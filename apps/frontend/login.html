@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in – EduFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="login-root">
+
+  <!-- ── Left: form ── -->
+  <div class="login-panel">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <div class="login-logo__icon">
+        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" aria-hidden="true">
+          <path d="M3.5 5h12M3.5 9.5h8M3.5 14h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="login-logo__name">EduFlow</span>
+    </div>
+
+    <h1 class="login-heading">Welcome back</h1>
+    <p class="login-subheading">Sign in to manage your students and documents.</p>
+
+    <!-- Error banner (hidden by default) -->
+    <div id="login-error" class="login-error" role="alert" aria-live="polite"></div>
+
+    <!-- Login form -->
+    <form id="login-form" novalidate>
+      <div class="login-fields">
+
+        <div>
+          <label class="field-label" for="email">Email address</label>
+          <input
+            class="field-input"
+            id="email"
+            name="email"
+            type="email"
+            placeholder="you@consultancy.com"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div>
+          <div class="field-label-row">
+            <label class="field-label" for="password">Password</label>
+            <a class="forgot-link" href="forgot-password.html">Forgot password?</a>
+          </div>
+          <input
+            class="field-input"
+            id="password"
+            name="password"
+            type="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+      </div>
+
+      <button class="btn-login" id="btn-submit" type="submit">
+        Sign in to EduFlow
+      </button>
+    </form>
+
+    <!-- Demo access -->
+    <div class="demo-access">
+      <p class="demo-access__label">Quick Demo Access</p>
+      <div class="demo-access__buttons">
+        <button class="btn-demo" id="btn-demo-admin"   type="button">🟢 Admin View</button>
+        <button class="btn-demo" id="btn-demo-student" type="button">🎓 Student View</button>
+      </div>
+    </div>
+
+    <p class="login-footer">© 2026 EduFlow · Trusted by 50+ education consultancies</p>
+  </div>
+
+  <!-- ── Right: illustration ── -->
+  <div class="login-illustration" aria-hidden="true">
+    <div class="illus-circle-1"></div>
+    <div class="illus-circle-2"></div>
+
+    <svg
+      class="illus-svg"
+      viewBox="0 0 500 440"
+      width="420"
+      height="370"
+    >
+      <circle cx="250" cy="220" r="200" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="42"/>
+      <circle cx="250" cy="220" r="130" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="26"/>
+      <circle cx="46"  cy="46"  r="3"   fill="rgba(255,255,255,0.2)"/>
+      <circle cx="454" cy="56"  r="3"   fill="rgba(255,255,255,0.2)"/>
+      <circle cx="30"  cy="394" r="3"   fill="rgba(255,255,255,0.2)"/>
+      <circle cx="462" cy="390" r="4"   fill="rgba(255,255,255,0.2)"/>
+
+      <!-- Stat cards -->
+      <rect x="16" y="76" width="110" height="60" rx="12" fill="white" fill-opacity="0.95"/>
+      <text x="71" y="102" text-anchor="middle" fill="#0F172A" font-family="Plus Jakarta Sans,system-ui" font-size="22" font-weight="800">247</text>
+      <text x="71" y="122" text-anchor="middle" fill="#64748B" font-family="Plus Jakarta Sans,system-ui" font-size="10.5" font-weight="500">Active Students</text>
+
+      <rect x="374" y="76" width="110" height="60" rx="12" fill="white" fill-opacity="0.95"/>
+      <text x="429" y="102" text-anchor="middle" fill="#16A34A" font-family="Plus Jakarta Sans,system-ui" font-size="22" font-weight="800">98%</text>
+      <text x="429" y="122" text-anchor="middle" fill="#64748B" font-family="Plus Jakarta Sans,system-ui" font-size="10.5" font-weight="500">Visa Success</text>
+
+      <!-- Main card -->
+      <rect x="88" y="140" width="274" height="196" rx="16" fill="white" fill-opacity="0.97"/>
+      <circle cx="118" cy="172" r="16" fill="#DBEAFE"/>
+      <text x="118" y="177" text-anchor="middle" fill="#1D4ED8" font-family="Plus Jakarta Sans,system-ui" font-size="11" font-weight="700">SC</text>
+      <rect x="142" y="160" width="124" height="9"  rx="4" fill="#0F172A" fill-opacity="0.13"/>
+      <rect x="142" y="175" width="88"  height="7"  rx="3" fill="#0F172A" fill-opacity="0.07"/>
+      <line x1="102" y1="198" x2="348" y2="198" stroke="#F1F5F9" stroke-width="1.5"/>
+      <rect x="102" y="212" width="216" height="7" rx="3" fill="#0F172A" fill-opacity="0.06"/>
+      <rect x="102" y="226" width="180" height="7" rx="3" fill="#0F172A" fill-opacity="0.06"/>
+      <rect x="102" y="240" width="196" height="7" rx="3" fill="#0F172A" fill-opacity="0.06"/>
+      <rect x="102" y="260" width="228" height="6" rx="3" fill="#E2E8F0"/>
+      <rect x="102" y="260" width="171" height="6" rx="3" fill="#16A34A"/>
+      <text x="102" y="280" fill="rgba(255,255,255,0.5)" font-family="Plus Jakarta Sans,system-ui" font-size="9.5">75% complete</text>
+      <rect x="102" y="292" width="90" height="24" rx="12" fill="#DCFCE7"/>
+      <text x="147" y="308" text-anchor="middle" fill="#16A34A" font-family="Plus Jakarta Sans,system-ui" font-size="11" font-weight="600">✓ Approved</text>
+      <rect x="200" y="292" width="64" height="24" rx="7" fill="#2563EB"/>
+      <text x="232" y="308" text-anchor="middle" fill="white" font-family="Plus Jakarta Sans,system-ui" font-size="11" font-weight="600">View</text>
+      <rect x="272" y="292" width="60" height="24" rx="7" fill="#F1F5F9"/>
+      <text x="302" y="308" text-anchor="middle" fill="#64748B" font-family="Plus Jakarta Sans,system-ui" font-size="11">Save</text>
+
+      <!-- Alert card -->
+      <rect x="20"  y="306" width="144" height="76" rx="12" fill="white" fill-opacity="0.93"/>
+      <circle cx="46" cy="330" r="13" fill="#FEF3C7"/>
+      <text x="46" y="336" text-anchor="middle" fill="#D97706" font-family="Plus Jakarta Sans,system-ui" font-size="13" font-weight="800">!</text>
+      <rect x="64" y="322" width="80" height="8" rx="4" fill="#0F172A" fill-opacity="0.12"/>
+      <rect x="64" y="336" width="60" height="6" rx="3" fill="#0F172A" fill-opacity="0.07"/>
+      <rect x="28" y="354" width="120" height="20" rx="10" fill="#FEF3C7"/>
+      <text x="88" y="368" text-anchor="middle" fill="#D97706" font-family="Plus Jakarta Sans,system-ui" font-size="10.5" font-weight="600">Pending Review</text>
+
+      <!-- Success badge -->
+      <rect x="358" y="238" width="122" height="74" rx="12" fill="white" fill-opacity="0.93"/>
+      <circle cx="383" cy="263" r="13" fill="#DCFCE7"/>
+      <text x="383" y="269" text-anchor="middle" fill="#16A34A" font-family="Plus Jakarta Sans,system-ui" font-size="13" font-weight="700">✓</text>
+      <rect x="402" y="255" width="62" height="8" rx="4" fill="#0F172A" fill-opacity="0.12"/>
+      <rect x="402" y="269" width="46" height="6" rx="3" fill="#0F172A" fill-opacity="0.07"/>
+      <rect x="366" y="286" width="100" height="18" rx="9" fill="#DCFCE7"/>
+      <text x="416" y="299" text-anchor="middle" fill="#16A34A" font-family="Plus Jakarta Sans,system-ui" font-size="10" font-weight="600">Document OK</text>
+
+      <!-- Connectors -->
+      <line x1="124" y1="140" x2="88"  y2="140" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="164" y1="368" x2="144" y2="350" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="356" y1="275" x2="362" y2="275" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" stroke-dasharray="4 4"/>
+    </svg>
+
+    <div class="illus-caption">
+      <p class="illus-caption__heading">One platform for every step</p>
+      <p class="illus-caption__body">
+        Replace WhatsApp, spreadsheets, and email with one system to
+        collect, verify, and track every student document.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Students – EduFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="sidebar-slot"></div>
+
+  <div class="main-content">
+    <div id="topbar-slot"></div>
+
+    <main class="page">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Students</h2>
+          <p class="page-subtitle">247 students across all stages</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" id="btn-export">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+          <button class="btn btn-primary" id="btn-add-student">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Student
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters bar -->
+      <div class="card" style="margin-bottom:var(--space-5); padding:0;">
+        <div style="display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4); flex-wrap:wrap;">
+
+          <!-- Search -->
+          <div class="input-group" style="flex:1; min-width:220px; max-width:340px;">
+            <span class="input-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input class="input" id="search-input" type="search" placeholder="Search by name or email…" />
+          </div>
+
+          <!-- Status filter -->
+          <select class="input select" id="filter-status" style="width:auto; min-width:160px;">
+            <option value="">All Statuses</option>
+            <option value="new">New</option>
+            <option value="pending">Pending Documents</option>
+            <option value="review">Under Review</option>
+            <option value="completed">Completed</option>
+            <option value="rejected">Rejected</option>
+          </select>
+
+          <!-- Destination filter -->
+          <select class="input select" id="filter-dest" style="width:auto; min-width:160px;">
+            <option value="">All Destinations</option>
+            <option>🇬🇧 UK</option>
+            <option>🇨🇦 Canada</option>
+            <option>🇦🇺 Australia</option>
+            <option>🇺🇸 USA</option>
+            <option>🇩🇪 Germany</option>
+          </select>
+
+          <!-- Results count -->
+          <div style="margin-left:auto; font-size:var(--font-size-sm); color:var(--color-neutral-500); white-space:nowrap;">
+            Showing <strong id="result-count">247</strong> students
+          </div>
+        </div>
+      </div>
+
+      <!-- Students table -->
+      <div class="card">
+        <div class="table-wrap">
+          <table class="table" id="students-table">
+            <thead>
+              <tr>
+                <th style="width:40px;">
+                  <input type="checkbox" id="select-all" style="cursor:pointer;" />
+                </th>
+                <th>Student</th>
+                <th>Contact</th>
+                <th>Destination</th>
+                <th>Stage</th>
+                <th>Progress</th>
+                <th>Counselor</th>
+                <th>Added</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="students-body">
+
+              <!-- Row 1 -->
+              <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=1'">
+                <td onclick="event.stopPropagation()"><input type="checkbox" /></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="avatar avatar-sm" data-color="blue">AK</div>
+                    <div>
+                      <div style="font-weight:600; color:var(--color-neutral-900);">Arjun Kumar</div>
+                      <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">STU-001</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div style="font-size:var(--font-size-sm);">arjun.kumar@gmail.com</div>
+                  <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">+44 7700 900123</div>
+                </td>
+                <td><span style="display:flex; align-items:center; gap:4px;">🇬🇧 <span>UK</span></span></td>
+                <td><span class="badge badge-warning"><span class="badge-dot badge-warning"></span>Under Review</span></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="progress" style="width:72px;"><div class="progress-bar progress-bar--warning" style="width:60%"></div></div>
+                    <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">3/5</span>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="avatar avatar-sm" data-color="green">SM</div>
+                    <span style="font-size:var(--font-size-sm);">Sarah M.</span>
+                  </div>
+                </td>
+                <td style="color:var(--color-neutral-500); font-size:var(--font-size-sm);">2 Jun 2026</td>
+                <td onclick="event.stopPropagation()">
+                  <div class="dropdown">
+                    <button class="btn btn-ghost btn-sm" data-dropdown="dd1">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    </button>
+                    <div class="dropdown-menu" id="dd1" hidden style="display:none;">
+                      <a class="dropdown-item" href="student-profile.html?id=1">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        View Profile
+                      </a>
+                      <button class="dropdown-item" onclick="toast('Invitation resent!', 'info')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        Resend Invitation
+                      </button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item dropdown-item--danger" onclick="toast('Student archived', 'warning')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/></svg>
+                        Archive
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 2 -->
+              <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=2'">
+                <td onclick="event.stopPropagation()"><input type="checkbox" /></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="avatar avatar-sm" data-color="violet">PS</div>
+                    <div>
+                      <div style="font-weight:600; color:var(--color-neutral-900);">Priya Sharma</div>
+                      <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">STU-002</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div style="font-size:var(--font-size-sm);">priya.sharma@gmail.com</div>
+                  <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">+1 604 555 0189</div>
+                </td>
+                <td>🇨🇦 Canada</td>
+                <td><span class="badge badge-success"><span class="badge-dot badge-success"></span>Completed</span></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="progress" style="width:72px;"><div class="progress-bar progress-bar--success" style="width:100%"></div></div>
+                    <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">5/5</span>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="avatar avatar-sm" data-color="green">SM</div>
+                    <span style="font-size:var(--font-size-sm);">Sarah M.</span>
+                  </div>
+                </td>
+                <td style="color:var(--color-neutral-500); font-size:var(--font-size-sm);">31 May 2026</td>
+                <td onclick="event.stopPropagation()">
+                  <div class="dropdown">
+                    <button class="btn btn-ghost btn-sm" data-dropdown="dd2">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    </button>
+                    <div class="dropdown-menu" id="dd2" hidden style="display:none;">
+                      <a class="dropdown-item" href="student-profile.html?id=2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        View Profile
+                      </a>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item dropdown-item--danger">Archive</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 3 -->
+              <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=3'">
+                <td onclick="event.stopPropagation()"><input type="checkbox" /></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="avatar avatar-sm" data-color="teal">MA</div>
+                    <div>
+                      <div style="font-weight:600; color:var(--color-neutral-900);">Mohammed Al-Lami</div>
+                      <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">STU-003</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div style="font-size:var(--font-size-sm);">m.allami@gmail.com</div>
+                  <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">+61 412 345 678</div>
+                </td>
+                <td>🇦🇺 Australia</td>
+                <td><span class="badge badge-neutral"><span class="badge-dot badge-neutral"></span>New</span></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="progress" style="width:72px;"><div class="progress-bar" style="width:0%"></div></div>
+                    <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">0/6</span>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="avatar avatar-sm" data-color="violet">JR</div>
+                    <span style="font-size:var(--font-size-sm);">James R.</span>
+                  </div>
+                </td>
+                <td style="color:var(--color-neutral-500); font-size:var(--font-size-sm);">29 May 2026</td>
+                <td onclick="event.stopPropagation()">
+                  <div class="dropdown">
+                    <button class="btn btn-ghost btn-sm" data-dropdown="dd3">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    </button>
+                    <div class="dropdown-menu" id="dd3" hidden style="display:none;">
+                      <a class="dropdown-item" href="student-profile.html?id=3">View Profile</a>
+                      <button class="dropdown-item" onclick="toast('Invitation resent!', 'info')">Resend Invitation</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item dropdown-item--danger">Archive</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 4 -->
+              <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=4'">
+                <td onclick="event.stopPropagation()"><input type="checkbox" /></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="avatar avatar-sm" data-color="amber">FN</div>
+                    <div>
+                      <div style="font-weight:600; color:var(--color-neutral-900);">Fatima Nasser</div>
+                      <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">STU-004</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div style="font-size:var(--font-size-sm);">fnasser@gmail.com</div>
+                  <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">+49 151 2345 6789</div>
+                </td>
+                <td>🇩🇪 Germany</td>
+                <td><span class="badge badge-danger"><span class="badge-dot badge-danger"></span>Rejected</span></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="progress" style="width:72px;"><div class="progress-bar progress-bar--danger" style="width:40%"></div></div>
+                    <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">2/5</span>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="avatar avatar-sm" data-color="green">SM</div>
+                    <span style="font-size:var(--font-size-sm);">Sarah M.</span>
+                  </div>
+                </td>
+                <td style="color:var(--color-neutral-500); font-size:var(--font-size-sm);">28 May 2026</td>
+                <td onclick="event.stopPropagation()">
+                  <div class="dropdown">
+                    <button class="btn btn-ghost btn-sm" data-dropdown="dd4">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    </button>
+                    <div class="dropdown-menu" id="dd4" hidden style="display:none;">
+                      <a class="dropdown-item" href="student-profile.html?id=4">View Profile</a>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item dropdown-item--danger">Archive</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Row 5 -->
+              <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=5'">
+                <td onclick="event.stopPropagation()"><input type="checkbox" /></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="avatar avatar-sm" data-color="green">LC</div>
+                    <div>
+                      <div style="font-weight:600; color:var(--color-neutral-900);">Li Chen</div>
+                      <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">STU-005</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div style="font-size:var(--font-size-sm);">li.chen@gmail.com</div>
+                  <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">+1 212 555 0192</div>
+                </td>
+                <td>🇺🇸 USA</td>
+                <td><span class="badge badge-brand"><span class="badge-dot badge-brand"></span>Pending Docs</span></td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="progress" style="width:72px;"><div class="progress-bar" style="width:66%"></div></div>
+                    <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">4/6</span>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <div class="avatar avatar-sm" data-color="violet">JR</div>
+                    <span style="font-size:var(--font-size-sm);">James R.</span>
+                  </div>
+                </td>
+                <td style="color:var(--color-neutral-500); font-size:var(--font-size-sm);">27 May 2026</td>
+                <td onclick="event.stopPropagation()">
+                  <div class="dropdown">
+                    <button class="btn btn-ghost btn-sm" data-dropdown="dd5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    </button>
+                    <div class="dropdown-menu" id="dd5" hidden style="display:none;">
+                      <a class="dropdown-item" href="student-profile.html?id=5">View Profile</a>
+                      <button class="dropdown-item" onclick="toast('Reminder sent!', 'info')">Send Reminder</button>
+                      <div class="dropdown-divider"></div>
+                      <button class="dropdown-item dropdown-item--danger">Archive</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer" style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:var(--font-size-sm); color:var(--color-neutral-500);">
+            Showing 1–20 of 247 students
+          </div>
+          <div style="display:flex; align-items:center; gap:var(--space-1);">
+            <button class="btn btn-ghost btn-sm" disabled>← Prev</button>
+            <button class="btn btn-primary btn-sm" style="min-width:34px;">1</button>
+            <button class="btn btn-ghost btn-sm" style="min-width:34px;">2</button>
+            <button class="btn btn-ghost btn-sm" style="min-width:34px;">3</button>
+            <span style="font-size:var(--font-size-sm); color:var(--color-neutral-400); padding:0 4px;">…</span>
+            <button class="btn btn-ghost btn-sm" style="min-width:34px;">13</button>
+            <button class="btn btn-ghost btn-sm">Next →</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+
+<!-- Add Student Modal (same as dashboard) -->
+<div class="modal-backdrop" id="modal-add-student" hidden style="display:none;">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-add-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-add-title">Add New Student</h2>
+      <button class="modal-close" onclick="Modal.close('modal-add-student')" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; flex-direction:column; gap:var(--space-4);">
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label" for="new-fname">First Name</label>
+            <input class="input" id="new-fname" type="text" placeholder="e.g. Arjun" />
+          </div>
+          <div class="field">
+            <label class="field-label" for="new-lname">Last Name</label>
+            <input class="input" id="new-lname" type="text" placeholder="e.g. Kumar" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="new-email">Email Address</label>
+          <input class="input" id="new-email" type="email" placeholder="student@email.com" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="new-phone">Phone Number</label>
+          <input class="input" id="new-phone" type="tel" placeholder="+1 234 567 8900" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="new-destination">Destination Country</label>
+          <select class="input select" id="new-destination">
+            <option value="">Select country…</option>
+            <option>🇬🇧 United Kingdom</option>
+            <option>🇨🇦 Canada</option>
+            <option>🇦🇺 Australia</option>
+            <option>🇺🇸 United States</option>
+            <option>🇩🇪 Germany</option>
+          </select>
+        </div>
+        <div class="alert alert-info" style="font-size:var(--font-size-xs);">
+          <span class="alert-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+          <span>A portal invitation will be sent to the student's email automatically.</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-add-student')">Cancel</button>
+      <button class="btn btn-primary" onclick="Modal.close('modal-add-student'); toast('Student added! Invitation sent.', 'success')">Add Student</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    buildShell({ title: 'Students' });
+
+    // Add student
+    document.getElementById('btn-add-student').addEventListener('click', () => Modal.open('modal-add-student'));
+    Modal.closeOnBackdrop('modal-add-student');
+
+    // Export stub
+    document.getElementById('btn-export').addEventListener('click', () => toast('Exporting student list…', 'info'));
+
+    // Dropdown toggles
+    document.querySelectorAll('[data-dropdown]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.dropdown;
+        const menu = document.getElementById(id);
+        const isOpen = menu.style.display !== 'none';
+        document.querySelectorAll('.dropdown-menu').forEach(m => { m.style.display = 'none'; m.hidden = true; });
+        if (!isOpen) { menu.style.display = 'block'; menu.hidden = false; }
+      });
+    });
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.dropdown-menu').forEach(m => { m.style.display = 'none'; m.hidden = true; });
+    });
+
+    // Search stub
+    document.getElementById('search-input').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('#students-body tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+      const visible = document.querySelectorAll('#students-body tr:not([style*="none"])').length;
+      document.getElementById('result-count').textContent = q ? visible : '247';
+    });
+  });
+</script>
+
+</body>
+</html>

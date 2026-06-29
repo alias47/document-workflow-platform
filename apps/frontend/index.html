@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EduFlow</title>
+  <script>
+    // Route authenticated users to the correct dashboard;
+    // everyone else lands on the login page.
+    (function () {
+      var role = sessionStorage.getItem('eduflow_role');
+      if (role === 'admin')   { location.replace('dashboard.html');        return; }
+      if (role === 'student') { location.replace('portal/dashboard.html'); return; }
+      location.replace('login.html');
+    })();
+  </script>
+</head>
+<body></body>
+</html>

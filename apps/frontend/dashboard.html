@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard – EduFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Sidebar injected by app.js -->
+  <div id="sidebar-slot"></div>
+
+  <div class="main-content">
+
+    <!-- Topbar injected by app.js -->
+    <div id="topbar-slot"></div>
+
+    <main class="page">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Dashboard</h2>
+          <p class="page-subtitle">Good morning, Sarah. Here's what's happening today.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="window.location.href='students.html'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            View Students
+          </button>
+          <button class="btn btn-primary" id="btn-add-student">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Student
+          </button>
+        </div>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="grid-4" style="margin-bottom: var(--space-6);">
+
+        <div class="stat-card">
+          <div class="stat-card__icon" style="background: var(--color-brand-50); color: var(--color-brand-600);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div>
+            <div class="stat-card__label">Total Students</div>
+            <div class="stat-card__value">247</div>
+          </div>
+          <div class="stat-card__change stat-card__change--up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            +12 this month
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card__icon" style="background: var(--color-warning-100); color: var(--color-warning-600);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div>
+            <div class="stat-card__label">Pending Review</div>
+            <div class="stat-card__value">34</div>
+          </div>
+          <div class="stat-card__change stat-card__change--up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            +5 since yesterday
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card__icon" style="background: var(--color-success-100); color: var(--color-success-600);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <div class="stat-card__label">Approved This Month</div>
+            <div class="stat-card__value">89</div>
+          </div>
+          <div class="stat-card__change stat-card__change--up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            98% approval rate
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card__icon" style="background: var(--color-danger-100); color: var(--color-danger-600);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+          </div>
+          <div>
+            <div class="stat-card__label">Missing Documents</div>
+            <div class="stat-card__value">18</div>
+          </div>
+          <div class="stat-card__change stat-card__change--down">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            Needs attention
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Main content grid -->
+      <div style="display: grid; grid-template-columns: 1fr 340px; gap: var(--space-5); align-items: start;">
+
+        <!-- Left column -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+
+          <!-- Recent students -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Recent Students</div>
+                <div class="card-subtitle">Latest applicants added to the system</div>
+              </div>
+              <a href="students.html" class="btn btn-ghost btn-sm">View all →</a>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Destination</th>
+                    <th>Stage</th>
+                    <th>Documents</th>
+                    <th>Added</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=1'">
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="avatar avatar-sm" data-color="blue">AK</div>
+                        <div>
+                          <div style="font-weight:600; color:var(--color-neutral-900);">Arjun Kumar</div>
+                          <div style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">arjun@email.com</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>🇬🇧 UK</td>
+                    <td><span class="badge badge-warning"><span class="badge-dot badge-warning"></span>Under Review</span></td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <div class="progress" style="width:80px;"><div class="progress-bar" style="width:60%"></div></div>
+                        <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">3/5</span>
+                      </div>
+                    </td>
+                    <td style="color:var(--color-neutral-500);">2 Jun 2026</td>
+                    <td><a href="student-profile.html?id=1" class="btn btn-ghost btn-sm">View</a></td>
+                  </tr>
+                  <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=2'">
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="avatar avatar-sm" data-color="violet">PS</div>
+                        <div>
+                          <div style="font-weight:600; color:var(--color-neutral-900);">Priya Sharma</div>
+                          <div style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">priya@email.com</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>🇨🇦 Canada</td>
+                    <td><span class="badge badge-success"><span class="badge-dot badge-success"></span>Completed</span></td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <div class="progress" style="width:80px;"><div class="progress-bar progress-bar--success" style="width:100%"></div></div>
+                        <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">5/5</span>
+                      </div>
+                    </td>
+                    <td style="color:var(--color-neutral-500);">31 May 2026</td>
+                    <td><a href="student-profile.html?id=2" class="btn btn-ghost btn-sm">View</a></td>
+                  </tr>
+                  <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=3'">
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="avatar avatar-sm" data-color="teal">ML</div>
+                        <div>
+                          <div style="font-weight:600; color:var(--color-neutral-900);">Mohammed Al-Lami</div>
+                          <div style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">mlami@email.com</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>🇦🇺 Australia</td>
+                    <td><span class="badge badge-neutral"><span class="badge-dot badge-neutral"></span>New</span></td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <div class="progress" style="width:80px;"><div class="progress-bar" style="width:0%"></div></div>
+                        <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">0/6</span>
+                      </div>
+                    </td>
+                    <td style="color:var(--color-neutral-500);">29 May 2026</td>
+                    <td><a href="student-profile.html?id=3" class="btn btn-ghost btn-sm">View</a></td>
+                  </tr>
+                  <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=4'">
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="avatar avatar-sm" data-color="amber">FN</div>
+                        <div>
+                          <div style="font-weight:600; color:var(--color-neutral-900);">Fatima Nasser</div>
+                          <div style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">fnasser@email.com</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>🇩🇪 Germany</td>
+                    <td><span class="badge badge-danger"><span class="badge-dot badge-danger"></span>Rejected</span></td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <div class="progress" style="width:80px;"><div class="progress-bar progress-bar--danger" style="width:40%"></div></div>
+                        <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">2/5</span>
+                      </div>
+                    </td>
+                    <td style="color:var(--color-neutral-500);">28 May 2026</td>
+                    <td><a href="student-profile.html?id=4" class="btn btn-ghost btn-sm">View</a></td>
+                  </tr>
+                  <tr class="table-row-link" onclick="window.location.href='student-profile.html?id=5'">
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="avatar avatar-sm" data-color="green">LC</div>
+                        <div>
+                          <div style="font-weight:600; color:var(--color-neutral-900);">Li Chen</div>
+                          <div style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">lchen@email.com</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>🇺🇸 USA</td>
+                    <td><span class="badge badge-brand"><span class="badge-dot badge-brand"></span>Pending Docs</span></td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <div class="progress" style="width:80px;"><div class="progress-bar progress-bar--warning" style="width:70%"></div></div>
+                        <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">4/6</span>
+                      </div>
+                    </td>
+                    <td style="color:var(--color-neutral-500);">27 May 2026</td>
+                    <td><a href="student-profile.html?id=5" class="btn btn-ghost btn-sm">View</a></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pending review queue -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Documents Awaiting Review</div>
+                <div class="card-subtitle">Review and approve submitted documents</div>
+              </div>
+              <span class="badge badge-warning">34 pending</span>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Document</th>
+                    <th>Student</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:34px; height:34px; background:var(--color-danger-50); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">📄</div>
+                        <div>
+                          <div style="font-weight:600; color:var(--color-neutral-900);">Passport Copy</div>
+                          <div style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">PDF · 2.4 MB</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="avatar avatar-sm" data-color="blue">AK</div>
+                        Arjun Kumar
+                      </div>
+                    </td>
+                    <td style="color:var(--color-neutral-500);">2 hours ago</td>
+                    <td>
+                      <div style="display:flex; gap:6px;">
+                        <button class="btn btn-secondary btn-sm">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          Review
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="toast('Document approved!', 'success')">Approve</button>
+                        <button class="btn btn-danger-ghost btn-sm" onclick="toast('Document rejected', 'error')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:34px; height:34px; background:var(--color-brand-50); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">📝</div>
+                        <div>
+                          <div style="font-weight:600; color:var(--color-neutral-900);">Bank Statement</div>
+                          <div style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">PDF · 1.1 MB</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="avatar avatar-sm" data-color="green">LC</div>
+                        Li Chen
+                      </div>
+                    </td>
+                    <td style="color:var(--color-neutral-500);">5 hours ago</td>
+                    <td>
+                      <div style="display:flex; gap:6px;">
+                        <button class="btn btn-secondary btn-sm">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          Review
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="toast('Document approved!', 'success')">Approve</button>
+                        <button class="btn btn-danger-ghost btn-sm" onclick="toast('Document rejected', 'error')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:34px; height:34px; background:var(--color-success-50); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🖼️</div>
+                        <div>
+                          <div style="font-weight:600; color:var(--color-neutral-900);">Academic Transcript</div>
+                          <div style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">JPG · 890 KB</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="avatar avatar-sm" data-color="amber">FN</div>
+                        Fatima Nasser
+                      </div>
+                    </td>
+                    <td style="color:var(--color-neutral-500);">Yesterday</td>
+                    <td>
+                      <div style="display:flex; gap:6px;">
+                        <button class="btn btn-secondary btn-sm">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          Review
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="toast('Document approved!', 'success')">Approve</button>
+                        <button class="btn btn-danger-ghost btn-sm" onclick="toast('Document rejected', 'error')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer">
+              <a href="documents.html" class="btn btn-ghost btn-sm" style="margin:0 auto;">View all 34 pending documents →</a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right column -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+
+          <!-- Workflow summary -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Workflow Overview</div>
+            </div>
+            <div class="card-body" style="display:flex; flex-direction:column; gap:var(--space-4);">
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+                  <div style="font-size:var(--font-size-sm); font-weight:var(--font-weight-semibold); color:var(--color-neutral-700);">New Applicants</div>
+                  <span class="badge badge-neutral">42</span>
+                </div>
+                <div class="progress"><div class="progress-bar" style="width:17%; background:var(--color-neutral-400)"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+                  <div style="font-size:var(--font-size-sm); font-weight:var(--font-weight-semibold); color:var(--color-neutral-700);">Documents Pending</div>
+                  <span class="badge badge-brand">78</span>
+                </div>
+                <div class="progress"><div class="progress-bar" style="width:32%"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+                  <div style="font-size:var(--font-size-sm); font-weight:var(--font-weight-semibold); color:var(--color-neutral-700);">Under Review</div>
+                  <span class="badge badge-warning">34</span>
+                </div>
+                <div class="progress"><div class="progress-bar progress-bar--warning" style="width:14%"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+                  <div style="font-size:var(--font-size-sm); font-weight:var(--font-weight-semibold); color:var(--color-neutral-700);">Completed</div>
+                  <span class="badge badge-success">93</span>
+                </div>
+                <div class="progress"><div class="progress-bar progress-bar--success" style="width:38%"></div></div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Recent activity -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Activity</div>
+            </div>
+            <div class="card-body">
+              <div class="timeline">
+
+                <div class="timeline-item">
+                  <div class="timeline-connector">
+                    <div class="timeline-dot" style="background:var(--color-success-100); color:var(--color-success-600);">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="timeline-line"></div>
+                  </div>
+                  <div class="timeline-content">
+                    <div class="timeline-content__title">Passport approved for Arjun Kumar</div>
+                    <div class="timeline-content__meta">Sarah Mitchell · 2 hours ago</div>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="timeline-connector">
+                    <div class="timeline-dot" style="background:var(--color-brand-100); color:var(--color-brand-600);">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+                    </div>
+                    <div class="timeline-line"></div>
+                  </div>
+                  <div class="timeline-content">
+                    <div class="timeline-content__title">Bank statement uploaded by Li Chen</div>
+                    <div class="timeline-content__meta">System · 5 hours ago</div>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="timeline-connector">
+                    <div class="timeline-dot" style="background:var(--color-neutral-100); color:var(--color-neutral-500);">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="timeline-line"></div>
+                  </div>
+                  <div class="timeline-content">
+                    <div class="timeline-content__title">New student added: Mohammed Al-Lami</div>
+                    <div class="timeline-content__meta">Sarah Mitchell · Yesterday</div>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="timeline-connector">
+                    <div class="timeline-dot" style="background:var(--color-danger-100); color:var(--color-danger-600);">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </div>
+                    <div class="timeline-line"></div>
+                  </div>
+                  <div class="timeline-content">
+                    <div class="timeline-content__title">Transcript rejected for Fatima Nasser</div>
+                    <div class="timeline-content__meta">Sarah Mitchell · Yesterday</div>
+                    <div class="timeline-content__body">Document is blurry and unreadable. Please re-upload a clearer scan.</div>
+                  </div>
+                </div>
+
+                <div class="timeline-item">
+                  <div class="timeline-connector">
+                    <div class="timeline-dot" style="background:var(--color-success-100); color:var(--color-success-600);">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="timeline-line"></div>
+                  </div>
+                  <div class="timeline-content">
+                    <div class="timeline-content__title">Priya Sharma – All documents approved</div>
+                    <div class="timeline-content__meta">Sarah Mitchell · 2 days ago</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- end grid -->
+
+    </main>
+  </div>
+</div>
+
+
+<!-- Add Student Modal -->
+<div class="modal-backdrop" id="modal-add-student" hidden style="display:none;">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-add-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-add-title">Add New Student</h2>
+      <button class="modal-close" onclick="Modal.close('modal-add-student')" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; flex-direction:column; gap:var(--space-4);">
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label" for="new-fname">First Name</label>
+            <input class="input" id="new-fname" type="text" placeholder="e.g. Arjun" />
+          </div>
+          <div class="field">
+            <label class="field-label" for="new-lname">Last Name</label>
+            <input class="input" id="new-lname" type="text" placeholder="e.g. Kumar" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="new-email">Email Address</label>
+          <input class="input" id="new-email" type="email" placeholder="student@email.com" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="new-phone">Phone Number</label>
+          <input class="input" id="new-phone" type="tel" placeholder="+1 234 567 8900" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="new-destination">Destination Country</label>
+          <select class="input select" id="new-destination">
+            <option value="">Select country…</option>
+            <option>🇬🇧 United Kingdom</option>
+            <option>🇨🇦 Canada</option>
+            <option>🇦🇺 Australia</option>
+            <option>🇺🇸 United States</option>
+            <option>🇩🇪 Germany</option>
+            <option>🇫🇷 France</option>
+            <option>🇳🇿 New Zealand</option>
+          </select>
+        </div>
+        <div class="alert alert-info" style="font-size:var(--font-size-xs);">
+          <span class="alert-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </span>
+          <span>A portal invitation will be sent to the student's email automatically.</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-add-student')">Cancel</button>
+      <button class="btn btn-primary" onclick="Modal.close('modal-add-student'); toast('Student added! Invitation sent.', 'success')">Add Student</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    buildShell({ title: 'Dashboard' });
+    document.getElementById('btn-add-student').addEventListener('click', () => Modal.open('modal-add-student'));
+    Modal.closeOnBackdrop('modal-add-student');
+  });
+</script>
+
+</body>
+</html>

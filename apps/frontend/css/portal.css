@@ -1,0 +1,219 @@
+/* ============================================================
+   EduFlow – Student / Applicant Portal Styles
+   ============================================================ */
+
+/* Portal uses a lighter sidebar variant */
+.portal-sidebar {
+  background: var(--color-neutral-0);
+  border-right: 1px solid var(--color-neutral-200);
+}
+
+.portal-sidebar .sidebar-logo__name {
+  color: var(--color-neutral-900);
+}
+
+.portal-sidebar .sidebar-section-label {
+  color: var(--color-neutral-400);
+}
+
+.portal-sidebar .sidebar-link {
+  color: var(--color-neutral-600);
+}
+
+.portal-sidebar .sidebar-link:hover {
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-900);
+}
+
+.portal-sidebar .sidebar-link.active {
+  background: var(--color-brand-50);
+  color: var(--color-brand-700);
+}
+
+.portal-sidebar .sidebar-link.active .sidebar-link__icon {
+  color: var(--color-brand-600);
+}
+
+.portal-sidebar .sidebar-footer {
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+.portal-sidebar .sidebar-user__name {
+  color: var(--color-neutral-800);
+}
+
+.portal-sidebar .sidebar-user__role {
+  color: var(--color-neutral-500);
+}
+
+.portal-sidebar .sidebar-user:hover {
+  background: var(--color-neutral-50);
+}
+
+.portal-sidebar .sidebar-user__chevron {
+  color: var(--color-neutral-400);
+}
+
+
+/* ── Portal-specific document upload card ── */
+
+.upload-requirement {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.upload-requirement:hover { border-color: var(--color-neutral-300); }
+
+.upload-req__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.upload-req__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.upload-req__body { padding: var(--space-4) var(--space-5); }
+
+.upload-req__description {
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-500);
+  line-height: var(--line-height-loose);
+  margin-bottom: var(--space-4);
+}
+
+/* ── Portal status hero ── */
+
+.portal-status-hero {
+  background: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-700) 100%);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  color: var(--color-neutral-0);
+  margin-bottom: var(--space-5);
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-status-hero::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+
+.portal-status-hero__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.7;
+  margin-bottom: var(--space-1);
+}
+
+.portal-status-hero__name {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: -0.5px;
+  margin-bottom: 2px;
+}
+
+.portal-status-hero__sub {
+  font-size: var(--font-size-sm);
+  opacity: 0.7;
+}
+
+.portal-status-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: rgba(255,255,255,0.15);
+  color: var(--color-neutral-0);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  margin-top: var(--space-3);
+}
+
+/* ── Workflow steps ── */
+
+.workflow-steps {
+  display: flex;
+  gap: 0;
+  margin: var(--space-5) 0;
+}
+
+.workflow-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  position: relative;
+  text-align: center;
+}
+
+.workflow-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: calc(50% + 16px);
+  right: calc(-50% + 16px);
+  height: 2px;
+  background: var(--color-neutral-200);
+}
+
+.workflow-step.done::after  { background: var(--color-success-500); }
+.workflow-step.active::after { background: var(--color-neutral-200); }
+
+.workflow-step__dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  border: 2px solid var(--color-neutral-200);
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-400);
+  position: relative;
+  z-index: 1;
+}
+
+.workflow-step.done .workflow-step__dot {
+  background: var(--color-success-600);
+  border-color: var(--color-success-600);
+  color: var(--color-neutral-0);
+}
+
+.workflow-step.active .workflow-step__dot {
+  background: var(--color-brand-600);
+  border-color: var(--color-brand-600);
+  color: var(--color-neutral-0);
+  box-shadow: 0 0 0 4px var(--color-brand-100);
+}
+
+.workflow-step__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-neutral-500);
+  font-weight: var(--font-weight-medium);
+  max-width: 80px;
+}
+
+.workflow-step.done .workflow-step__label   { color: var(--color-success-600); font-weight: var(--font-weight-semibold); }
+.workflow-step.active .workflow-step__label { color: var(--color-brand-600); font-weight: var(--font-weight-semibold); }

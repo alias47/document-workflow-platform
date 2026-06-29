@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Profile – EduFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="sidebar-slot"></div>
+
+  <div class="main-content">
+    <div id="topbar-slot"></div>
+
+    <main class="page">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumbs" style="margin-bottom:var(--space-4);">
+        <a href="students.html">Students</a>
+        <span>›</span>
+        <span class="current">Arjun Kumar</span>
+      </div>
+
+      <!-- Profile header -->
+      <div class="card" style="margin-bottom:var(--space-5);">
+        <div class="card-body">
+          <div style="display:flex; align-items:flex-start; gap:var(--space-4); flex-wrap:wrap;">
+
+            <div class="avatar avatar-xl" data-color="blue">AK</div>
+
+            <div style="flex:1; min-width:200px;">
+              <div style="display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap;">
+                <h2 style="font-size:var(--font-size-2xl); font-weight:var(--font-weight-extrabold); color:var(--color-neutral-900); letter-spacing:-0.4px;">Arjun Kumar</h2>
+                <span class="badge badge-warning"><span class="badge-dot badge-warning"></span>Under Review</span>
+              </div>
+              <div style="display:flex; gap:var(--space-5); margin-top:var(--space-3); flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-sm); color:var(--color-neutral-500);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  arjun.kumar@gmail.com
+                </div>
+                <div style="display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-sm); color:var(--color-neutral-500);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 11a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.93 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  +44 7700 900123
+                </div>
+                <div style="display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-sm); color:var(--color-neutral-500);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Mumbai, India
+                </div>
+                <div style="font-size:var(--font-size-sm); color:var(--color-neutral-500);">
+                  Student ID: <strong>STU-001</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Header actions -->
+            <div style="display:flex; gap:var(--space-2); align-items:center; flex-shrink:0;">
+              <button class="btn btn-secondary" onclick="toast('Invitation resent!', 'info')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Resend Invite
+              </button>
+              <button class="btn btn-secondary" id="btn-edit-student">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+              <div class="dropdown">
+                <button class="btn btn-ghost" data-dropdown="header-dd">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+                <div class="dropdown-menu" id="header-dd" hidden style="display:none;">
+                  <button class="dropdown-item" onclick="toast('Password reset email sent!', 'info')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Reset Password
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button class="dropdown-item dropdown-item--danger" onclick="toast('Student archived', 'warning')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/></svg>
+                    Archive Student
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Progress summary -->
+          <div style="margin-top:var(--space-5); padding-top:var(--space-4); border-top:1px solid var(--color-neutral-100);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:var(--space-2);">
+              <span style="font-size:var(--font-size-sm); font-weight:var(--font-weight-semibold); color:var(--color-neutral-700);">Document Progress</span>
+              <span style="font-size:var(--font-size-sm); color:var(--color-neutral-500);">3 of 5 submitted</span>
+            </div>
+            <div class="progress" style="height:8px;">
+              <div class="progress-bar progress-bar--warning" style="width:60%;"></div>
+            </div>
+            <div style="display:flex; gap:var(--space-4); margin-top:var(--space-3);">
+              <span style="font-size:var(--font-size-xs); color:var(--color-success-600); font-weight:600;">✓ 2 Approved</span>
+              <span style="font-size:var(--font-size-xs); color:var(--color-warning-600); font-weight:600;">⏳ 1 Under Review</span>
+              <span style="font-size:var(--font-size-xs); color:var(--color-neutral-500);">📋 2 Missing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main layout -->
+      <div class="grid-aside-wide">
+
+        <!-- Left: tabs content -->
+        <div>
+
+          <!-- Tabs -->
+          <div class="tabs">
+            <button class="tab active" data-tab="documents">Documents</button>
+            <button class="tab" data-tab="timeline">Timeline</button>
+            <button class="tab" data-tab="notes">Notes</button>
+            <button class="tab" data-tab="info">Info</button>
+          </div>
+
+          <!-- Documents tab -->
+          <div id="tab-documents">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:var(--space-3);">
+              <button class="btn btn-secondary btn-sm" id="btn-request-doc">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Request Document
+              </button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+
+              <!-- Approved document -->
+              <div class="doc-card">
+                <div class="doc-card__icon" style="background:var(--color-danger-50);">📄</div>
+                <div style="flex:1; min-width:0;">
+                  <div class="doc-card__name">Passport Copy</div>
+                  <div class="doc-card__meta">PDF · 2.4 MB · Uploaded 2 Jun 2026</div>
+                </div>
+                <span class="badge badge-success">✓ Approved</span>
+                <div class="doc-card__actions">
+                  <button class="btn btn-ghost btn-sm" title="Preview" onclick="toast('Opening preview…', 'info')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="btn btn-ghost btn-sm" title="Download" onclick="toast('Downloading…', 'info')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Approved document -->
+              <div class="doc-card">
+                <div class="doc-card__icon" style="background:var(--color-brand-50);">📝</div>
+                <div style="flex:1; min-width:0;">
+                  <div class="doc-card__name">Academic Transcript</div>
+                  <div class="doc-card__meta">PDF · 1.8 MB · Uploaded 1 Jun 2026</div>
+                </div>
+                <span class="badge badge-success">✓ Approved</span>
+                <div class="doc-card__actions">
+                  <button class="btn btn-ghost btn-sm" title="Preview" onclick="toast('Opening preview…', 'info')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="btn btn-ghost btn-sm" title="Download" onclick="toast('Downloading…', 'info')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Under review -->
+              <div class="doc-card" style="border-color:var(--color-warning-200, #FDE68A);">
+                <div class="doc-card__icon" style="background:var(--color-warning-50);">📄</div>
+                <div style="flex:1; min-width:0;">
+                  <div class="doc-card__name">Bank Statement</div>
+                  <div class="doc-card__meta">PDF · 980 KB · Uploaded today</div>
+                </div>
+                <span class="badge badge-warning">⏳ Under Review</span>
+                <div class="doc-card__actions">
+                  <button class="btn btn-primary btn-sm" onclick="toast('Document approved!', 'success')">Approve</button>
+                  <button class="btn btn-danger-ghost btn-sm" id="btn-reject-doc">Reject</button>
+                </div>
+              </div>
+
+              <!-- Missing document -->
+              <div class="doc-card" style="border-style:dashed; background:var(--color-neutral-50);">
+                <div class="doc-card__icon" style="background:var(--color-neutral-100); color:var(--color-neutral-400);">📋</div>
+                <div style="flex:1; min-width:0;">
+                  <div class="doc-card__name" style="color:var(--color-neutral-600);">English Proficiency Certificate</div>
+                  <div class="doc-card__meta">Awaiting upload from student</div>
+                </div>
+                <span class="badge badge-neutral">Missing</span>
+                <div class="doc-card__actions">
+                  <button class="btn btn-ghost btn-sm" onclick="toast('Reminder sent to Arjun!', 'info')">Send Reminder</button>
+                </div>
+              </div>
+
+              <!-- Missing document -->
+              <div class="doc-card" style="border-style:dashed; background:var(--color-neutral-50);">
+                <div class="doc-card__icon" style="background:var(--color-neutral-100); color:var(--color-neutral-400);">📋</div>
+                <div style="flex:1; min-width:0;">
+                  <div class="doc-card__name" style="color:var(--color-neutral-600);">Statement of Purpose</div>
+                  <div class="doc-card__meta">Awaiting upload from student</div>
+                </div>
+                <span class="badge badge-neutral">Missing</span>
+                <div class="doc-card__actions">
+                  <button class="btn btn-ghost btn-sm" onclick="toast('Reminder sent to Arjun!', 'info')">Send Reminder</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Timeline tab (hidden by default) -->
+          <div id="tab-timeline" hidden>
+            <div class="timeline">
+
+              <div class="timeline-item">
+                <div class="timeline-connector">
+                  <div class="timeline-dot" style="background:var(--color-success-100); color:var(--color-success-600);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-content">
+                  <div class="timeline-content__title">Passport approved</div>
+                  <div class="timeline-content__meta">Sarah Mitchell · 2 Jun 2026, 10:14</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-connector">
+                  <div class="timeline-dot" style="background:var(--color-brand-100); color:var(--color-brand-600);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+                  </div>
+                  <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-content">
+                  <div class="timeline-content__title">Bank statement uploaded</div>
+                  <div class="timeline-content__meta">Arjun Kumar (portal) · 2 Jun 2026, 09:05</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-connector">
+                  <div class="timeline-dot" style="background:var(--color-success-100); color:var(--color-success-600);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-content">
+                  <div class="timeline-content__title">Academic Transcript approved</div>
+                  <div class="timeline-content__meta">Sarah Mitchell · 1 Jun 2026, 15:30</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-connector">
+                  <div class="timeline-dot" style="background:var(--color-brand-100); color:var(--color-brand-600);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+                  </div>
+                  <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-content">
+                  <div class="timeline-content__title">Passport copy uploaded</div>
+                  <div class="timeline-content__meta">Arjun Kumar (portal) · 2 Jun 2026, 08:44</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-connector">
+                  <div class="timeline-dot" style="background:var(--color-brand-100); color:var(--color-brand-600);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+                  </div>
+                  <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-content">
+                  <div class="timeline-content__title">Academic Transcript uploaded</div>
+                  <div class="timeline-content__meta">Arjun Kumar (portal) · 1 Jun 2026, 14:22</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-connector">
+                  <div class="timeline-dot" style="background:var(--color-neutral-100); color:var(--color-neutral-500);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </div>
+                  <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-content">
+                  <div class="timeline-content__title">Portal invitation sent</div>
+                  <div class="timeline-content__meta">System · 2 Jun 2026, 08:00</div>
+                  <div class="timeline-content__body">Invitation email sent to arjun.kumar@gmail.com with login credentials.</div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-connector">
+                  <div class="timeline-dot" style="background:var(--color-neutral-100); color:var(--color-neutral-500);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                  </div>
+                  <div class="timeline-line"></div>
+                </div>
+                <div class="timeline-content">
+                  <div class="timeline-content__title">Student profile created</div>
+                  <div class="timeline-content__meta">Sarah Mitchell · 2 Jun 2026, 08:00</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Notes tab (hidden) -->
+          <div id="tab-notes" hidden>
+            <div style="margin-bottom:var(--space-4);">
+              <textarea class="input textarea" id="note-input" placeholder="Add an internal note about this student…" style="min-height:100px;"></textarea>
+              <div style="display:flex; justify-content:flex-end; margin-top:var(--space-2);">
+                <button class="btn btn-primary btn-sm" id="btn-add-note">Add Note</button>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+
+              <div class="card" style="box-shadow:none;">
+                <div class="card-body" style="padding:var(--space-4);">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-2);">
+                    <div style="display:flex; align-items:center; gap:var(--space-2);">
+                      <div class="avatar avatar-sm" data-color="green">SM</div>
+                      <div>
+                        <div style="font-size:var(--font-size-sm); font-weight:var(--font-weight-semibold);">Sarah Mitchell</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">1 Jun 2026, 11:20</div>
+                      </div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" style="color:var(--color-neutral-400);">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                  <p style="font-size:var(--font-size-sm); color:var(--color-neutral-700); line-height:var(--line-height-loose);">
+                    Student confirmed they'll upload the IELTS certificate by end of week. Bank statement is from 3 months ago — may need to get a more recent one.
+                  </p>
+                </div>
+              </div>
+
+              <div class="card" style="box-shadow:none;">
+                <div class="card-body" style="padding:var(--space-4);">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-2);">
+                    <div style="display:flex; align-items:center; gap:var(--space-2);">
+                      <div class="avatar avatar-sm" data-color="violet">JR</div>
+                      <div>
+                        <div style="font-size:var(--font-size-sm); font-weight:var(--font-weight-semibold);">James Robinson</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-neutral-400);">2 Jun 2026, 09:30</div>
+                      </div>
+                    </div>
+                  </div>
+                  <p style="font-size:var(--font-size-sm); color:var(--color-neutral-700); line-height:var(--line-height-loose);">
+                    Called the student. He's aware of the missing documents and will upload them tonight.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Info tab (hidden) -->
+          <div id="tab-info" hidden>
+            <div class="card" style="box-shadow:none; border:none; padding:0;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+
+                <div class="field">
+                  <label class="field-label">First Name</label>
+                  <input class="input" type="text" value="Arjun" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Last Name</label>
+                  <input class="input" type="text" value="Kumar" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Email Address</label>
+                  <input class="input" type="email" value="arjun.kumar@gmail.com" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Phone Number</label>
+                  <input class="input" type="tel" value="+44 7700 900123" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Date of Birth</label>
+                  <input class="input" type="date" value="1999-04-15" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Nationality</label>
+                  <input class="input" type="text" value="Indian" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Passport Number</label>
+                  <input class="input" type="text" value="P1234567" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Destination Country</label>
+                  <select class="input select">
+                    <option selected>🇬🇧 United Kingdom</option>
+                    <option>🇨🇦 Canada</option>
+                    <option>🇦🇺 Australia</option>
+                  </select>
+                </div>
+                <div class="field" style="grid-column:1/-1;">
+                  <label class="field-label">Address</label>
+                  <input class="input" type="text" value="42 Marine Drive, Mumbai, Maharashtra 400002, India" />
+                </div>
+
+              </div>
+              <div style="margin-top:var(--space-5); display:flex; gap:var(--space-2); justify-content:flex-end;">
+                <button class="btn btn-secondary">Discard</button>
+                <button class="btn btn-primary" onclick="toast('Profile updated!', 'success')">Save Changes</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right sidebar -->
+        <div style="display:flex; flex-direction:column; gap:var(--space-4);">
+
+          <!-- Application info -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Application Info</div></div>
+            <div class="card-body" style="display:flex; flex-direction:column; gap:var(--space-3);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:var(--font-size-sm); color:var(--color-neutral-500);">Stage</span>
+                <span class="badge badge-warning">Under Review</span>
+              </div>
+              <hr class="divider" style="margin:0;" />
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:var(--font-size-sm); color:var(--color-neutral-500);">Destination</span>
+                <span style="font-size:var(--font-size-sm); font-weight:600;">🇬🇧 UK</span>
+              </div>
+              <hr class="divider" style="margin:0;" />
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:var(--font-size-sm); color:var(--color-neutral-500);">Counselor</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <div class="avatar avatar-sm" data-color="green">SM</div>
+                  <span style="font-size:var(--font-size-sm);">Sarah Mitchell</span>
+                </div>
+              </div>
+              <hr class="divider" style="margin:0;" />
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:var(--font-size-sm); color:var(--color-neutral-500);">Added</span>
+                <span style="font-size:var(--font-size-sm);">2 Jun 2026</span>
+              </div>
+              <hr class="divider" style="margin:0;" />
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:var(--font-size-sm); color:var(--color-neutral-500);">Portal Access</span>
+                <span class="badge badge-success">Active</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <select class="input select" style="font-size:var(--font-size-sm);" onchange="toast('Stage updated!', 'success')">
+                <option>New Applicant</option>
+                <option>Documents Pending</option>
+                <option selected>Documents Under Review</option>
+                <option>Documents Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Quick Actions</div></div>
+            <div class="card-body" style="display:flex; flex-direction:column; gap:var(--space-2);">
+              <button class="btn btn-secondary" style="justify-content:flex-start; width:100%;" onclick="toast('Reminder sent!', 'info')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Send Document Reminder
+              </button>
+              <button class="btn btn-secondary" style="justify-content:flex-start; width:100%;" onclick="toast('All documents downloaded as ZIP', 'info')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download All Documents
+              </button>
+              <button class="btn btn-secondary" style="justify-content:flex-start; width:100%;" onclick="toast('Password reset email sent!', 'info')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Reset Portal Password
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+
+<!-- Reject Document Modal -->
+<div class="modal-backdrop" id="modal-reject" hidden style="display:none;">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-reject-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-reject-title">Reject Document</h2>
+      <button class="modal-close" onclick="Modal.close('modal-reject')" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-warning" style="margin-bottom:var(--space-4);">
+        <span class="alert-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
+        <div>
+          <div class="alert-title">Rejecting: Bank Statement</div>
+          The student will be notified and asked to re-upload.
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="reject-reason">Reason for rejection</label>
+        <textarea class="input textarea" id="reject-reason" placeholder="e.g. Document is too old. Please provide a bank statement from the last 3 months."></textarea>
+        <span class="field-hint">This message will be visible to the student in their portal.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-reject')">Cancel</button>
+      <button class="btn btn-danger" onclick="Modal.close('modal-reject'); toast('Document rejected. Student notified.', 'error')">Reject Document</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    buildShell({ title: 'Student Profile' });
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const name = tab.dataset.tab;
+        ['documents','timeline','notes','info'].forEach(id => {
+          const el = document.getElementById(`tab-${id}`);
+          if (el) id === name ? el.removeAttribute('hidden') : el.setAttribute('hidden','');
+        });
+      });
+    });
+
+    // Reject modal
+    document.getElementById('btn-reject-doc')?.addEventListener('click', () => Modal.open('modal-reject'));
+    Modal.closeOnBackdrop('modal-reject');
+
+    // Add note
+    document.getElementById('btn-add-note')?.addEventListener('click', () => {
+      const val = document.getElementById('note-input').value.trim();
+      if (!val) return;
+      document.getElementById('note-input').value = '';
+      toast('Note added!', 'success');
+    });
+
+    // Dropdown
+    document.querySelectorAll('[data-dropdown]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.dropdown;
+        const menu = document.getElementById(id);
+        const isOpen = menu.style.display !== 'none';
+        document.querySelectorAll('.dropdown-menu').forEach(m => { m.style.display = 'none'; m.hidden = true; });
+        if (!isOpen) { menu.style.display = 'block'; menu.hidden = false; }
+      });
+    });
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.dropdown-menu').forEach(m => { m.style.display = 'none'; m.hidden = true; });
+    });
+  });
+</script>
+
+</body>
+</html>
