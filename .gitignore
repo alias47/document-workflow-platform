@@ -1,0 +1,26 @@
+# Node
+node_modules
+
+# Environment
+.env
+.env.*
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Build
+.next
+dist
+coverage
+
+# Prisma
+prisma/dev.db
+
+# Uploads
+storage/uploads
+
+# VSCode
+.vscode/settings.json
