@@ -23,7 +23,8 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/client": "6.19.3"
+    "@prisma/client": "6.19.3",
+    "argon2": "^0.44.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

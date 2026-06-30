@@ -5,11 +5,234 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------------------------
+
+enum StaffStatus {
+  active
+  inactive
+  suspended
+}
+
+enum PortalAccountStatus {
+  pending
+  invitation_sent
+  invitation_accepted
+  active
+  suspended
+  disabled
+  locked
+}
+
+// ---------------------------------------------------------------------------
+// ORGANIZATION
+// ---------------------------------------------------------------------------
+
+model Organization {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  legalName    String?
+  slug         String    @unique
+  contactEmail String
+  contactPhone String?
+  website      String?
+  country      String?
+  timezone     String    @default("UTC")
+  industryType String?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  staff Staff[]
+  roles Role[]
+
+  @@map("organizations")
+}
+
+// ---------------------------------------------------------------------------
+// ROLE
+// ---------------------------------------------------------------------------
+
+model Role {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @db.Uuid
+  name           String
+  description    String?
+  isDefault      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  staff        Staff[]
+  permissions  RolePermission[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("roles")
+}
+
+// ---------------------------------------------------------------------------
+// PERMISSION
+// ---------------------------------------------------------------------------
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  action      String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ---------------------------------------------------------------------------
+// STAFF
+// ---------------------------------------------------------------------------
+
+model Staff {
+  id                String      @id @default(uuid()) @db.Uuid
+  organizationId    String      @db.Uuid
+  roleId            String      @db.Uuid
+  firstName         String
+  lastName          String
+  email             String
+  phone             String?
+  jobTitle          String?
+  profileImage      String?
+  status            StaffStatus @default(active)
+  passwordHash      String
+  lastLoginAt       DateTime?
+  failedAttempts    Int         @default(0)
+  lockedUntil       DateTime?
+  mustChangePass    Boolean     @default(false)
+  passwordChangedAt DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  deletedAt         DateTime?
+
+  organization        Organization         @relation(fields: [organizationId], references: [id])
+  role                Role                 @relation(fields: [roleId], references: [id])
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+  @@map("staff")
+}
+
+// ---------------------------------------------------------------------------
+// REFRESH TOKEN
+// ---------------------------------------------------------------------------
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  staffId    String    @db.Uuid
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  replacedBy String?   @db.Uuid
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+
+  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// PASSWORD RESET TOKEN
+// ---------------------------------------------------------------------------
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  staffId   String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId])
+  @@index([tokenHash])
+  @@map("password_reset_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// AUDIT LOG
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @db.Uuid
+  actorId        String?  @db.Uuid
+  actorType      String   @default("staff")
+  action         String
+  resourceType   String?
+  resourceId     String?  @db.Uuid
+  metadata       Json?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// PORTAL ACCOUNT (applicant auth — scaffold for future sprint)
+// ---------------------------------------------------------------------------
+
+model PortalAccount {
+  id                  String              @id @default(uuid()) @db.Uuid
+  organizationId      String              @db.Uuid
+  email               String
+  passwordHash        String?
+  status              PortalAccountStatus @default(pending)
+  invitationToken     String?             @unique
+  invitationExpiresAt DateTime?
+  failedAttempts      Int                 @default(0)
+  lockedUntil         DateTime?
+  mustChangePass      Boolean             @default(true)
+  passwordChangedAt   DateTime?
+  lastLoginAt         DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  deletedAt           DateTime?
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([email])
+  @@index([invitationToken])
+  @@map("portal_accounts")
 }

@@ -1,24 +1,24 @@
 # CHANGELOG
 
-## Sprint 4
+## Sprint 5.1 – Authentication Backend
 
-### Completed
+### Started
 
-- HTML prototypes migrated into React
-- Authentication pages rebuilt
-- Dashboard rebuilt
-- Applicant List rebuilt
-- Applicant Profile rebuilt
-- Shared styling migrated
-- Runtime rendering issue fixed
-- Refresh rendering issue resolved
+Authentication backend implementation.
 
-### Result
+Scope:
 
-Frontend MVP foundation complete.
+- Prisma authentication models
+- NestJS authentication modules
+- JWT authentication
+- Argon2 password hashing
+- Refresh tokens
+- RBAC foundation
+- Provider interfaces
+- DTO validation
+- Swagger documentation
+- Authentication tests
 
-### Next
+Next:
 
-Sprint 4.1
-
-Frontend infrastructure for backend integration.
+Sprint 6 – Organization & Staff Management

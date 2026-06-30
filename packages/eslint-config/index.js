@@ -69,6 +69,9 @@ function nestjs(plugins) {
       rules: {
         '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
         '@typescript-eslint/no-empty-function': ['error', { allow: ['constructors'] }],
+        // NestJS DI uses class constructors as runtime tokens via emitDecoratorMetadata;
+        // the type-imports rule can't detect this and incorrectly flags service imports.
+        '@typescript-eslint/consistent-type-imports': 'off',
       },
     },
   ];

@@ -303,13 +303,17 @@ Reference: [04_DOMAIN_MODEL.md](docs/04_DOMAIN_MODEL.md),
 The docs contradict each other in a few places. These are the binding resolutions
 for this codebase. If you change one, update the relevant `/docs` file too.
 
-| Topic              | Decision                                                           | Why                                                                                                                                    |
-| ------------------ | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Password hashing   | **Argon2**                                                         | 4 docs (MVP, Domain, Dev Guide, Sys Arch) specify Argon2; only Backend Arch said bcrypt. Argon2 is the stronger choice.                |
-| Frontend structure | **Feature-based** (doc 07): `src/features`, `src/components`       | Matches the `@repo/ui` split and is simpler than the FSD layout in doc 14. Treat FSD (entities/widgets) as aspirational, not required. |
-| Prisma location    | **Root `prisma/` + `apps/api/src/prisma/` service**                | Matches built code and docs 02/08. Doc 14's `src/database/prisma/` layout is not used.                                                 |
-| MVP notifications  | **In-app only**, email **provider scaffolded behind an interface** | MVP charter excludes email; Mailpit/email stays wired but off the critical path until post-pilot.                                      |
-| State              | **TanStack Query = server state, Zustand = UI state**              | Reconciles doc 07 vs the "avoid global state" rule in doc 15.                                                                          |
+| Topic                  | Decision                                                                                   | Why                                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Password hashing       | **Argon2**                                                                                 | 4 docs (MVP, Domain, Dev Guide, Sys Arch) specify Argon2; only Backend Arch said bcrypt. Argon2 is the stronger choice.                |
+| Frontend structure     | **Feature-based** (doc 07): `src/features`, `src/components`                               | Matches the `@repo/ui` split and is simpler than the FSD layout in doc 14. Treat FSD (entities/widgets) as aspirational, not required. |
+| Prisma location        | **Root `prisma/` + `apps/api/src/prisma/` service**                                        | Matches built code and docs 02/08. Doc 14's `src/database/prisma/` layout is not used.                                                 |
+| MVP notifications      | **In-app only**, email **provider scaffolded behind an interface**                         | MVP charter excludes email; Mailpit/email stays wired but off the critical path until post-pilot.                                      |
+| State                  | **TanStack Query = server state, Zustand = UI state**                                      | Reconciles doc 07 vs the "avoid global state" rule in doc 15.                                                                          |
+| Refresh token lifetime | **7 days** (`JWT_REFRESH_EXPIRES_IN=7d`)                                                   | Env validation default is 7d; some docs mentioned 30d. 7d is the implemented value — change only via env var.                          |
+| Error envelope shape   | `{ success, message, data, meta? }` success · `{ success: false, message, errors? }` error | `HttpExceptionFilter` in `apps/api/src/common/filters/` is the canonical implementation. Frontend must match this shape.               |
+| Auth path scheme       | `/auth/*` (e.g. `POST /auth/login`, `GET /auth/me`)                                        | All auth routes are under `/auth` prefix on the shared controller. No `/auth/staff/*` nesting for staff auth.                          |
+| DI class imports       | Use **value imports** (not `import type`) for classes injected via NestJS DI               | `import type` is erased at runtime; injecting a type-only import silently breaks DI. Use `import type` only for interfaces/types.      |
 
 ---
 
@@ -386,6 +390,12 @@ has no console errors · updates API docs + `/docs` if behavior/architecture cha
   `{apps,packages}/**/*.{ts,tsx}` to avoid root/prisma files that have no config.
 - Prettier config is fixed ([.prettierrc](.prettierrc)): single quotes, semicolons,
   trailing commas, width 100, 2-space. Don't fight it — run `pnpm format`.
+- **NestJS DI imports:** Use `import ClassName from '...'` (value import) for any
+  class token injected via `@Injectable()` / constructor DI. `import type` is stripped
+  at compile time and silently produces an `undefined` token at runtime, breaking the
+  DI container. Reserve `import type` for pure TypeScript interfaces, type aliases, and
+  DTO types that are never used as runtime values. ESLint's `@typescript-eslint/no-import-type-side-effects`
+  does not catch DI misuse — enforce by code review (see §13 resolved decisions).
 
 ---
 

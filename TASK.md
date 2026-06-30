@@ -1,107 +1,170 @@
 # TASK.md
 
-# Sprint 4.1 – Frontend Infrastructure Completion
+# Sprint 5.1 – Authentication Backend
 
 ## Objective
 
-Prepare the frontend for backend integration without introducing real API communication.
+Implement the authentication foundation for the platform.
+
+This sprint establishes secure authentication and authorization for future business modules.
+
+No Applicant, Document, or Workflow logic should be implemented.
+
+---
+
+## Documentation
+
+Read before implementation:
+
+- CLAUDE.md
+- docs/04_DOMAIN_MODEL.md
+- docs/05_DATABASE_DESIGN.md
+- docs/06_API_SPECIFICATION.md
+- docs/08_BACKEND_ARCHITECTURE.md
+- docs/10_SECURITY_GUIDELINES.md
+- docs/15_CODING_STANDARDS.md
+- docs/16_ERROR_HANDLING.md
 
 ---
 
 ## Scope
 
-### Service Layer
+### Prisma Models
 
-Create reusable services:
+Implement only authentication-related models:
 
-- api-client.ts
-- auth.service.ts
-- applicant.service.ts
-- dashboard.service.ts
+- Organization
+- Staff
+- Role
+- Permission
+- PortalAccount
+- RefreshToken
+
+Include:
+
+- UUID primary keys
+- createdAt
+- updatedAt
+- deletedAt
+- organizationId (where applicable)
+
+Create proper relationships and indexes.
 
 ---
 
-### Environment
+### NestJS Modules
 
 Create:
 
-src/lib/env.ts
+- auth
+- organization
+- staff
+- common
 
-Support:
+Follow the documented module structure:
 
-- NEXT_PUBLIC_API_URL
-- NEXT_PUBLIC_APP_NAME
-- NEXT_PUBLIC_ENV
+controllers/
+services/
+repositories/
+dto/
+entities/
+interfaces/
+validators/
+tests/
 
 ---
 
 ### Authentication
 
-Create:
+Implement:
 
-- AuthProvider
-- mock authentication
-- auth context
+- Login
+- Logout
+- Refresh Access Token
+- Change Password
+- Forgot Password (provider interface only)
+- Reset Password
 
----
+Use:
 
-### Route Protection
-
-Prepare protected routes:
-
-- dashboard
-- applicants
-
-Public:
-
-- login
-- forgot-password
-- reset-password
+- JWT Access Tokens
+- JWT Refresh Tokens
+- Argon2 password hashing
 
 ---
 
-### Loading UI
+### Authorization
+
+Implement:
+
+- JwtAuthGuard
+- RolesGuard
+- PermissionsGuard
+
+Create decorators:
+
+- @CurrentUser()
+- @Roles()
+- @Permissions()
+
+---
+
+### Providers
+
+Create interfaces only:
+
+- EmailProvider
+- TokenProvider
+
+Business logic must depend on interfaces.
+
+---
+
+### Validation
+
+Use:
+
+- class-validator
+- ValidationPipe
+- DTOs for every endpoint
+
+---
+
+### API
+
+Implement the endpoints documented in the API specification.
+
+Keep Swagger synchronized.
+
+---
+
+### Error Handling
+
+Use the project's global exception strategy.
+
+No controller should format errors manually.
+
+---
+
+### Testing
 
 Add:
 
-loading.tsx
-
-where appropriate.
-
----
-
-### Error UI
-
-Add:
-
-error.tsx
-
-where appropriate.
+- AuthService unit tests
+- Login integration tests
+- Password hashing tests
 
 ---
 
-### Empty States
+## Out of Scope
 
-Standardize empty state components.
+Do NOT implement:
 
----
+- Applicant module
+- Document module
+- Workflow
+- Notifications
+- Dashboard APIs
+- Frontend integration
 
-### Skeletons
-
-Create reusable skeleton loaders.
-
----
-
-## Rules
-
-No backend.
-
-No JWT.
-
-No API integration.
-
-No business logic changes.
-
-No UI redesign.
-
-Architecture only.
+Authentication only.
