@@ -1,20 +1,29 @@
 # CHANGELOG
 
-## Sprint 6.1
+## Sprint 6.2
 
 ### Added
 
-- Applicant database domain
-- ApplicantAssignment model
-- Applicant ↔ PortalAccount relationship
-- ApplicantStatus enum
-- Prisma migration
-- Seed data
+- Applicant backend module
+- Applicant controller
+- Applicant service
+- Applicant repository
+- Applicant DTOs
+- CRUD API
+- Pagination
+- Search
+- Filtering
+- Sorting
+- Swagger documentation
 
-### Updated
+### Improved
 
-- PortalAccount linked to Applicant
+- Applicant creation transaction
+- Audit logging
+- Soft delete
+- Organization isolation
 
-### Fixed
+### Tested
 
-- Prisma generator output configuration
+- Service unit tests
+- Repository integration tests

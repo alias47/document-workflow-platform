@@ -1,109 +1,114 @@
 # TASK.md
 
-# Sprint 6.1 – Applicant Database & Domain
+# Sprint 6.3 – Applicant Frontend Integration
 
 ## Objective
 
-Implement the Applicant domain models in Prisma according to the project documentation.
+Replace the Applicant mock data with live backend integration.
 
-This sprint focuses only on the database layer.
-
-No API or frontend changes.
+This sprint connects the completed frontend UI to the Applicant API.
 
 ---
 
 ## Read Before Starting
 
 - CLAUDE.md
-- docs/04_DOMAIN_MODEL.md
-- docs/05_DATABASE_DESIGN.md
-- docs/08_BACKEND_ARCHITECTURE.md
+- docs/06_API_SPECIFICATION.md
+- docs/07_FRONTEND_ARCHITECTURE.md
+- docs/12_UI_UX_GUIDELINES.md
+- docs/13_COMPONENT_LIBRARY.md
 
 ---
 
 ## Scope
 
-### Applicant Models
+### Services
 
-Implement only the models required for Applicant management.
+Create an ApplicantService responsible for all HTTP communication.
 
-Expected models (verify against documentation):
+Implement:
 
-- Applicant
-- ApplicantAssignment
-- ApplicantTimeline
-- ApplicantNote
-- ApplicantTag (if documented)
+- getApplicants()
+- getApplicant()
+- createApplicant()
+- updateApplicant()
+- archiveApplicant()
 
-Create all relationships.
-
----
-
-### Applicant Fields
-
-Implement documented fields such as:
-
-- UUID id
-- organizationId
-- applicantNumber
-- firstName
-- lastName
-- email
-- phone
-- status
-- currentStage
-- assignedStaffId
-- createdById
-- createdAt
-- updatedAt
-- deletedAt
-
-Do not invent fields. Follow the documentation.
+No Axios calls directly inside React components.
 
 ---
 
-### Relationships
+### React Query
+
+Implement query hooks.
+
+Required hooks:
+
+- useApplicants
+- useApplicant
+- useCreateApplicant
+- useUpdateApplicant
+- useArchiveApplicant
+
+Handle cache invalidation correctly.
+
+---
+
+### Replace Mock Data
+
+Remove all applicant mock usage.
+
+Replace with API data.
+
+No component should import mock applicants anymore.
+
+---
+
+### Applicant List
 
 Connect:
 
-- Organization
-- Staff (creator)
-- Staff (assigned)
-- Timeline
-- Notes
+- Search
+- Filters
+- Pagination
+- Sorting
 
-Use proper foreign keys and indexes.
-
----
-
-### Enums
-
-Implement documented enums only, for example:
-
-- ApplicantStatus
-- WorkflowStage
-
-Do not create extra enums unless specified.
+Use backend query parameters.
 
 ---
 
-### Migrations
+### Applicant Profile
 
-Generate Prisma migration.
+Connect:
 
-Verify migration applies successfully.
+- Header
+- Details
+- Timeline placeholder
+- Workflow placeholder
+- Documents placeholder
+
+Only Applicant data is live.
 
 ---
 
-### Seed
+### UI States
 
-Update seed data with:
+Implement:
 
-- Sample applicants
-- Assignments
-- Timeline entries
+- Loading
+- Empty
+- Error
+- Retry
 
-Use realistic development data.
+Every page must handle all four states.
+
+---
+
+### Error Handling
+
+Display friendly messages.
+
+Do not expose raw API errors.
 
 ---
 
@@ -111,10 +116,9 @@ Use realistic development data.
 
 Verify:
 
-- Prisma schema validates
-- Migration succeeds
-- Prisma client generates
-- Seed executes successfully
+- pnpm lint
+- pnpm type-check
+- pnpm build
 
 ---
 
@@ -122,13 +126,9 @@ Verify:
 
 Do NOT implement:
 
-- Controllers
-- Services
-- DTOs
-- API endpoints
-- React Query
-- Frontend integration
-- File uploads
+- Documents
 - Workflow engine
-
-Database only.
+- Notifications
+- Notes
+- Timeline backend
+- File uploads

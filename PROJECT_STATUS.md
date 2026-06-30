@@ -1,21 +1,24 @@
-# Project Status
+# PROJECT STATUS
+
+Current Version
+
+v0.4.1
 
 Current Sprint
 
-✅ Sprint 6.1 Complete
+✅ Sprint 6.2 Complete
 
-Overall Progress
+Completed
 
-██████████████░░░░░░░░░░░░░░
+✅ Documentation
+✅ Foundation
+✅ Frontend MVP
+✅ Authentication
+✅ Applicant Database
+✅ Applicant Backend CRUD
 
-Documentation ✅
-Foundation ✅
-Frontend MVP ✅
-Authentication ✅
-Applicant Database ✅
+Next Sprint
 
-Current Phase
+Sprint 6.3
 
-Sprint 6.2
-
-Applicant Backend CRUD
+Applicant Frontend Integration

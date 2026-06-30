@@ -10,6 +10,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { appConfig, corsConfig, databaseConfig, envValidationSchema, jwtConfig } from './config';
+import { ApplicantModule } from './modules/applicant/applicant.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationModule } from './modules/organization/organization.module';
@@ -58,6 +59,7 @@ const ENV_FILES = [
     AuthModule,
     OrganizationModule,
     StaffModule,
+    ApplicantModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
