@@ -22,9 +22,7 @@ export function AppShell({ children, title, userName, userRole }: AppShellProps)
     <div className="min-h-screen bg-[#F8FAFC]">
       <Sidebar {...sidebarProps} />
       <Header {...headerProps} />
-      <main className="pl-[240px] pt-[60px]">
-        <div className="p-6">{children}</div>
-      </main>
+      <main className="pl-[240px] pt-[60px]">{children}</main>
     </div>
   );
 }
