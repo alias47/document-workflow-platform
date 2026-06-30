@@ -1,4 +1,7 @@
-import { type ApiListResponse, type ApiResponse, apiClient } from './api-client';
+import type { ApiResponse, PaginatedResponse } from '@/types/api';
+
+import { env } from '@/lib/env';
+import { http } from '@/lib/http';
 
 export interface Applicant {
   id: string;
@@ -22,7 +25,7 @@ export interface ApplicantListParams {
   destination?: string;
 }
 
-// ---------- mock ----------
+// ---------- mock (used until the backend is wired to the UI) ----------
 const MOCK_APPLICANTS: Applicant[] = [
   {
     id: '1',
@@ -62,35 +65,44 @@ const MOCK_APPLICANTS: Applicant[] = [
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+function buildQueryString(params: ApplicantListParams): string {
+  const qs = new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, String(v)]),
+  ).toString();
+  return qs ? `?${qs}` : '';
+}
+
 // ---------- service ----------
+// All HTTP communication for applicants lives here. Components never call axios.
 export const applicantService = {
-  async list(params: ApplicantListParams = {}): Promise<ApiListResponse<Applicant>> {
-    if (process.env.NODE_ENV === 'development') {
+  async list(params: ApplicantListParams = {}): Promise<PaginatedResponse<Applicant>> {
+    if (env.isDev) {
       await delay(300);
       const { page = 1, pageSize = 25 } = params;
       return {
         success: true,
         message: 'OK',
         data: MOCK_APPLICANTS,
-        meta: { total: MOCK_APPLICANTS.length, page, pageSize, totalPages: 1 },
+        meta: { totalItems: MOCK_APPLICANTS.length, page, pageSize, totalPages: 1 },
       };
     }
-    const qs = new URLSearchParams(
-      Object.entries(params)
-        .filter(([, v]) => v !== undefined)
-        .map(([k, v]) => [k, String(v)]),
-    ).toString();
-    return apiClient.get<ApiListResponse<Applicant>>(`/applicants${qs ? `?${qs}` : ''}`);
+    const res = await http.get<PaginatedResponse<Applicant>>(
+      `/applicants${buildQueryString(params)}`,
+    );
+    return res.data;
   },
 
   async getById(id: string): Promise<ApiResponse<Applicant>> {
-    if (process.env.NODE_ENV === 'development') {
+    if (env.isDev) {
       await delay(300);
       const found = MOCK_APPLICANTS.find((a) => a.id === id) ?? MOCK_APPLICANTS[0];
       if (!found) throw new Error(`Applicant ${id} not found`);
 
       return { success: true, message: 'OK', data: found };
     }
-    return apiClient.get<ApiResponse<Applicant>>(`/applicants/${id}`);
+    const res = await http.get<ApiResponse<Applicant>>(`/applicants/${id}`);
+    return res.data;
   },
 };

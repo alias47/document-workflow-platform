@@ -1,4 +1,7 @@
-import { type ApiResponse, apiClient } from './api-client';
+import type { ApiResponse } from '@/types/api';
+
+import { env } from '@/lib/env';
+import { http } from '@/lib/http';
 
 export interface DashboardStats {
   totalApplicants: number;
@@ -18,7 +21,7 @@ export interface DashboardSummary {
   workflowStages: WorkflowStage[];
 }
 
-// ---------- mock ----------
+// ---------- mock (used until the backend is wired to the UI) ----------
 const MOCK_SUMMARY: DashboardSummary = {
   stats: {
     totalApplicants: 247,
@@ -37,12 +40,14 @@ const MOCK_SUMMARY: DashboardSummary = {
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // ---------- service ----------
+// All HTTP communication for the dashboard lives here. Components never call axios.
 export const dashboardService = {
   async getSummary(): Promise<ApiResponse<DashboardSummary>> {
-    if (process.env.NODE_ENV === 'development') {
+    if (env.isDev) {
       await delay(300);
       return { success: true, message: 'OK', data: MOCK_SUMMARY };
     }
-    return apiClient.get<ApiResponse<DashboardSummary>>('/dashboard/summary');
+    const res = await http.get<ApiResponse<DashboardSummary>>('/dashboard/summary');
+    return res.data;
   },
 };

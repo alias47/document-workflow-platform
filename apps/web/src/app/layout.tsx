@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import { ToastProvider } from '@/components/ui/toast';
 import { AuthProvider } from '@/providers/auth-provider';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 import './globals.css';
 
@@ -15,9 +16,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

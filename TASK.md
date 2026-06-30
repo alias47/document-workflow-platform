@@ -1,12 +1,18 @@
 # TASK.md
 
-# Sprint 6.3 – Applicant Frontend Integration
+# Sprint 6.2.5 – Frontend API Infrastructure
 
 ## Objective
 
-Replace the Applicant mock data with live backend integration.
+Build the shared frontend infrastructure required for all backend communication.
 
-This sprint connects the completed frontend UI to the Applicant API.
+This sprint creates the API foundation only.
+
+No Applicant UI integration.
+
+No new pages.
+
+No feature implementation.
 
 ---
 
@@ -20,115 +26,185 @@ This sprint connects the completed frontend UI to the Applicant API.
 
 ---
 
-## Scope
+# Scope
 
-### Services
+## HTTP Client
 
-Create an ApplicantService responsible for all HTTP communication.
+Create:
+
+src/lib/http.ts
+
+Responsibilities:
+
+- Axios instance
+- Base URL from environment
+- withCredentials enabled
+- Default headers
+- Request interceptor
+- Response interceptor
+- Global error handling
+
+Do not call axios directly anywhere else.
+
+---
+
+## API Types
+
+Create:
+
+src/types/api.ts
+
+Define:
+
+ApiResponse<T>
+
+PaginatedResponse<T>
+
+PaginationMeta
+
+ApiError
+
+ValidationError
+
+These types will be reused by every service.
+
+---
+
+## Services
+
+Create:
+
+src/services/
 
 Implement:
 
-- getApplicants()
-- getApplicant()
-- createApplicant()
-- updateApplicant()
-- archiveApplicant()
+auth.service.ts
 
-No Axios calls directly inside React components.
+applicant.service.ts
 
----
+Each service owns all HTTP communication.
 
-### React Query
-
-Implement query hooks.
-
-Required hooks:
-
-- useApplicants
-- useApplicant
-- useCreateApplicant
-- useUpdateApplicant
-- useArchiveApplicant
-
-Handle cache invalidation correctly.
+Components must never import axios.
 
 ---
 
-### Replace Mock Data
+## React Query
 
-Remove all applicant mock usage.
+Install and configure:
 
-Replace with API data.
+- QueryClient
+- QueryClientProvider
 
-No component should import mock applicants anymore.
+Create:
 
----
+src/providers/QueryProvider.tsx
 
-### Applicant List
+Configure:
 
-Connect:
+- staleTime
+- retry policy
+- devtools (development only)
 
-- Search
-- Filters
-- Pagination
-- Sorting
-
-Use backend query parameters.
+Wrap the application.
 
 ---
 
-### Applicant Profile
+## Query Keys
 
-Connect:
+Create:
 
-- Header
-- Details
-- Timeline placeholder
-- Workflow placeholder
-- Documents placeholder
+src/lib/query-keys.ts
 
-Only Applicant data is live.
+Centralize every query key.
 
----
+Example:
 
-### UI States
+auth
 
-Implement:
+applicants
 
-- Loading
-- Empty
-- Error
-- Retry
+documents
 
-Every page must handle all four states.
+workflow
+
+notifications
+
+Never hardcode query keys.
 
 ---
 
-### Error Handling
+## Environment
 
-Display friendly messages.
+Create:
 
-Do not expose raw API errors.
+.env.local.example
+
+NEXT_PUBLIC_API_URL
+
+Update README if necessary.
 
 ---
 
-### Validation
+## Error Handling
+
+Create reusable helpers.
+
+Handle:
+
+401
+
+403
+
+404
+
+422
+
+500
+
+Do not expose raw backend messages.
+
+---
+
+## Authentication
+
+Prepare support for:
+
+HTTP-only cookie authentication
+
+Do NOT implement login logic.
+
+Only prepare the infrastructure.
+
+---
+
+## Validation
 
 Verify:
 
-- pnpm lint
-- pnpm type-check
-- pnpm build
+pnpm lint
+
+pnpm type-check
+
+pnpm build
 
 ---
 
-## Out of Scope
+# Out of Scope
 
 Do NOT implement:
 
-- Documents
-- Workflow engine
-- Notifications
-- Notes
-- Timeline backend
-- File uploads
+Applicant pages
+
+Documents
+
+Workflow
+
+Notifications
+
+Settings
+
+File uploads
+
+Business logic
+
+React UI changes

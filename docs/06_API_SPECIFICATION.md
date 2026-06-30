@@ -113,12 +113,12 @@ This enables future API versioning without breaking existing clients.
 
 The API uses standard HTTP methods.
 
-| Method | Purpose |
-|---------|----------|
-| GET | Retrieve resources |
-| POST | Create resources |
-| PUT | Replace resources |
-| PATCH | Partial update |
+| Method | Purpose                 |
+| ------ | ----------------------- |
+| GET    | Retrieve resources      |
+| POST   | Create resources        |
+| PUT    | Replace resources       |
+| PATCH  | Partial update          |
 | DELETE | Archive/Delete resource |
 
 DELETE performs a soft delete unless explicitly documented otherwise.
@@ -209,7 +209,7 @@ Staff Login
 
 Access Token
 
-+
+-
 
 Refresh Token
 
@@ -269,7 +269,7 @@ Controller
 Applicants
 
 - applicant.create
-- applicant.read
+- applicant.view
 - applicant.update
 - applicant.archive
 
@@ -283,7 +283,7 @@ Documents
 
 Workflow
 
-- workflow.read
+- workflow.view
 - workflow.update
 
 Tasks
@@ -437,18 +437,18 @@ Errors follow one consistent format.
 
 ## Common Error Codes
 
-| HTTP | Code |
-|------|------|
-| 400 | VALIDATION_ERROR |
-| 401 | UNAUTHORIZED |
-| 403 | FORBIDDEN |
-| 404 | NOT_FOUND |
-| 409 | CONFLICT |
-| 413 | FILE_TOO_LARGE |
-| 415 | UNSUPPORTED_MEDIA_TYPE |
-| 422 | BUSINESS_RULE_VIOLATION |
-| 429 | RATE_LIMIT_EXCEEDED |
-| 500 | INTERNAL_SERVER_ERROR |
+| HTTP | Code                    |
+| ---- | ----------------------- |
+| 400  | VALIDATION_ERROR        |
+| 401  | UNAUTHORIZED            |
+| 403  | FORBIDDEN               |
+| 404  | NOT_FOUND               |
+| 409  | CONFLICT                |
+| 413  | FILE_TOO_LARGE          |
+| 415  | UNSUPPORTED_MEDIA_TYPE  |
+| 422  | BUSINESS_RULE_VIOLATION |
+| 429  | RATE_LIMIT_EXCEEDED     |
+| 500  | INTERNAL_SERVER_ERROR   |
 
 ---
 
@@ -701,11 +701,11 @@ Not Required
 
 ### Errors
 
-| Status | Description |
-|---------|-------------|
-|400|Validation Error|
-|401|Invalid Credentials|
-|423|Account Locked|
+| Status | Description         |
+| ------ | ------------------- |
+| 400    | Validation Error    |
+| 401    | Invalid Credentials |
+| 423    | Account Locked      |
 
 ---
 
@@ -1088,21 +1088,21 @@ GET /applicants
 ## Permission
 
 ```
-applicant.read
+applicant.view
 ```
 
 ## Query Parameters
 
-| Parameter | Type | Description |
-|------------|------|-------------|
-| page | Integer | Page Number |
-| pageSize | Integer | Number of Records |
-| search | String | Search Applicants |
-| status | String | Applicant Status |
-| assignedTo | UUID | Assigned Staff |
-| workflowStatus | String | Workflow Status |
-| sortBy | String | Sort Field |
-| sortOrder | String | asc / desc |
+| Parameter      | Type    | Description       |
+| -------------- | ------- | ----------------- |
+| page           | Integer | Page Number       |
+| pageSize       | Integer | Number of Records |
+| search         | String  | Search Applicants |
+| status         | String  | Applicant Status  |
+| assignedTo     | UUID    | Assigned Staff    |
+| workflowStatus | String  | Workflow Status   |
+| sortBy         | String  | Sort Field        |
+| sortOrder      | String  | asc / desc        |
 
 ---
 
@@ -1156,7 +1156,7 @@ GET /applicants/{id}
 ## Permission
 
 ```
-applicant.read
+applicant.view
 ```
 
 ---
@@ -1341,8 +1341,8 @@ applicant.assign
 
 ```json
 {
-    "staffId":"uuid",
-    "primary":true
+  "staffId": "uuid",
+  "primary": true
 }
 ```
 
@@ -1386,8 +1386,8 @@ applicant.invite
 
 ```json
 {
-    "success":true,
-    "message":"Invitation sent successfully."
+  "success": true,
+  "message": "Invitation sent successfully."
 }
 ```
 
@@ -1435,15 +1435,15 @@ GET /applicants/{id}/dashboard
 
 ```json
 {
-    "success":true,
-    "data":{
-        "profile":{},
-        "workflow":{},
-        "documents":[],
-        "tasks":[],
-        "notes":[],
-        "timeline":[]
-    }
+  "success": true,
+  "data": {
+    "profile": {},
+    "workflow": {},
+    "documents": [],
+    "tasks": [],
+    "notes": [],
+    "timeline": []
+  }
 }
 ```
 
@@ -1465,13 +1465,13 @@ GET /applicants/statistics
 
 ```json
 {
-    "success":true,
-    "data":{
-        "totalApplicants":250,
-        "activeApplicants":180,
-        "completedApplicants":52,
-        "pendingApplicants":18
-    }
+  "success": true,
+  "data": {
+    "totalApplicants": 250,
+    "activeApplicants": 180,
+    "completedApplicants": 52,
+    "pendingApplicants": 18
+  }
 }
 ```
 
@@ -1509,26 +1509,26 @@ Returns all assigned tasks.
 
 # Applicant API Summary
 
-| Endpoint | Description |
-|------------|-------------|
-| GET /applicants | List Applicants |
-| GET /applicants/{id} | Get Applicant |
-| POST /applicants | Create Applicant |
-| PATCH /applicants/{id} | Update Applicant |
-| DELETE /applicants/{id} | Archive Applicant |
-| POST /applicants/{id}/restore | Restore Applicant |
-| POST /applicants/{id}/assignments | Assign Consultant |
-| GET /applicants/{id}/assignments | List Assignments |
-| DELETE /applicants/{id}/assignments/{assignmentId} | Remove Assignment |
-| POST /applicants/{id}/invite | Send Invitation |
-| POST /applicants/{id}/invite/resend | Resend Invitation |
-| PATCH /applicants/{id}/portal/enable | Enable Portal |
-| PATCH /applicants/{id}/portal/disable | Disable Portal |
-| GET /applicants/{id}/dashboard | Applicant Dashboard |
-| GET /applicants/statistics | Applicant Statistics |
-| GET /applicants/{id}/timeline | Timeline |
-| GET /applicants/{id}/notes | Notes |
-| GET /applicants/{id}/tasks | Tasks |
+| Endpoint                                           | Description          |
+| -------------------------------------------------- | -------------------- |
+| GET /applicants                                    | List Applicants      |
+| GET /applicants/{id}                               | Get Applicant        |
+| POST /applicants                                   | Create Applicant     |
+| PATCH /applicants/{id}                             | Update Applicant     |
+| DELETE /applicants/{id}                            | Archive Applicant    |
+| POST /applicants/{id}/restore                      | Restore Applicant    |
+| POST /applicants/{id}/assignments                  | Assign Consultant    |
+| GET /applicants/{id}/assignments                   | List Assignments     |
+| DELETE /applicants/{id}/assignments/{assignmentId} | Remove Assignment    |
+| POST /applicants/{id}/invite                       | Send Invitation      |
+| POST /applicants/{id}/invite/resend                | Resend Invitation    |
+| PATCH /applicants/{id}/portal/enable               | Enable Portal        |
+| PATCH /applicants/{id}/portal/disable              | Disable Portal       |
+| GET /applicants/{id}/dashboard                     | Applicant Dashboard  |
+| GET /applicants/statistics                         | Applicant Statistics |
+| GET /applicants/{id}/timeline                      | Timeline             |
+| GET /applicants/{id}/notes                         | Notes                |
+| GET /applicants/{id}/tasks                         | Tasks                |
 
 # 21. Workflow API
 
@@ -1553,19 +1553,19 @@ GET /workflow-templates
 ## Permission
 
 ```
-workflow.read
+workflow.view
 ```
 
 ---
 
 ## Query Parameters
 
-| Parameter | Description |
-|------------|-------------|
-| page | Page Number |
-| pageSize | Records Per Page |
-| search | Search by Name |
-| active | Active Templates |
+| Parameter | Description      |
+| --------- | ---------------- |
+| page      | Page Number      |
+| pageSize  | Records Per Page |
+| search    | Search by Name   |
+| active    | Active Templates |
 
 ---
 
@@ -1599,9 +1599,9 @@ workflow.manage
 
 ```json
 {
-    "name":"Australia Student Visa",
-    "description":"Default workflow",
-    "isDefault":true
+  "name": "Australia Student Visa",
+  "description": "Default workflow",
+  "isDefault": true
 }
 ```
 
@@ -1653,11 +1653,11 @@ POST /workflow-templates/{id}/stages
 
 ```json
 {
-    "stageName":"University Application",
-    "description":"Submit application",
-    "stageOrder":3,
-    "estimatedDays":14,
-    "isRequired":true
+  "stageName": "University Application",
+  "description": "Submit application",
+  "stageOrder": 3,
+  "estimatedDays": 14,
+  "isRequired": true
 }
 ```
 
@@ -1699,12 +1699,7 @@ PUT /workflow-templates/{id}/stages/order
 
 ```json
 {
-    "stageIds":[
-        "uuid-1",
-        "uuid-2",
-        "uuid-3",
-        "uuid-4"
-    ]
+  "stageIds": ["uuid-1", "uuid-2", "uuid-3", "uuid-4"]
 }
 ```
 
@@ -1726,14 +1721,14 @@ GET /applicants/{id}/workflow
 
 ```json
 {
-    "success":true,
-    "data":{
-        "workflowId":"uuid",
-        "status":"In Progress",
-        "progress":55,
-        "currentStage":"University Application",
-        "stages":[]
-    }
+  "success": true,
+  "data": {
+    "workflowId": "uuid",
+    "status": "In Progress",
+    "progress": 55,
+    "currentStage": "University Application",
+    "stages": []
+  }
 }
 ```
 
@@ -1755,7 +1750,7 @@ PATCH /workflows/{id}
 
 ```json
 {
-    "status":"On Hold"
+  "status": "On Hold"
 }
 ```
 
@@ -1811,7 +1806,7 @@ POST /workflow-stages/{id}/complete
 
 ```json
 {
-    "remarks":"Documents verified successfully."
+  "remarks": "Documents verified successfully."
 }
 ```
 
@@ -1831,7 +1826,7 @@ POST /workflow-stages/{id}/skip
 
 ```json
 {
-    "reason":"Not required for this Applicant."
+  "reason": "Not required for this Applicant."
 }
 ```
 
@@ -1853,7 +1848,7 @@ POST /workflow-stages/{id}/reopen
 
 ```json
 {
-    "reason":"Applicant submitted updated documents."
+  "reason": "Applicant submitted updated documents."
 }
 ```
 
@@ -1875,7 +1870,7 @@ PATCH /workflow-stages/{id}/assignment
 
 ```json
 {
-    "staffId":"uuid"
+  "staffId": "uuid"
 }
 ```
 
@@ -1897,13 +1892,13 @@ GET /workflows/{id}/progress
 
 ```json
 {
-    "success":true,
-    "data":{
-        "completedStages":6,
-        "totalStages":10,
-        "progress":60,
-        "currentStage":"Financial Verification"
-    }
+  "success": true,
+  "data": {
+    "completedStages": 6,
+    "totalStages": 10,
+    "progress": 60,
+    "currentStage": "Financial Verification"
+  }
 }
 ```
 
@@ -1925,13 +1920,13 @@ GET /workflows/dashboard
 
 ```json
 {
-    "success":true,
-    "data":{
-        "activeWorkflows":180,
-        "completedWorkflows":65,
-        "onHold":12,
-        "cancelled":4
-    }
+  "success": true,
+  "data": {
+    "activeWorkflows": 180,
+    "completedWorkflows": 65,
+    "onHold": 12,
+    "cancelled": 4
+  }
 }
 ```
 
@@ -1939,29 +1934,29 @@ GET /workflows/dashboard
 
 # Workflow API Summary
 
-| Endpoint | Description |
-|------------|-------------|
-| GET /workflow-templates | List Templates |
-| GET /workflow-templates/{id} | Get Template |
-| POST /workflow-templates | Create Template |
-| PATCH /workflow-templates/{id} | Update Template |
-| DELETE /workflow-templates/{id} | Archive Template |
-| GET /workflow-templates/{id}/stages | List Template Stages |
-| POST /workflow-templates/{id}/stages | Add Stage |
-| PATCH /workflow-stages/{id} | Update Stage |
-| DELETE /workflow-stages/{id} | Delete Stage |
-| PUT /workflow-templates/{id}/stages/order | Reorder Stages |
-| GET /applicants/{id}/workflow | Applicant Workflow |
-| PATCH /workflows/{id} | Update Workflow |
-| GET /workflows/{id}/stages | List Workflow Stages |
-| GET /workflow-stages/{id} | Get Stage |
-| POST /workflow-stages/{id}/start | Start Stage |
-| POST /workflow-stages/{id}/complete | Complete Stage |
-| POST /workflow-stages/{id}/skip | Skip Stage |
-| POST /workflow-stages/{id}/reopen | Reopen Stage |
-| PATCH /workflow-stages/{id}/assignment | Assign Staff |
-| GET /workflows/{id}/progress | Workflow Progress |
-| GET /workflows/dashboard | Workflow Dashboard |
+| Endpoint                                  | Description          |
+| ----------------------------------------- | -------------------- |
+| GET /workflow-templates                   | List Templates       |
+| GET /workflow-templates/{id}              | Get Template         |
+| POST /workflow-templates                  | Create Template      |
+| PATCH /workflow-templates/{id}            | Update Template      |
+| DELETE /workflow-templates/{id}           | Archive Template     |
+| GET /workflow-templates/{id}/stages       | List Template Stages |
+| POST /workflow-templates/{id}/stages      | Add Stage            |
+| PATCH /workflow-stages/{id}               | Update Stage         |
+| DELETE /workflow-stages/{id}              | Delete Stage         |
+| PUT /workflow-templates/{id}/stages/order | Reorder Stages       |
+| GET /applicants/{id}/workflow             | Applicant Workflow   |
+| PATCH /workflows/{id}                     | Update Workflow      |
+| GET /workflows/{id}/stages                | List Workflow Stages |
+| GET /workflow-stages/{id}                 | Get Stage            |
+| POST /workflow-stages/{id}/start          | Start Stage          |
+| POST /workflow-stages/{id}/complete       | Complete Stage       |
+| POST /workflow-stages/{id}/skip           | Skip Stage           |
+| POST /workflow-stages/{id}/reopen         | Reopen Stage         |
+| PATCH /workflow-stages/{id}/assignment    | Assign Staff         |
+| GET /workflows/{id}/progress              | Workflow Progress    |
+| GET /workflows/dashboard                  | Workflow Dashboard   |
 
 ---
 
@@ -2029,16 +2024,16 @@ GET /applicants/{id}/documents
 
 ```json
 {
-    "success":true,
-    "data":[
-        {
-            "id":"uuid",
-            "documentType":"Passport",
-            "status":"Approved",
-            "currentVersion":2,
-            "reviewedBy":"John Doe"
-        }
-    ]
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "documentType": "Passport",
+      "status": "Approved",
+      "currentVersion": 2,
+      "reviewedBy": "John Doe"
+    }
+  ]
 }
 ```
 
@@ -2074,11 +2069,11 @@ multipart/form-data
 
 ## Form Data
 
-| Field | Type |
-|---------|------|
-| applicantId | UUID |
-| documentRequirementId | UUID |
-| file | Binary |
+| Field                 | Type   |
+| --------------------- | ------ |
+| applicantId           | UUID   |
+| documentRequirementId | UUID   |
+| file                  | Binary |
 
 ---
 
@@ -2086,8 +2081,8 @@ multipart/form-data
 
 ```json
 {
-    "success":true,
-    "message":"Document uploaded successfully."
+  "success": true,
+  "message": "Document uploaded successfully."
 }
 ```
 
@@ -2131,7 +2126,7 @@ POST /documents/{id}/review
 
 ```json
 {
-    "comments":"Looks good."
+  "comments": "Looks good."
 }
 ```
 
@@ -2151,7 +2146,7 @@ POST /documents/{id}/approve
 
 ```json
 {
-    "comments":"Verified."
+  "comments": "Verified."
 }
 ```
 
@@ -2171,7 +2166,7 @@ POST /documents/{id}/reject
 
 ```json
 {
-    "reason":"Image is blurry."
+  "reason": "Image is blurry."
 }
 ```
 
@@ -2191,7 +2186,7 @@ POST /documents/{id}/request-reupload
 
 ```json
 {
-    "reason":"Please upload a higher quality scan."
+  "reason": "Please upload a higher quality scan."
 }
 ```
 
@@ -2241,13 +2236,13 @@ GET /documents/statistics
 
 ```json
 {
-    "success":true,
-    "data":{
-        "uploaded":420,
-        "approved":355,
-        "rejected":41,
-        "pendingReview":24
-    }
+  "success": true,
+  "data": {
+    "uploaded": 420,
+    "approved": 355,
+    "rejected": 41,
+    "pendingReview": 24
+  }
 }
 ```
 
@@ -2255,25 +2250,25 @@ GET /documents/statistics
 
 # Document API Summary
 
-| Endpoint | Description |
-|------------|-------------|
-| GET /document-requirements | List Requirements |
-| POST /document-requirements | Create Requirement |
-| PATCH /document-requirements/{id} | Update Requirement |
-| DELETE /document-requirements/{id} | Archive Requirement |
-| GET /applicants/{id}/documents | Applicant Documents |
-| GET /documents/{id} | Get Document |
-| POST /documents/upload | Upload Document |
-| POST /documents/{id}/replace | Replace Document |
-| GET /documents/{id}/download | Download Current Version |
-| POST /documents/{id}/review | Review Document |
-| POST /documents/{id}/approve | Approve Document |
-| POST /documents/{id}/reject | Reject Document |
-| POST /documents/{id}/request-reupload | Request Re-upload |
-| GET /documents/{id}/versions | Version History |
-| GET /document-versions/{id} | Get Version |
-| GET /document-versions/{id}/download | Download Version |
-| GET /documents/statistics | Document Dashboard |
+| Endpoint                              | Description              |
+| ------------------------------------- | ------------------------ |
+| GET /document-requirements            | List Requirements        |
+| POST /document-requirements           | Create Requirement       |
+| PATCH /document-requirements/{id}     | Update Requirement       |
+| DELETE /document-requirements/{id}    | Archive Requirement      |
+| GET /applicants/{id}/documents        | Applicant Documents      |
+| GET /documents/{id}                   | Get Document             |
+| POST /documents/upload                | Upload Document          |
+| POST /documents/{id}/replace          | Replace Document         |
+| GET /documents/{id}/download          | Download Current Version |
+| POST /documents/{id}/review           | Review Document          |
+| POST /documents/{id}/approve          | Approve Document         |
+| POST /documents/{id}/reject           | Reject Document          |
+| POST /documents/{id}/request-reupload | Request Re-upload        |
+| GET /documents/{id}/versions          | Version History          |
+| GET /document-versions/{id}           | Get Version              |
+| GET /document-versions/{id}/download  | Download Version         |
+| GET /documents/statistics             | Document Dashboard       |
 
 # 23. Task API
 
@@ -2298,23 +2293,23 @@ GET /tasks
 ## Permission
 
 ```
-task.read
+task.view
 ```
 
 ---
 
 ## Query Parameters
 
-| Parameter | Description |
-|------------|-------------|
-| page | Page Number |
-| pageSize | Records Per Page |
-| status | Task Status |
-| priority | Task Priority |
-| assignedTo | Staff ID |
-| applicantId | Applicant ID |
-| dueDate | Due Date |
-| search | Search Title |
+| Parameter   | Description      |
+| ----------- | ---------------- |
+| page        | Page Number      |
+| pageSize    | Records Per Page |
+| status      | Task Status      |
+| priority    | Task Priority    |
+| assignedTo  | Staff ID         |
+| applicantId | Applicant ID     |
+| dueDate     | Due Date         |
+| search      | Search Title     |
 
 ---
 
@@ -2348,12 +2343,12 @@ task.create
 
 ```json
 {
-    "title":"Follow up with Applicant",
-    "description":"Request updated bank statement.",
-    "priority":"High",
-    "assignedTo":"uuid",
-    "applicantId":"uuid",
-    "dueDate":"2026-07-10"
+  "title": "Follow up with Applicant",
+  "description": "Request updated bank statement.",
+  "priority": "High",
+  "assignedTo": "uuid",
+  "applicantId": "uuid",
+  "dueDate": "2026-07-10"
 }
 ```
 
@@ -2383,7 +2378,7 @@ POST /tasks/{id}/complete
 
 ```json
 {
-    "remarks":"Applicant submitted updated documents."
+  "remarks": "Applicant submitted updated documents."
 }
 ```
 
@@ -2459,13 +2454,13 @@ GET /tasks/statistics
 
 ```json
 {
-    "success":true,
-    "data":{
-        "total":140,
-        "completed":92,
-        "pending":31,
-        "overdue":17
-    }
+  "success": true,
+  "data": {
+    "total": 140,
+    "completed": 92,
+    "pending": 31,
+    "overdue": 17
+  }
 }
 ```
 
@@ -2473,19 +2468,19 @@ GET /tasks/statistics
 
 # Task API Summary
 
-| Endpoint | Description |
-|------------|-------------|
-| GET /tasks | List Tasks |
-| GET /tasks/{id} | Get Task |
-| POST /tasks | Create Task |
-| PATCH /tasks/{id} | Update Task |
-| POST /tasks/{id}/complete | Complete Task |
-| POST /tasks/{id}/reopen | Reopen Task |
-| DELETE /tasks/{id} | Archive Task |
-| GET /tasks/my | My Tasks |
-| GET /tasks/overdue | Overdue Tasks |
-| GET /tasks/upcoming | Upcoming Tasks |
-| GET /tasks/statistics | Task Dashboard |
+| Endpoint                  | Description    |
+| ------------------------- | -------------- |
+| GET /tasks                | List Tasks     |
+| GET /tasks/{id}           | Get Task       |
+| POST /tasks               | Create Task    |
+| PATCH /tasks/{id}         | Update Task    |
+| POST /tasks/{id}/complete | Complete Task  |
+| POST /tasks/{id}/reopen   | Reopen Task    |
+| DELETE /tasks/{id}        | Archive Task   |
+| GET /tasks/my             | My Tasks       |
+| GET /tasks/overdue        | Overdue Tasks  |
+| GET /tasks/upcoming       | Upcoming Tasks |
+| GET /tasks/statistics     | Task Dashboard |
 
 ---
 
@@ -2533,7 +2528,7 @@ POST /applicants/{id}/notes
 
 ```json
 {
-    "note":"Applicant requested extension for document submission."
+  "note": "Applicant requested extension for document submission."
 }
 ```
 
@@ -2583,15 +2578,15 @@ POST /notes/{id}/unpin
 
 # Notes API Summary
 
-| Endpoint | Description |
-|------------|-------------|
-| GET /applicants/{id}/notes | List Notes |
-| GET /notes/{id} | Get Note |
-| POST /applicants/{id}/notes | Create Note |
-| PATCH /notes/{id} | Update Note |
-| DELETE /notes/{id} | Archive Note |
-| POST /notes/{id}/pin | Pin Note |
-| POST /notes/{id}/unpin | Unpin Note |
+| Endpoint                    | Description  |
+| --------------------------- | ------------ |
+| GET /applicants/{id}/notes  | List Notes   |
+| GET /notes/{id}             | Get Note     |
+| POST /applicants/{id}/notes | Create Note  |
+| PATCH /notes/{id}           | Update Note  |
+| DELETE /notes/{id}          | Archive Note |
+| POST /notes/{id}/pin        | Pin Note     |
+| POST /notes/{id}/unpin      | Unpin Note   |
 
 ---
 
@@ -2617,11 +2612,11 @@ GET /applicants/{id}/timeline
 
 ## Query Parameters
 
-| Parameter | Description |
-|------------|-------------|
-| page | Page Number |
-| pageSize | Records Per Page |
-| eventType | Activity Type |
+| Parameter | Description      |
+| --------- | ---------------- |
+| page      | Page Number      |
+| pageSize  | Records Per Page |
+| eventType | Activity Type    |
 
 ---
 
@@ -2662,15 +2657,15 @@ Examples include:
 
 ```json
 {
-    "success":true,
-    "data":[
-        {
-            "id":"uuid",
-            "event":"Document Approved",
-            "performedBy":"Jane Smith",
-            "timestamp":"2026-06-29T10:00:00Z"
-        }
-    ]
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "event": "Document Approved",
+      "performedBy": "Jane Smith",
+      "timestamp": "2026-06-29T10:00:00Z"
+    }
+  ]
 }
 ```
 
@@ -2678,10 +2673,10 @@ Examples include:
 
 # Timeline API Summary
 
-| Endpoint | Description |
-|------------|-------------|
+| Endpoint                      | Description        |
+| ----------------------------- | ------------------ |
 | GET /applicants/{id}/timeline | Applicant Timeline |
-| GET /timeline/{id} | Get Timeline Entry |
+| GET /timeline/{id}            | Get Timeline Entry |
 
 ---
 
@@ -2705,11 +2700,11 @@ GET /notifications
 
 ## Query Parameters
 
-| Parameter | Description |
-|------------|-------------|
-| page | Page Number |
-| pageSize | Records Per Page |
-| unreadOnly | Boolean |
+| Parameter  | Description      |
+| ---------- | ---------------- |
+| page       | Page Number      |
+| pageSize   | Records Per Page |
+| unreadOnly | Boolean          |
 
 ---
 
@@ -2779,9 +2774,9 @@ PATCH /notification-preferences
 
 ```json
 {
-    "email":true,
-    "inApp":true,
-    "push":false
+  "email": true,
+  "inApp": true,
+  "push": false
 }
 ```
 
@@ -2789,15 +2784,15 @@ PATCH /notification-preferences
 
 # Notification API Summary
 
-| Endpoint | Description |
-|------------|-------------|
-| GET /notifications | List Notifications |
-| GET /notifications/{id} | Get Notification |
-| PATCH /notifications/{id}/read | Mark as Read |
-| PATCH /notifications/read-all | Mark All as Read |
-| DELETE /notifications/{id} | Delete Notification |
-| GET /notification-preferences | Get Preferences |
-| PATCH /notification-preferences | Update Preferences |
+| Endpoint                        | Description         |
+| ------------------------------- | ------------------- |
+| GET /notifications              | List Notifications  |
+| GET /notifications/{id}         | Get Notification    |
+| PATCH /notifications/{id}/read  | Mark as Read        |
+| PATCH /notifications/read-all   | Mark All as Read    |
+| DELETE /notifications/{id}      | Delete Notification |
+| GET /notification-preferences   | Get Preferences     |
+| PATCH /notification-preferences | Update Preferences  |
 
 # 27. Dashboard API
 
@@ -2826,7 +2821,7 @@ GET /dashboard
 ## Permission
 
 ```
-dashboard.read
+dashboard.view
 ```
 
 ---
@@ -2923,11 +2918,11 @@ GET /dashboard/charts
 
 # Dashboard API Summary
 
-| Endpoint | Description |
-|------------|-------------|
-| GET /dashboard | Organization Dashboard |
-| GET /dashboard/me | My Dashboard |
-| GET /dashboard/charts | Dashboard Charts |
+| Endpoint              | Description            |
+| --------------------- | ---------------------- |
+| GET /dashboard        | Organization Dashboard |
+| GET /dashboard/me     | My Dashboard           |
+| GET /dashboard/charts | Dashboard Charts       |
 
 ---
 
@@ -3070,18 +3065,18 @@ Displays
 
 # Organization API Summary
 
-| Endpoint | Description |
-|------------|-------------|
-| GET /organization | Organization |
-| PATCH /organization | Update Organization |
-| PATCH /organization/branding | Branding |
-| GET /organization/workflow-settings | Workflow Settings |
-| PATCH /organization/workflow-settings | Update Workflow Settings |
-| GET /organization/portal-settings | Portal Settings |
-| PATCH /organization/portal-settings | Update Portal Settings |
-| GET /organization/notification-settings | Notification Settings |
+| Endpoint                                  | Description                  |
+| ----------------------------------------- | ---------------------------- |
+| GET /organization                         | Organization                 |
+| PATCH /organization                       | Update Organization          |
+| PATCH /organization/branding              | Branding                     |
+| GET /organization/workflow-settings       | Workflow Settings            |
+| PATCH /organization/workflow-settings     | Update Workflow Settings     |
+| GET /organization/portal-settings         | Portal Settings              |
+| PATCH /organization/portal-settings       | Update Portal Settings       |
+| GET /organization/notification-settings   | Notification Settings        |
 | PATCH /organization/notification-settings | Update Notification Settings |
-| GET /organization/storage-settings | Storage Settings |
+| GET /organization/storage-settings        | Storage Settings             |
 
 ---
 
@@ -3406,21 +3401,21 @@ Webhook payloads will include
 
 # 35. HTTP Status Codes
 
-| Code | Description |
-|------|-------------|
-|200|OK|
-|201|Created|
-|204|No Content|
-|400|Bad Request|
-|401|Unauthorized|
-|403|Forbidden|
-|404|Not Found|
-|409|Conflict|
-|413|Payload Too Large|
-|415|Unsupported Media Type|
-|422|Business Validation Failed|
-|429|Too Many Requests|
-|500|Internal Server Error|
+| Code | Description                |
+| ---- | -------------------------- |
+| 200  | OK                         |
+| 201  | Created                    |
+| 204  | No Content                 |
+| 400  | Bad Request                |
+| 401  | Unauthorized               |
+| 403  | Forbidden                  |
+| 404  | Not Found                  |
+| 409  | Conflict                   |
+| 413  | Payload Too Large          |
+| 415  | Unsupported Media Type     |
+| 422  | Business Validation Failed |
+| 429  | Too Many Requests          |
+| 500  | Internal Server Error      |
 
 ---
 

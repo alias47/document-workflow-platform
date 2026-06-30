@@ -1,4 +1,7 @@
-import { type ApiResponse, apiClient } from './api-client';
+import type { ApiResponse } from '@/types/api';
+
+import { env } from '@/lib/env';
+import { http } from '@/lib/http';
 
 export interface LoginCredentials {
   email: string;
@@ -18,7 +21,7 @@ export interface AuthTokens {
   accessToken: string;
 }
 
-// ---------- mock data ----------
+// ---------- mock data (used until the backend is wired to the UI) ----------
 const MOCK_USER: StaffUser = {
   id: 'staff-1',
   email: 'sarah@example.com',
@@ -32,50 +35,61 @@ const MOCK_DELAY = 400;
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // ---------- service ----------
+// All HTTP communication for auth lives here. Components never call axios.
 export const authService = {
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: StaffUser }>> {
-    if (process.env.NODE_ENV === 'development') {
+    if (env.isDev) {
       await delay(MOCK_DELAY);
-      if (credentials.email === 'demo@example.com' && credentials.password === 'password') {
-        return { success: true, message: 'Login successful', data: { user: MOCK_USER } };
-      }
       if (credentials.email && credentials.password) {
         return { success: true, message: 'Login successful', data: { user: MOCK_USER } };
       }
       throw new Error('Invalid credentials');
     }
-    return apiClient.post<ApiResponse<{ user: StaffUser }>>('/auth/login', credentials);
+    const res = await http.post<ApiResponse<{ user: StaffUser }>>('/auth/login', credentials);
+    return res.data;
   },
 
   async logout(): Promise<void> {
-    if (process.env.NODE_ENV === 'development') {
+    if (env.isDev) {
       await delay(200);
       return;
     }
-    await apiClient.post('/auth/logout', {});
+    await http.post('/auth/logout', {});
   },
 
   async refreshToken(): Promise<ApiResponse<AuthTokens>> {
-    if (process.env.NODE_ENV === 'development') {
+    if (env.isDev) {
       await delay(200);
       return { success: true, message: 'Token refreshed', data: { accessToken: 'mock-token' } };
     }
-    return apiClient.post<ApiResponse<AuthTokens>>('/auth/refresh', {});
+    const res = await http.post<ApiResponse<AuthTokens>>('/auth/refresh', {});
+    return res.data;
+  },
+
+  async me(): Promise<ApiResponse<StaffUser>> {
+    if (env.isDev) {
+      await delay(200);
+      return { success: true, message: 'OK', data: MOCK_USER };
+    }
+    const res = await http.get<ApiResponse<StaffUser>>('/auth/me');
+    return res.data;
   },
 
   async forgotPassword(email: string): Promise<ApiResponse<null>> {
-    if (process.env.NODE_ENV === 'development') {
+    if (env.isDev) {
       await delay(MOCK_DELAY);
       return { success: true, message: 'Reset link sent', data: null };
     }
-    return apiClient.post<ApiResponse<null>>('/auth/forgot-password', { email });
+    const res = await http.post<ApiResponse<null>>('/auth/forgot-password', { email });
+    return res.data;
   },
 
   async resetPassword(token: string, password: string): Promise<ApiResponse<null>> {
-    if (process.env.NODE_ENV === 'development') {
+    if (env.isDev) {
       await delay(MOCK_DELAY);
       return { success: true, message: 'Password changed', data: null };
     }
-    return apiClient.post<ApiResponse<null>>('/auth/reset-password', { token, password });
+    const res = await http.post<ApiResponse<null>>('/auth/reset-password', { token, password });
+    return res.data;
   },
 };

@@ -84,15 +84,15 @@ Adding new features should require adding new tables rather than modifying exist
 
 The platform uses the following technologies.
 
-| Component | Technology |
-|-----------|------------|
-| Database | PostgreSQL |
-| ORM | Prisma |
-| Migrations | Prisma Migrate |
-| UUID Generation | PostgreSQL UUID |
-| Development | Docker PostgreSQL |
-| Pilot | Managed PostgreSQL |
-| Production | PostgreSQL Cluster |
+| Component       | Technology         |
+| --------------- | ------------------ |
+| Database        | PostgreSQL         |
+| ORM             | Prisma             |
+| Migrations      | Prisma Migrate     |
+| UUID Generation | PostgreSQL UUID    |
+| Development     | Docker PostgreSQL  |
+| Pilot           | Managed PostgreSQL |
+| Production      | PostgreSQL Cluster |
 
 ---
 
@@ -360,7 +360,7 @@ Organization
 │
 ├── Applicant
 │     │
-│     ├── ApplicantAccount
+│     ├── PortalAccount
 │     ├── Workflow
 │     ├── Document
 │     ├── Note
@@ -473,25 +473,25 @@ Every business record belongs to exactly one Organization.
 
 ## Columns
 
-| Column | Type | Nullable | Description |
-|---------|------|----------|-------------|
-| id | UUID | No | Primary Key |
-| name | VARCHAR(255) | No | Display Name |
-| legal_name | VARCHAR(255) | Yes | Registered Name |
-| slug | VARCHAR(100) | No | Unique URL Identifier |
-| industry | VARCHAR(100) | No | Industry Type |
-| email | VARCHAR(255) | Yes | Contact Email |
-| phone | VARCHAR(50) | Yes | Contact Phone |
-| website | VARCHAR(255) | Yes | Website |
-| timezone | VARCHAR(100) | No | Default Timezone |
-| country | VARCHAR(100) | No | Country |
-| status | VARCHAR(30) | No | Active / Suspended |
-| created_at | TIMESTAMP | No | Creation Date |
-| created_by | UUID | Yes | Staff ID |
-| updated_at | TIMESTAMP | Yes | Last Update |
-| updated_by | UUID | Yes | Staff ID |
-| deleted_at | TIMESTAMP | Yes | Soft Delete |
-| deleted_by | UUID | Yes | Staff ID |
+| Column     | Type         | Nullable | Description           |
+| ---------- | ------------ | -------- | --------------------- |
+| id         | UUID         | No       | Primary Key           |
+| name       | VARCHAR(255) | No       | Display Name          |
+| legal_name | VARCHAR(255) | Yes      | Registered Name       |
+| slug       | VARCHAR(100) | No       | Unique URL Identifier |
+| industry   | VARCHAR(100) | No       | Industry Type         |
+| email      | VARCHAR(255) | Yes      | Contact Email         |
+| phone      | VARCHAR(50)  | Yes      | Contact Phone         |
+| website    | VARCHAR(255) | Yes      | Website               |
+| timezone   | VARCHAR(100) | No       | Default Timezone      |
+| country    | VARCHAR(100) | No       | Country               |
+| status     | VARCHAR(30)  | No       | Active / Suspended    |
+| created_at | TIMESTAMP    | No       | Creation Date         |
+| created_by | UUID         | Yes      | Staff ID              |
+| updated_at | TIMESTAMP    | Yes      | Last Update           |
+| updated_by | UUID         | Yes      | Staff ID              |
+| deleted_at | TIMESTAMP    | Yes      | Soft Delete           |
+| deleted_by | UUID         | Yes      | Staff ID              |
 
 ---
 
@@ -546,24 +546,24 @@ Authentication is stored separately.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| role_id | UUID |
-| first_name | VARCHAR(100) |
-| last_name | VARCHAR(100) |
-| job_title | VARCHAR(100) |
-| phone | VARCHAR(50) |
-| profile_image | TEXT |
-| status | VARCHAR(30) |
-| last_login_at | TIMESTAMP |
-| created_at | TIMESTAMP |
-| created_by | UUID |
-| updated_at | TIMESTAMP |
-| updated_by | UUID |
-| deleted_at | TIMESTAMP |
-| deleted_by | UUID |
+| Column          | Type         |
+| --------------- | ------------ |
+| id              | UUID         |
+| organization_id | UUID         |
+| role_id         | UUID         |
+| first_name      | VARCHAR(100) |
+| last_name       | VARCHAR(100) |
+| job_title       | VARCHAR(100) |
+| phone           | VARCHAR(50)  |
+| profile_image   | TEXT         |
+| status          | VARCHAR(30)  |
+| last_login_at   | TIMESTAMP    |
+| created_at      | TIMESTAMP    |
+| created_by      | UUID         |
+| updated_at      | TIMESTAMP    |
+| updated_by      | UUID         |
+| deleted_at      | TIMESTAMP    |
+| deleted_by      | UUID         |
 
 ---
 
@@ -606,19 +606,19 @@ Separating authentication from business information improves security and allows
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| staff_id | UUID |
-| email | VARCHAR(255) |
-| password_hash | TEXT |
-| account_status | VARCHAR(30) |
-| email_verified | BOOLEAN |
-| failed_login_attempts | INTEGER |
-| last_login_at | TIMESTAMP |
-| password_changed_at | TIMESTAMP |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
+| Column                | Type         |
+| --------------------- | ------------ |
+| id                    | UUID         |
+| staff_id              | UUID         |
+| email                 | VARCHAR(255) |
+| password_hash         | TEXT         |
+| account_status        | VARCHAR(30)  |
+| email_verified        | BOOLEAN      |
+| failed_login_attempts | INTEGER      |
+| last_login_at         | TIMESTAMP    |
+| password_changed_at   | TIMESTAMP    |
+| created_at            | TIMESTAMP    |
+| updated_at            | TIMESTAMP    |
 
 ---
 
@@ -666,15 +666,15 @@ Examples
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| name | VARCHAR(100) |
-| description | TEXT |
-| is_system | BOOLEAN |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
+| Column          | Type         |
+| --------------- | ------------ |
+| id              | UUID         |
+| organization_id | UUID         |
+| name            | VARCHAR(100) |
+| description     | TEXT         |
+| is_system       | BOOLEAN      |
+| created_at      | TIMESTAMP    |
+| updated_at      | TIMESTAMP    |
 
 ---
 
@@ -721,12 +721,12 @@ Permissions are shared across all Organizations.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| name | VARCHAR(150) |
-| category | VARCHAR(100) |
-| description | TEXT |
+| Column      | Type         |
+| ----------- | ------------ |
+| id          | UUID         |
+| name        | VARCHAR(150) |
+| category    | VARCHAR(100) |
+| description | TEXT         |
 
 ---
 
@@ -786,11 +786,11 @@ A Permission may belong to many Roles.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| role_id | UUID |
-| permission_id | UUID |
-| created_at | TIMESTAMP |
+| Column        | Type      |
+| ------------- | --------- |
+| role_id       | UUID      |
+| permission_id | UUID      |
+| created_at    | TIMESTAMP |
 
 ---
 
@@ -870,29 +870,29 @@ Every Applicant belongs to one Organization.
 
 ## Columns
 
-| Column | Type | Nullable | Description |
-|---------|------|----------|-------------|
-| id | UUID | No | Primary Key |
-| organization_id | UUID | No | Organization |
-| applicant_number | VARCHAR(50) | No | Unique Applicant Number |
-| first_name | VARCHAR(100) | No | First Name |
-| middle_name | VARCHAR(100) | Yes | Middle Name |
-| last_name | VARCHAR(100) | No | Last Name |
-| gender | VARCHAR(20) | Yes | Gender |
-| date_of_birth | DATE | Yes | Date of Birth |
-| nationality | VARCHAR(100) | Yes | Nationality |
-| email | VARCHAR(255) | Yes | Contact Email |
-| phone | VARCHAR(50) | Yes | Contact Phone |
-| address | TEXT | Yes | Address |
-| city | VARCHAR(100) | Yes | City |
-| country | VARCHAR(100) | Yes | Country |
-| status | VARCHAR(30) | No | Applicant Status |
-| created_at | TIMESTAMP | No | Created At |
-| created_by | UUID | Yes | Staff |
-| updated_at | TIMESTAMP | Yes | Updated At |
-| updated_by | UUID | Yes | Staff |
-| deleted_at | TIMESTAMP | Yes | Soft Delete |
-| deleted_by | UUID | Yes | Staff |
+| Column           | Type         | Nullable | Description             |
+| ---------------- | ------------ | -------- | ----------------------- |
+| id               | UUID         | No       | Primary Key             |
+| organization_id  | UUID         | No       | Organization            |
+| applicant_number | VARCHAR(50)  | No       | Unique Applicant Number |
+| first_name       | VARCHAR(100) | No       | First Name              |
+| middle_name      | VARCHAR(100) | Yes      | Middle Name             |
+| last_name        | VARCHAR(100) | No       | Last Name               |
+| gender           | VARCHAR(20)  | Yes      | Gender                  |
+| date_of_birth    | DATE         | Yes      | Date of Birth           |
+| nationality      | VARCHAR(100) | Yes      | Nationality             |
+| email            | VARCHAR(255) | Yes      | Contact Email           |
+| phone            | VARCHAR(50)  | Yes      | Contact Phone           |
+| address          | TEXT         | Yes      | Address                 |
+| city             | VARCHAR(100) | Yes      | City                    |
+| country          | VARCHAR(100) | Yes      | Country                 |
+| status           | VARCHAR(30)  | No       | Applicant Status        |
+| created_at       | TIMESTAMP    | No       | Created At              |
+| created_by       | UUID         | Yes      | Staff                   |
+| updated_at       | TIMESTAMP    | Yes      | Updated At              |
+| updated_by       | UUID         | Yes      | Staff                   |
+| deleted_at       | TIMESTAMP    | Yes      | Soft Delete             |
+| deleted_by       | UUID         | Yes      | Staff                   |
 
 ---
 
@@ -941,7 +941,10 @@ Has Many
 
 ---
 
-# 13.2 applicant_accounts
+# 13.2 portal_accounts
+
+> Prisma model: `PortalAccount` · table: `portal_accounts`. This is the
+> authentication entity for Applicants (one-to-one with `Applicant`).
 
 ## Purpose
 
@@ -957,21 +960,25 @@ Authentication is separated from Applicant profile information.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| applicant_id | UUID |
-| email | VARCHAR(255) |
-| password_hash | TEXT |
-| invitation_token | TEXT |
-| invitation_expires_at | TIMESTAMP |
-| activated_at | TIMESTAMP |
-| account_status | VARCHAR(30) |
-| failed_login_attempts | INTEGER |
-| last_login_at | TIMESTAMP |
-| password_changed_at | TIMESTAMP |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
+| Column                | Type                    |
+| --------------------- | ----------------------- |
+| id                    | UUID                    |
+| organization_id       | UUID                    |
+| applicant_id          | UUID (nullable, unique) |
+| email                 | VARCHAR(255)            |
+| password_hash         | TEXT                    |
+| status                | account_status enum     |
+| invitation_token      | TEXT                    |
+| invitation_expires_at | TIMESTAMP               |
+| activated_at          | TIMESTAMP               |
+| failed_attempts       | INTEGER                 |
+| locked_until          | TIMESTAMP               |
+| must_change_pass      | BOOLEAN                 |
+| password_changed_at   | TIMESTAMP               |
+| last_login_at         | TIMESTAMP               |
+| created_at            | TIMESTAMP               |
+| updated_at            | TIMESTAMP               |
+| deleted_at            | TIMESTAMP               |
 
 ---
 
@@ -989,7 +996,7 @@ Authentication is separated from Applicant profile information.
 Unique
 
 - applicant_id
-- email
+- (organization_id, email)
 
 ---
 
@@ -997,14 +1004,14 @@ Unique
 
 Belongs To
 
-- Applicant
+- Applicant (one-to-one)
 
 ---
 
 ## Suggested Indexes
 
+- organization_id
 - email
-- account_status
 - invitation_token
 
 ---
@@ -1021,16 +1028,16 @@ Assignments are stored separately to support reassignment history and multiple S
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| applicant_id | UUID |
-| staff_id | UUID |
-| assigned_by | UUID |
-| assigned_at | TIMESTAMP |
-| is_primary | BOOLEAN |
-| created_at | TIMESTAMP |
+| Column          | Type      |
+| --------------- | --------- |
+| id              | UUID      |
+| organization_id | UUID      |
+| applicant_id    | UUID      |
+| staff_id        | UUID      |
+| assigned_by     | UUID      |
+| assigned_at     | TIMESTAMP |
+| is_primary      | BOOLEAN   |
+| created_at      | TIMESTAMP |
 
 ---
 
@@ -1071,7 +1078,7 @@ Organization
       ├──────────────┐
       │              │
       ▼              ▼
-ApplicantAccount   ApplicantAssignment
+PortalAccount      ApplicantAssignment
                        │
                        ▼
                      Staff
@@ -1128,21 +1135,21 @@ Recruitment Agency
 
 ## Columns
 
-| Column | Type | Nullable | Description |
-|---------|------|----------|-------------|
-| id | UUID | No | Primary Key |
-| organization_id | UUID | No | Organization |
-| name | VARCHAR(150) | No | Template Name |
-| description | TEXT | Yes | Description |
-| industry_id | UUID | Yes | Industry Reference |
-| is_default | BOOLEAN | No | Default Template |
-| is_active | BOOLEAN | No | Active Status |
-| created_at | TIMESTAMP | No | Created At |
-| created_by | UUID | Yes | Staff |
-| updated_at | TIMESTAMP | Yes | Updated At |
-| updated_by | UUID | Yes | Staff |
-| deleted_at | TIMESTAMP | Yes | Soft Delete |
-| deleted_by | UUID | Yes | Staff |
+| Column          | Type         | Nullable | Description        |
+| --------------- | ------------ | -------- | ------------------ |
+| id              | UUID         | No       | Primary Key        |
+| organization_id | UUID         | No       | Organization       |
+| name            | VARCHAR(150) | No       | Template Name      |
+| description     | TEXT         | Yes      | Description        |
+| industry_id     | UUID         | Yes      | Industry Reference |
+| is_default      | BOOLEAN      | No       | Default Template   |
+| is_active       | BOOLEAN      | No       | Active Status      |
+| created_at      | TIMESTAMP    | No       | Created At         |
+| created_by      | UUID         | Yes      | Staff              |
+| updated_at      | TIMESTAMP    | Yes      | Updated At         |
+| updated_by      | UUID         | Yes      | Staff              |
+| deleted_at      | TIMESTAMP    | Yes      | Soft Delete        |
+| deleted_by      | UUID         | Yes      | Staff              |
 
 ---
 
@@ -1188,17 +1195,17 @@ Defines the ordered stages belonging to a Workflow Template.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| workflow_template_id | UUID |
-| stage_name | VARCHAR(150) |
-| stage_order | INTEGER |
-| description | TEXT |
-| estimated_days | INTEGER |
-| is_required | BOOLEAN |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
+| Column               | Type         |
+| -------------------- | ------------ |
+| id                   | UUID         |
+| workflow_template_id | UUID         |
+| stage_name           | VARCHAR(150) |
+| stage_order          | INTEGER      |
+| description          | TEXT         |
+| estimated_days       | INTEGER      |
+| is_required          | BOOLEAN      |
+| created_at           | TIMESTAMP    |
+| updated_at           | TIMESTAMP    |
 
 ---
 
@@ -1239,19 +1246,19 @@ Future changes to the template will not affect existing Applicant workflows.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| applicant_id | UUID |
-| workflow_template_id | UUID |
-| current_stage_id | UUID |
-| status | VARCHAR(30) |
-| progress_percentage | DECIMAL(5,2) |
-| started_at | TIMESTAMP |
-| completed_at | TIMESTAMP |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
+| Column               | Type         |
+| -------------------- | ------------ |
+| id                   | UUID         |
+| organization_id      | UUID         |
+| applicant_id         | UUID         |
+| workflow_template_id | UUID         |
+| current_stage_id     | UUID         |
+| status               | VARCHAR(30)  |
+| progress_percentage  | DECIMAL(5,2) |
+| started_at           | TIMESTAMP    |
+| completed_at         | TIMESTAMP    |
+| created_at           | TIMESTAMP    |
+| updated_at           | TIMESTAMP    |
 
 ---
 
@@ -1299,20 +1306,20 @@ Unlike Template Stages, these records change as the Applicant progresses.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| workflow_id | UUID |
-| workflow_template_stage_id | UUID |
-| stage_name | VARCHAR(150) |
-| stage_order | INTEGER |
-| status | VARCHAR(30) |
-| assigned_staff_id | UUID |
-| started_at | TIMESTAMP |
-| completed_at | TIMESTAMP |
-| notes | TEXT |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
+| Column                     | Type         |
+| -------------------------- | ------------ |
+| id                         | UUID         |
+| workflow_id                | UUID         |
+| workflow_template_stage_id | UUID         |
+| stage_name                 | VARCHAR(150) |
+| stage_order                | INTEGER      |
+| status                     | VARCHAR(30)  |
+| assigned_staff_id          | UUID         |
+| started_at                 | TIMESTAMP    |
+| completed_at               | TIMESTAMP    |
+| notes                      | TEXT         |
+| created_at                 | TIMESTAMP    |
+| updated_at                 | TIMESTAMP    |
 
 ---
 
@@ -1463,15 +1470,15 @@ Organizations determine which Document Types are required through Document Requi
 
 ## Columns
 
-| Column | Type | Nullable | Description |
-|---------|------|----------|-------------|
-| id | UUID | No | Primary Key |
-| code | VARCHAR(50) | No | Unique System Code |
-| name | VARCHAR(150) | No | Display Name |
-| description | TEXT | Yes | Description |
-| category | VARCHAR(100) | Yes | Document Category |
-| created_at | TIMESTAMP | No | Created At |
-| updated_at | TIMESTAMP | Yes | Updated At |
+| Column      | Type         | Nullable | Description        |
+| ----------- | ------------ | -------- | ------------------ |
+| id          | UUID         | No       | Primary Key        |
+| code        | VARCHAR(50)  | No       | Unique System Code |
+| name        | VARCHAR(150) | No       | Display Name       |
+| description | TEXT         | Yes      | Description        |
+| category    | VARCHAR(100) | Yes      | Document Category  |
+| created_at  | TIMESTAMP    | No       | Created At         |
+| updated_at  | TIMESTAMP    | Yes      | Updated At         |
 
 ---
 
@@ -1515,22 +1522,22 @@ This makes document collection configurable without changing application code.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| workflow_template_id | UUID |
-| document_type_id | UUID |
-| display_name | VARCHAR(150) |
-| is_required | BOOLEAN |
-| requires_review | BOOLEAN |
-| allows_multiple | BOOLEAN |
-| max_file_size_mb | INTEGER |
-| allowed_file_types | JSONB |
-| expires | BOOLEAN |
-| display_order | INTEGER |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
+| Column               | Type         |
+| -------------------- | ------------ |
+| id                   | UUID         |
+| organization_id      | UUID         |
+| workflow_template_id | UUID         |
+| document_type_id     | UUID         |
+| display_name         | VARCHAR(150) |
+| is_required          | BOOLEAN      |
+| requires_review      | BOOLEAN      |
+| allows_multiple      | BOOLEAN      |
+| max_file_size_mb     | INTEGER      |
+| allowed_file_types   | JSONB        |
+| expires              | BOOLEAN      |
+| display_order        | INTEGER      |
+| created_at           | TIMESTAMP    |
+| updated_at           | TIMESTAMP    |
 
 ---
 
@@ -1600,21 +1607,21 @@ Current Version = 3
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| applicant_id | UUID |
-| document_requirement_id | UUID |
-| current_version_id | UUID |
-| status | VARCHAR(30) |
-| reviewed_by | UUID |
-| reviewed_at | TIMESTAMP |
-| rejection_reason | TEXT |
-| expires_at | TIMESTAMP |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
-| deleted_at | TIMESTAMP |
+| Column                  | Type        |
+| ----------------------- | ----------- |
+| id                      | UUID        |
+| organization_id         | UUID        |
+| applicant_id            | UUID        |
+| document_requirement_id | UUID        |
+| current_version_id      | UUID        |
+| status                  | VARCHAR(30) |
+| reviewed_by             | UUID        |
+| reviewed_at             | TIMESTAMP   |
+| rejection_reason        | TEXT        |
+| expires_at              | TIMESTAMP   |
+| created_at              | TIMESTAMP   |
+| updated_at              | TIMESTAMP   |
+| deleted_at              | TIMESTAMP   |
 
 ---
 
@@ -1676,21 +1683,21 @@ Replacing a file creates a new version instead of overwriting the existing one.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| document_id | UUID |
-| version_number | INTEGER |
-| original_filename | VARCHAR(255) |
-| storage_provider | VARCHAR(50) |
-| bucket | VARCHAR(150) |
-| storage_key | TEXT |
-| mime_type | VARCHAR(100) |
-| file_size | BIGINT |
-| checksum | VARCHAR(255) |
-| uploaded_by_staff_id | UUID |
-| uploaded_by_applicant | BOOLEAN |
-| uploaded_at | TIMESTAMP |
+| Column                | Type         |
+| --------------------- | ------------ |
+| id                    | UUID         |
+| document_id           | UUID         |
+| version_number        | INTEGER      |
+| original_filename     | VARCHAR(255) |
+| storage_provider      | VARCHAR(50)  |
+| bucket                | VARCHAR(150) |
+| storage_key           | TEXT         |
+| mime_type             | VARCHAR(100) |
+| file_size             | BIGINT       |
+| checksum              | VARCHAR(255) |
+| uploaded_by_staff_id  | UUID         |
+| uploaded_by_applicant | BOOLEAN      |
+| uploaded_at           | TIMESTAMP    |
 
 ---
 
@@ -1863,17 +1870,17 @@ Applicants cannot view internal notes.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| applicant_id | UUID |
-| created_by | UUID |
-| note | TEXT |
-| is_pinned | BOOLEAN |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
-| deleted_at | TIMESTAMP |
+| Column          | Type      |
+| --------------- | --------- |
+| id              | UUID      |
+| organization_id | UUID      |
+| applicant_id    | UUID      |
+| created_by      | UUID      |
+| note            | TEXT      |
+| is_pinned       | BOOLEAN   |
+| created_at      | TIMESTAMP |
+| updated_at      | TIMESTAMP |
+| deleted_at      | TIMESTAMP |
 
 ---
 
@@ -1907,22 +1914,22 @@ Tasks improve collaboration and ensure Applicants progress through the workflow.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| applicant_id | UUID |
-| assigned_to | UUID |
-| created_by | UUID |
-| title | VARCHAR(255) |
-| description | TEXT |
-| priority | VARCHAR(30) |
-| status | VARCHAR(30) |
-| due_date | TIMESTAMP |
-| completed_at | TIMESTAMP |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
-| deleted_at | TIMESTAMP |
+| Column          | Type         |
+| --------------- | ------------ |
+| id              | UUID         |
+| organization_id | UUID         |
+| applicant_id    | UUID         |
+| assigned_to     | UUID         |
+| created_by      | UUID         |
+| title           | VARCHAR(255) |
+| description     | TEXT         |
+| priority        | VARCHAR(30)  |
+| status          | VARCHAR(30)  |
+| due_date        | TIMESTAMP    |
+| completed_at    | TIMESTAMP    |
+| created_at      | TIMESTAMP    |
+| updated_at      | TIMESTAMP    |
+| deleted_at      | TIMESTAMP    |
 
 ---
 
@@ -1975,16 +1982,16 @@ Timeline entries are generated automatically by the system and may also be added
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| applicant_id | UUID |
-| event_type | VARCHAR(100) |
-| title | VARCHAR(255) |
-| description | TEXT |
-| performed_by | UUID |
-| created_at | TIMESTAMP |
+| Column          | Type         |
+| --------------- | ------------ |
+| id              | UUID         |
+| organization_id | UUID         |
+| applicant_id    | UUID         |
+| event_type      | VARCHAR(100) |
+| title           | VARCHAR(255) |
+| description     | TEXT         |
+| performed_by    | UUID         |
+| created_at      | TIMESTAMP    |
 
 ---
 
@@ -2031,20 +2038,20 @@ Unlike Timeline entries, Audit Logs are never visible to Applicants.
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| user_type | VARCHAR(30) |
-| user_id | UUID |
-| action | VARCHAR(150) |
-| entity_type | VARCHAR(100) |
-| entity_id | UUID |
-| old_values | JSONB |
-| new_values | JSONB |
-| ip_address | VARCHAR(100) |
-| user_agent | TEXT |
-| created_at | TIMESTAMP |
+| Column          | Type         |
+| --------------- | ------------ |
+| id              | UUID         |
+| organization_id | UUID         |
+| user_type       | VARCHAR(30)  |
+| user_id         | UUID         |
+| action          | VARCHAR(150) |
+| entity_type     | VARCHAR(100) |
+| entity_id       | UUID         |
+| old_values      | JSONB        |
+| new_values      | JSONB        |
+| ip_address      | VARCHAR(100) |
+| user_agent      | TEXT         |
+| created_at      | TIMESTAMP    |
 
 ---
 
@@ -2090,18 +2097,18 @@ The notification system currently supports in-app notifications and is designed 
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| recipient_type | VARCHAR(30) |
-| recipient_id | UUID |
+| Column            | Type         |
+| ----------------- | ------------ |
+| id                | UUID         |
+| organization_id   | UUID         |
+| recipient_type    | VARCHAR(30)  |
+| recipient_id      | UUID         |
 | notification_type | VARCHAR(100) |
-| title | VARCHAR(255) |
-| message | TEXT |
-| is_read | BOOLEAN |
-| read_at | TIMESTAMP |
-| created_at | TIMESTAMP |
+| title             | VARCHAR(255) |
+| message           | TEXT         |
+| is_read           | BOOLEAN      |
+| read_at           | TIMESTAMP    |
+| created_at        | TIMESTAMP    |
 
 ---
 
@@ -2147,19 +2154,19 @@ This allows new configuration options to be added without requiring database sch
 
 ## Columns
 
-| Column | Type |
-|---------|------|
-| id | UUID |
-| organization_id | UUID |
-| branding | JSONB |
-| terminology | JSONB |
-| portal | JSONB |
-| workflow | JSONB |
-| documents | JSONB |
-| notifications | JSONB |
-| feature_flags | JSONB |
-| created_at | TIMESTAMP |
-| updated_at | TIMESTAMP |
+| Column          | Type      |
+| --------------- | --------- |
+| id              | UUID      |
+| organization_id | UUID      |
+| branding        | JSONB     |
+| terminology     | JSONB     |
+| portal          | JSONB     |
+| workflow        | JSONB     |
+| documents       | JSONB     |
+| notifications   | JSONB     |
+| feature_flags   | JSONB     |
+| created_at      | TIMESTAMP |
+| updated_at      | TIMESTAMP |
 
 ---
 
@@ -2346,7 +2353,7 @@ applicants
 
 ↓
 
-applicant_accounts
+portal_accounts
 
 ↓
 
@@ -2414,16 +2421,16 @@ document_versions
 
 Foreign keys should use the following delete rules.
 
-| Relationship | On Delete |
-|--------------|-----------|
-| Organization → Staff | RESTRICT |
-| Organization → Applicant | RESTRICT |
-| Staff → Staff Account | CASCADE |
-| Applicant → Applicant Account | CASCADE |
-| Applicant → Documents | RESTRICT |
-| Document → Versions | CASCADE |
-| Workflow → Workflow Stages | CASCADE |
-| Role → Role Permissions | CASCADE |
+| Relationship                  | On Delete |
+| ----------------------------- | --------- |
+| Organization → Staff          | RESTRICT  |
+| Organization → Applicant      | RESTRICT  |
+| Staff → Staff Account         | CASCADE   |
+| Applicant → Applicant Account | CASCADE   |
+| Applicant → Documents         | RESTRICT  |
+| Document → Versions           | CASCADE   |
+| Workflow → Workflow Stages    | CASCADE   |
+| Role → Role Permissions       | CASCADE   |
 
 Business records should generally use `RESTRICT`.
 

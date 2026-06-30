@@ -1,29 +1,23 @@
 # CHANGELOG
 
-## Sprint 6.2
+## Sprint 6.2.5
 
 ### Added
 
-- Applicant backend module
-- Applicant controller
-- Applicant service
-- Applicant repository
-- Applicant DTOs
-- CRUD API
-- Pagination
-- Search
-- Filtering
-- Sorting
-- Swagger documentation
+- Shared Axios HTTP client
+- Global API response types
+- Query Provider
+- Query Keys
+- Error normalization
+- Environment configuration
+
+### Refactored
+
+- Consolidated all services onto one HTTP client
+- Removed duplicate fetch API client
 
 ### Improved
 
-- Applicant creation transaction
-- Audit logging
-- Soft delete
-- Organization isolation
-
-### Tested
-
-- Service unit tests
-- Repository integration tests
+- Cookie authentication support
+- Retry policy
+- Pagination consistency
