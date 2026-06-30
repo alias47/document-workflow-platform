@@ -1,135 +1,107 @@
 # TASK.md
 
-# Sprint 4 – UX Completion Layer
+# Sprint 4.1 – Frontend Infrastructure Completion
 
 ## Objective
 
-Improve interaction quality, usability consistency, and feedback states across the existing application.
-
-No new features or pages should be introduced.
-
-Focus only on UX polish of existing UI built in Sprint 1–3.5.
+Prepare the frontend for backend integration without introducing real API communication.
 
 ---
 
 ## Scope
 
-### 1. Form UX Improvements
+### Service Layer
 
-Apply across:
+Create reusable services:
 
-- Login
-- Forgot Password
-- Reset Password
-- Applicant Filters/Search
-
-Enhancements:
-
-- Loading state on submit buttons
-- Disabled state when submitting
-- Disabled state when form is invalid
-- Consistent error message styling
-- Success feedback states where missing
+- api-client.ts
+- auth.service.ts
+- applicant.service.ts
+- dashboard.service.ts
 
 ---
 
-### 2. Password UX (Reset Password Page)
+### Environment
 
-Enhancements:
+Create:
 
-- Password strength meter (visual only)
-- Password requirements checklist:
-  - Minimum 8 characters
-  - At least 1 uppercase letter
-  - At least 1 number
-  - At least 1 special character
-- Real-time password match indicator
+src/lib/env.ts
 
----
+Support:
 
-### 3. Applicants Table UX
-
-Enhancements:
-
-- Row hover highlighting
-- Checkbox selection (single + multi-select)
-- Bulk action bar (UI only):
-  - Archive Selected
-  - Export Selected
-- Improved empty state design
+- NEXT_PUBLIC_API_URL
+- NEXT_PUBLIC_APP_NAME
+- NEXT_PUBLIC_ENV
 
 ---
 
-### 4. Feedback System Standardization
+### Authentication
 
-Ensure consistent UX for:
+Create:
 
-- Success toast
-- Error toast
-- Info toast
-- Loading indicators
-
-All actions must provide user feedback (even in mock mode).
+- AuthProvider
+- mock authentication
+- auth context
 
 ---
 
-### 5. Dashboard Micro UX Improvements
+### Route Protection
 
-Enhancements:
+Prepare protected routes:
 
-- Improve visibility of trend indicators
-- Add hover feedback on stat cards
-- Optional subtle animation for activity feed items
+- dashboard
+- applicants
+
+Public:
+
+- login
+- forgot-password
+- reset-password
+
+---
+
+### Loading UI
+
+Add:
+
+loading.tsx
+
+where appropriate.
+
+---
+
+### Error UI
+
+Add:
+
+error.tsx
+
+where appropriate.
+
+---
+
+### Empty States
+
+Standardize empty state components.
+
+---
+
+### Skeletons
+
+Create reusable skeleton loaders.
 
 ---
 
 ## Rules
 
-- Do NOT create new pages
-- Do NOT add backend logic
-- Do NOT add API integration
-- Do NOT change architecture or folder structure
-- Do NOT introduce new libraries
-- Use existing components only
-- Keep changes inside existing feature modules
+No backend.
 
----
+No JWT.
 
-## Out of Scope
+No API integration.
 
-- Backend development
-- Authentication logic
-- File uploads
-- Workflow engine
-- Notifications system
-- New UI modules
+No business logic changes.
 
----
+No UI redesign.
 
-## Definition of Done
-
-- All forms have loading + disabled states
-- Password UX is fully enhanced
-- Applicants table supports selection + bulk UI
-- Toast system is consistent
-- Dashboard interactions improved
-- No missing UX feedback states
-- No architecture changes introduced
-
----
-
-## Validation
-
-Run before completion:
-
-pnpm lint
-pnpm type-check
-pnpm build
-
----
-
-## Output Required
-
-- List of UX improvements implemented
-- Files modified
-- Any inconsistencies found
+Architecture only.

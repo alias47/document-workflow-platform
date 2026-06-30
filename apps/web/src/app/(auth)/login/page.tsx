@@ -1,15 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
+import { useAuth } from '@/hooks/use-auth';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
+  const router = useRouter();
   const { toast } = useToast();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,13 +34,23 @@ export default function LoginPage() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setLoading(false);
-    toast({
-      type: 'error',
-      title: 'Sign in failed',
-      message: 'Invalid email or password. Please try again.',
-    });
+    try {
+      await login(email, password);
+      toast({
+        type: 'success',
+        title: 'Signed in',
+        message: 'Redirecting to dashboard...',
+      });
+      router.push('/dashboard');
+    } catch (err) {
+      toast({
+        type: 'error',
+        title: 'Sign in failed',
+        message: err instanceof Error ? err.message : 'Invalid email or password.',
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   function prefill(role: 'admin' | 'applicant') {
