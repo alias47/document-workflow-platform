@@ -1,158 +1,120 @@
 # TASK.md
 
-# Sprint 5.1 – Authentication Backend
+# Sprint 6.1 – Applicant Database & Domain
 
 ## Objective
 
-Implement the authentication foundation for the platform.
+Implement the Applicant domain models in Prisma according to the project documentation.
 
-This sprint establishes secure authentication and authorization for future business modules.
+This sprint focuses only on the database layer.
 
-No Applicant, Document, or Workflow logic should be implemented.
+No API or frontend changes.
 
 ---
 
-## Documentation
-
-Read before implementation:
+## Read Before Starting
 
 - CLAUDE.md
 - docs/04_DOMAIN_MODEL.md
 - docs/05_DATABASE_DESIGN.md
-- docs/06_API_SPECIFICATION.md
 - docs/08_BACKEND_ARCHITECTURE.md
-- docs/10_SECURITY_GUIDELINES.md
-- docs/15_CODING_STANDARDS.md
-- docs/16_ERROR_HANDLING.md
 
 ---
 
 ## Scope
 
-### Prisma Models
+### Applicant Models
 
-Implement only authentication-related models:
+Implement only the models required for Applicant management.
 
-- Organization
-- Staff
-- Role
-- Permission
-- PortalAccount
-- RefreshToken
+Expected models (verify against documentation):
 
-Include:
+- Applicant
+- ApplicantAssignment
+- ApplicantTimeline
+- ApplicantNote
+- ApplicantTag (if documented)
 
-- UUID primary keys
+Create all relationships.
+
+---
+
+### Applicant Fields
+
+Implement documented fields such as:
+
+- UUID id
+- organizationId
+- applicantNumber
+- firstName
+- lastName
+- email
+- phone
+- status
+- currentStage
+- assignedStaffId
+- createdById
 - createdAt
 - updatedAt
 - deletedAt
-- organizationId (where applicable)
 
-Create proper relationships and indexes.
-
----
-
-### NestJS Modules
-
-Create:
-
-- auth
-- organization
-- staff
-- common
-
-Follow the documented module structure:
-
-controllers/
-services/
-repositories/
-dto/
-entities/
-interfaces/
-validators/
-tests/
+Do not invent fields. Follow the documentation.
 
 ---
 
-### Authentication
+### Relationships
 
-Implement:
+Connect:
 
-- Login
-- Logout
-- Refresh Access Token
-- Change Password
-- Forgot Password (provider interface only)
-- Reset Password
+- Organization
+- Staff (creator)
+- Staff (assigned)
+- Timeline
+- Notes
 
-Use:
-
-- JWT Access Tokens
-- JWT Refresh Tokens
-- Argon2 password hashing
+Use proper foreign keys and indexes.
 
 ---
 
-### Authorization
+### Enums
 
-Implement:
+Implement documented enums only, for example:
 
-- JwtAuthGuard
-- RolesGuard
-- PermissionsGuard
+- ApplicantStatus
+- WorkflowStage
 
-Create decorators:
-
-- @CurrentUser()
-- @Roles()
-- @Permissions()
+Do not create extra enums unless specified.
 
 ---
 
-### Providers
+### Migrations
 
-Create interfaces only:
+Generate Prisma migration.
 
-- EmailProvider
-- TokenProvider
+Verify migration applies successfully.
 
-Business logic must depend on interfaces.
+---
+
+### Seed
+
+Update seed data with:
+
+- Sample applicants
+- Assignments
+- Timeline entries
+
+Use realistic development data.
 
 ---
 
 ### Validation
 
-Use:
+Verify:
 
-- class-validator
-- ValidationPipe
-- DTOs for every endpoint
-
----
-
-### API
-
-Implement the endpoints documented in the API specification.
-
-Keep Swagger synchronized.
-
----
-
-### Error Handling
-
-Use the project's global exception strategy.
-
-No controller should format errors manually.
-
----
-
-### Testing
-
-Add:
-
-- AuthService unit tests
-- Login integration tests
-- Password hashing tests
+- Prisma schema validates
+- Migration succeeds
+- Prisma client generates
+- Seed executes successfully
 
 ---
 
@@ -160,11 +122,13 @@ Add:
 
 Do NOT implement:
 
-- Applicant module
-- Document module
-- Workflow
-- Notifications
-- Dashboard APIs
+- Controllers
+- Services
+- DTOs
+- API endpoints
+- React Query
 - Frontend integration
+- File uploads
+- Workflow engine
 
-Authentication only.
+Database only.

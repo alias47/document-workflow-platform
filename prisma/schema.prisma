@@ -1,6 +1,5 @@
 generator client {
-  provider      = "prisma-client-js"
-  output        = "../node_modules/@prisma/client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -28,6 +27,14 @@ enum PortalAccountStatus {
   locked
 }
 
+// Applicant lifecycle status. Domain doc §9 defines "Current Status" generically;
+// values kept industry-neutral (no Student/Candidate terms leak into the backend).
+enum ApplicantStatus {
+  active
+  inactive
+  archived
+}
+
 // ---------------------------------------------------------------------------
 // ORGANIZATION
 // ---------------------------------------------------------------------------
@@ -48,8 +55,10 @@ model Organization {
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
-  staff Staff[]
-  roles Role[]
+  staff       Staff[]
+  roles       Role[]
+  applicants  Applicant[]
+  assignments ApplicantAssignment[]
 
   @@map("organizations")
 }
@@ -68,7 +77,7 @@ model Role {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
-  organization Organization    @relation(fields: [organizationId], references: [id])
+  organization Organization     @relation(fields: [organizationId], references: [id])
   staff        Staff[]
   permissions  RolePermission[]
 
@@ -128,10 +137,12 @@ model Staff {
   updatedAt         DateTime    @updatedAt
   deletedAt         DateTime?
 
-  organization        Organization         @relation(fields: [organizationId], references: [id])
-  role                Role                 @relation(fields: [roleId], references: [id])
+  organization        Organization          @relation(fields: [organizationId], references: [id])
+  role                Role                  @relation(fields: [roleId], references: [id])
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  assignments         ApplicantAssignment[] @relation("AssignedStaff")
+  assignmentsMade     ApplicantAssignment[] @relation("AssignedByStaff")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -211,11 +222,13 @@ model AuditLog {
 model PortalAccount {
   id                  String              @id @default(uuid()) @db.Uuid
   organizationId      String              @db.Uuid
+  applicantId         String?             @unique @db.Uuid
   email               String
   passwordHash        String?
   status              PortalAccountStatus @default(pending)
   invitationToken     String?             @unique
   invitationExpiresAt DateTime?
+  activatedAt         DateTime?
   failedAttempts      Int                 @default(0)
   lockedUntil         DateTime?
   mustChangePass      Boolean             @default(true)
@@ -225,9 +238,77 @@ model PortalAccount {
   updatedAt           DateTime            @updatedAt
   deletedAt           DateTime?
 
+  applicant Applicant? @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
   @@unique([organizationId, email])
   @@index([organizationId])
   @@index([email])
   @@index([invitationToken])
   @@map("portal_accounts")
+}
+
+// ---------------------------------------------------------------------------
+// APPLICANT (domain doc §9, DB design §13.1)
+// ---------------------------------------------------------------------------
+
+model Applicant {
+  id              String          @id @default(uuid()) @db.Uuid
+  organizationId  String          @db.Uuid
+  applicantNumber String          @unique
+  firstName       String
+  middleName      String?
+  lastName        String
+  gender          String?
+  dateOfBirth     DateTime?       @db.Date
+  nationality     String?
+  email           String?
+  phone           String?
+  address         String?
+  city            String?
+  country         String?
+  status          ApplicantStatus @default(active)
+  createdAt       DateTime        @default(now())
+  createdBy       String?         @db.Uuid
+  updatedAt       DateTime        @updatedAt
+  updatedBy       String?         @db.Uuid
+  deletedAt       DateTime?
+  deletedBy       String?         @db.Uuid
+
+  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  portalAccount PortalAccount?
+  assignments   ApplicantAssignment[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@index([applicantNumber])
+  @@index([status])
+  @@index([lastName])
+  @@index([email])
+  @@index([organizationId, status])
+  @@map("applicants")
+}
+
+// ---------------------------------------------------------------------------
+// APPLICANT ASSIGNMENT (domain doc §11, DB design §13.3)
+// ---------------------------------------------------------------------------
+
+model ApplicantAssignment {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @db.Uuid
+  applicantId    String   @db.Uuid
+  staffId        String   @db.Uuid
+  assignedBy     String?  @db.Uuid
+  assignedAt     DateTime @default(now())
+  isPrimary      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  applicant       Applicant    @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  staff           Staff        @relation("AssignedStaff", fields: [staffId], references: [id], onDelete: Restrict)
+  assignedByStaff Staff?       @relation("AssignedByStaff", fields: [assignedBy], references: [id], onDelete: SetNull)
+
+  @@index([applicantId])
+  @@index([staffId])
+  @@index([organizationId])
+  @@map("applicant_assignments")
 }

@@ -122,6 +122,91 @@ async function main(): Promise<void> {
     update: {},
   });
   console.log(`Admin staff: ${adminStaff.email} (${adminStaff.id})`);
+
+  // --- Sample applicants (with portal accounts + assignment to admin staff) ---
+  const SAMPLE_APPLICANTS = [
+    {
+      applicantNumber: 'APP-2026-0001',
+      firstName: 'Aarav',
+      lastName: 'Sharma',
+      gender: 'male',
+      dateOfBirth: new Date('1999-04-12'),
+      nationality: 'Nepali',
+      email: 'aarav.sharma@example.com',
+      phone: '+977-9800000001',
+      city: 'Kathmandu',
+      country: 'Nepal',
+    },
+    {
+      applicantNumber: 'APP-2026-0002',
+      firstName: 'Mei',
+      middleName: 'Ling',
+      lastName: 'Chen',
+      gender: 'female',
+      dateOfBirth: new Date('2001-09-30'),
+      nationality: 'Chinese',
+      email: 'mei.chen@example.com',
+      phone: '+86-13800000002',
+      city: 'Chengdu',
+      country: 'China',
+    },
+    {
+      applicantNumber: 'APP-2026-0003',
+      firstName: 'Daniel',
+      lastName: 'Okeke',
+      gender: 'male',
+      dateOfBirth: new Date('1997-01-22'),
+      nationality: 'Nigerian',
+      email: 'daniel.okeke@example.com',
+      phone: '+234-8030000003',
+      city: 'Lagos',
+      country: 'Nigeria',
+    },
+  ];
+
+  for (const data of SAMPLE_APPLICANTS) {
+    const applicant = await prisma.applicant.upsert({
+      where: { applicantNumber: data.applicantNumber },
+      create: {
+        organizationId: orgId,
+        createdBy: adminStaff.id,
+        status: 'active',
+        ...data,
+      },
+      update: {},
+    });
+
+    // One portal account per applicant (pending invitation — staff-driven onboarding)
+    await prisma.portalAccount.upsert({
+      where: { applicantId: applicant.id },
+      create: {
+        organizationId: orgId,
+        applicantId: applicant.id,
+        email: data.email,
+        status: 'pending',
+        mustChangePass: true,
+      },
+      update: {},
+    });
+
+    // Primary assignment to the admin staff member
+    const existingAssignment = await prisma.applicantAssignment.findFirst({
+      where: { applicantId: applicant.id, staffId: adminStaff.id },
+    });
+    if (!existingAssignment) {
+      await prisma.applicantAssignment.create({
+        data: {
+          organizationId: orgId,
+          applicantId: applicant.id,
+          staffId: adminStaff.id,
+          assignedBy: adminStaff.id,
+          isPrimary: true,
+        },
+      });
+    }
+  }
+  console.log(`Applicants: ${SAMPLE_APPLICANTS.length} seeded (with portal accounts + assignments)`);
+
   console.log(`\nSeed complete.`);
   console.log(`DEFAULT_ORG_ID=${orgId}`);
   console.log(`Admin login: admin@example.com / ${adminPassword} (change on first login)`);

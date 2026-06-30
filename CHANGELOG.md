@@ -1,24 +1,20 @@
 # CHANGELOG
 
-## Sprint 5.1 – Authentication Backend
+## Sprint 6.1
 
-### Started
+### Added
 
-Authentication backend implementation.
+- Applicant database domain
+- ApplicantAssignment model
+- Applicant ↔ PortalAccount relationship
+- ApplicantStatus enum
+- Prisma migration
+- Seed data
 
-Scope:
+### Updated
 
-- Prisma authentication models
-- NestJS authentication modules
-- JWT authentication
-- Argon2 password hashing
-- Refresh tokens
-- RBAC foundation
-- Provider interfaces
-- DTO validation
-- Swagger documentation
-- Authentication tests
+- PortalAccount linked to Applicant
 
-Next:
+### Fixed
 
-Sprint 6 – Organization & Staff Management
+- Prisma generator output configuration

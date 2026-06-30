@@ -11,7 +11,8 @@
       "Bash(/Users/devfinityiosdevelopement/Desktop/Apps/document-workflow-platform/node_modules/.bin/eslint --version)",
       "Bash(grep -v \"^$\")",
       "Bash(pnpm -w exec eslint apps/web/src/features/applicants/components/ApplicantTable.tsx apps/web/src/features/applicants/components/ApplicantTableRow.tsx --no-warn-ignored --fix)",
-      "Bash(npx jest *)"
+      "Bash(npx jest *)",
+      "Bash(npx prisma *)"
     ]
   }
 }
