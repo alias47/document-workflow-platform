@@ -9,7 +9,8 @@
       "Bash(node -e \"console.log\\(require\\('./packages/eslint-config/node_modules/eslint/package.json'\\).version\\)\")",
       "Bash(pnpm list *)",
       "Bash(/Users/devfinityiosdevelopement/Desktop/Apps/document-workflow-platform/node_modules/.bin/eslint --version)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(pnpm -w exec eslint apps/web/src/features/applicants/components/ApplicantTable.tsx apps/web/src/features/applicants/components/ApplicantTableRow.tsx --no-warn-ignored --fix)"
     ]
   }
 }

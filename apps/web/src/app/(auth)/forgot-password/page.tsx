@@ -1,100 +1,336 @@
 'use client';
 
-import { ArrowLeft, CheckCircle, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Logo } from '@/components/ui/logo';
+import { useToast } from '@/components/ui/toast';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ForgotPasswordPage() {
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [sentTo, setSentTo] = useState('');
+
+  function validate(): boolean {
+    if (!email) {
+      setEmailError('Please enter your email address.');
+      return false;
+    }
+    if (!EMAIL_RE.test(email)) {
+      setEmailError('Please enter a valid email address.');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!validate()) return;
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 1200));
+    setLoading(false);
+    setSentTo(email);
+    setSubmitted(true);
+  }
+
+  async function handleResend() {
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    setLoading(false);
+    toast({ type: 'info', title: 'Email resent', message: `Reset link sent again to ${sentTo}.` });
+  }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
-      <div className="w-full max-w-[420px]">
-        <div className="mb-8">
-          <Logo size="md" />
-        </div>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#F8FAFC',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+      }}
+    >
+      <div style={{ width: '100%', maxWidth: '420px' }}>
+        <div
+          style={{
+            width: '100%',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '18px',
+            boxShadow: '0 10px 15px rgba(15, 23, 42, 0.07), 0 4px 6px rgba(15, 23, 42, 0.04)',
+            padding: '32px',
+          }}
+        >
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                background: '#2563EB',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 19 19" fill="none" aria-hidden="true">
+                <path
+                  d="M3.5 5h12M3.5 9.5h8M3.5 14h10"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            <span
+              style={{
+                fontSize: '18px',
+                fontWeight: 800,
+                color: '#0F172A',
+                letterSpacing: '-0.3px',
+              }}
+            >
+              EduFlow
+            </span>
+          </div>
 
-        <div className="bg-white rounded-[16px] border border-[#E2E8F0] shadow-sm p-8">
           {submitted ? (
-            <div className="text-center">
-              <div className="flex justify-center mb-5">
-                <div className="w-14 h-14 rounded-full bg-[#DCFCE7] flex items-center justify-center">
-                  <CheckCircle size={28} className="text-[#16A34A]" />
-                </div>
+            /* Success state */
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  background: '#DCFCE7',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 20px',
+                  color: '#16A34A',
+                }}
+              >
+                <svg
+                  width="30"
+                  height="30"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
               </div>
-              <h1 className="text-xl font-bold text-[#0F172A] mb-2">Check your email</h1>
-              <p className="text-sm text-[#64748B] leading-relaxed mb-6">
-                We&apos;ve sent password reset instructions to your email address. Please check your
-                inbox and follow the link to reset your password.
+              <h2
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 800,
+                  color: '#0F172A',
+                  marginBottom: '8px',
+                }}
+              >
+                Check your email
+              </h2>
+              <p
+                style={{
+                  fontSize: '12.5px',
+                  color: '#64748B',
+                  lineHeight: 1.7,
+                  marginBottom: '24px',
+                }}
+              >
+                We&apos;ve sent a password reset link to{' '}
+                <strong style={{ color: '#0F172A' }}>{sentTo}</strong>. The link will expire in 30
+                minutes.
               </p>
-              <p className="text-xs text-[#94A3B8] mb-6">
-                Didn&apos;t receive the email?{' '}
+              <p style={{ fontSize: '11px', color: '#94A3B8' }}>
+                Didn&apos;t receive it? Check your spam folder or{' '}
                 <button
                   type="button"
-                  className="text-[#2563EB] font-medium hover:text-[#1D4ED8] transition-colors"
-                  onClick={() => setSubmitted(false)}
+                  disabled={loading}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#2563EB',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: 'inherit',
+                    padding: 0,
+                    opacity: loading ? 0.5 : 1,
+                  }}
+                  onClick={handleResend}
                 >
-                  Try again
+                  resend the email
                 </button>
+                .
               </p>
-              <Link href="/login">
-                <Button variant="secondary" size="md" className="w-full">
-                  Back to sign in
-                </Button>
+              <Link
+                href="/login"
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  fontSize: '12.5px',
+                  color: '#64748B',
+                  marginTop: '20px',
+                  textDecoration: 'none',
+                }}
+              >
+                ← Back to sign in
               </Link>
             </div>
           ) : (
+            /* Default state */
             <>
-              <div className="mb-6">
-                <h1 className="text-xl font-bold text-[#0F172A] mb-1.5">Forgot your password?</h1>
-                <p className="text-sm text-[#64748B]">
-                  Enter your email address and we&apos;ll send you a link to reset your password.
-                </p>
-              </div>
-
-              <form
-                className="space-y-5"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setSubmitted(true);
+              <h1
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 800,
+                  color: '#0F172A',
+                  letterSpacing: '-0.5px',
+                  marginBottom: '4px',
                 }}
               >
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email address</Label>
-                  <div className="relative">
-                    <Mail
-                      size={16}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none"
-                    />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@organization.com"
-                      autoComplete="email"
-                      className="pl-10"
-                    />
-                  </div>
+                Forgot password?
+              </h1>
+              <p
+                style={{
+                  fontSize: '12.5px',
+                  color: '#64748B',
+                  lineHeight: 1.7,
+                  marginBottom: '24px',
+                }}
+              >
+                Enter the email address you use to sign in. We&apos;ll send a reset link to your
+                inbox.
+              </p>
+
+              {/* Error banner */}
+              {emailError && (
+                <div
+                  role="alert"
+                  aria-live="polite"
+                  style={{
+                    padding: '12px 16px',
+                    background: '#FFE4E6',
+                    border: '1px solid #FECDD3',
+                    borderRadius: '8px',
+                    color: '#DC2626',
+                    fontSize: '14px',
+                    marginBottom: '20px',
+                  }}
+                >
+                  {emailError}
+                </div>
+              )}
+
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  marginBottom: '20px',
+                }}
+              >
+                <div>
+                  <label
+                    htmlFor="fp-email"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      color: '#0F172A',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    Email address
+                  </label>
+                  <input
+                    id="fp-email"
+                    name="email"
+                    type="email"
+                    placeholder="you@consultancy.com"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError('');
+                    }}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '10px 14px',
+                      background: '#F8FAFC',
+                      border: emailError ? '1.5px solid #EF4444' : '1.5px solid #E2E8F0',
+                      borderRadius: '10px',
+                      fontSize: '14px',
+                      fontFamily: 'inherit',
+                      outline: 'none',
+                      transition: 'border-color 0.2s, box-shadow 0.2s',
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = '#2563EB';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = emailError ? '#EF4444' : '#E2E8F0';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  />
                 </div>
 
-                <Button type="submit" size="lg" className="w-full">
-                  Send reset link
-                </Button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: '#2563EB',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    fontFamily: 'inherit',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    opacity: loading ? 0.7 : 1,
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!loading) e.currentTarget.style.background = '#1D4ED8';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#2563EB';
+                  }}
+                >
+                  {loading ? 'Sending…' : 'Send reset link'}
+                </button>
               </form>
 
-              <div className="mt-6 text-center">
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-1.5 text-sm text-[#64748B] hover:text-[#1E293B] transition-colors"
-                >
-                  <ArrowLeft size={14} />
-                  Back to sign in
-                </Link>
-              </div>
+              <Link
+                href="/login"
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  fontSize: '12.5px',
+                  color: '#64748B',
+                  marginTop: '20px',
+                  textDecoration: 'none',
+                }}
+              >
+                ← Back to sign in
+              </Link>
             </>
           )}
         </div>

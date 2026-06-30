@@ -460,32 +460,15 @@ Claude should:
 - Avoid copying raw HTML directly.
 - Use the project's design system and shared components.
 
-## Current Sprint
+## UI Design Source of Truth
 
-Current Focus:
+The HTML prototypes in `apps/frontend` are the official visual reference for the application.
 
-- Frontend Foundation
+When implementing any page:
 
-Current Goal:
-
-- Convert the HTML prototypes in `apps/frontend` into reusable Next.js pages.
-- Build the application shell.
-- Implement authentication UI.
-
-In Scope:
-
-- App layout
-- Sidebar
-- Header
-- Login
-- Register
-- Forgot Password
-- Reset Password
-
-Out of Scope:
-
-- Backend implementation
-- Prisma integration
-- Authentication API
-- Database
-- File uploads
+1. Locate the corresponding HTML prototype.
+2. Analyze its layout, spacing, typography, colors, icons, and interactions.
+3. Recreate the design using React, Next.js, Tailwind CSS, and shadcn/ui.
+4. Do not copy the HTML directly.
+5. Extract reusable components instead of duplicating markup.
+6. Maintain pixel-level visual consistency wherever practical.

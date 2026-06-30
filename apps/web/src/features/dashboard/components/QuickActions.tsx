@@ -1,6 +1,9 @@
+'use client';
+
 import { FileUp, FolderPlus, LayoutList, UserPlus } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/components/ui/toast';
 
 const ACTIONS = [
   {
@@ -9,7 +12,11 @@ const ACTIONS = [
     description: 'Add a new applicant to the system',
     icon: UserPlus,
     colorClass: 'bg-[#DBEAFE] text-[#2563EB]',
-    href: '/applicants/new',
+    toast: {
+      type: 'info' as const,
+      title: 'Coming soon',
+      message: 'Create Applicant will be available once the backend is connected.',
+    },
   },
   {
     id: 'upload-document',
@@ -17,7 +24,11 @@ const ACTIONS = [
     description: 'Upload documents for an applicant',
     icon: FileUp,
     colorClass: 'bg-[#EDE9FE] text-[#7C3AED]',
-    href: '/documents/upload',
+    toast: {
+      type: 'info' as const,
+      title: 'Coming soon',
+      message: 'Document upload will be available once the backend is connected.',
+    },
   },
   {
     id: 'assign-task',
@@ -25,7 +36,11 @@ const ACTIONS = [
     description: 'Create and assign a new task',
     icon: LayoutList,
     colorClass: 'bg-[#FEF3C7] text-[#D97706]',
-    href: '/tasks/new',
+    toast: {
+      type: 'info' as const,
+      title: 'Coming soon',
+      message: 'Task assignment will be available once the backend is connected.',
+    },
   },
   {
     id: 'view-reports',
@@ -33,7 +48,11 @@ const ACTIONS = [
     description: 'Review workflow and activity reports',
     icon: FolderPlus,
     colorClass: 'bg-[#DCFCE7] text-[#16A34A]',
-    href: '/reports',
+    toast: {
+      type: 'info' as const,
+      title: 'Coming soon',
+      message: 'Reports will be available once the backend is connected.',
+    },
   },
 ] as const;
 
@@ -42,6 +61,8 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ className }: QuickActionsProps) {
+  const { toast } = useToast();
+
   return (
     <Card className={className}>
       <CardHeader>
@@ -55,7 +76,8 @@ export function QuickActions({ className }: QuickActionsProps) {
               <button
                 key={action.id}
                 type="button"
-                className="flex flex-col items-start gap-2 p-3 rounded-[10px] border border-[#E2E8F0] hover:border-[#2563EB] hover:bg-[#F8FAFC] transition-colors text-left group"
+                onClick={() => toast(action.toast)}
+                className="flex flex-col items-start gap-2 p-3 rounded-[10px] border border-[#E2E8F0] hover:border-[#2563EB] hover:bg-[#F8FAFC] active:bg-[#EFF6FF] transition-colors text-left group"
                 aria-label={action.label}
               >
                 <div
