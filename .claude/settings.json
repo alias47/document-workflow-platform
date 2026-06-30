@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --filter @repo/api type-check)",
+      "Bash(DATABASE_URL=postgresql://postgres:postgres@localhost:5432/document_workflow NODE_ENV=development pnpm --filter @repo/api dev)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/eslint/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./apps/api/node_modules/eslint/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./packages/eslint-config/node_modules/eslint/package.json'\\).version\\)\")",
+      "Bash(pnpm list *)",
+      "Bash(/Users/devfinityiosdevelopement/Desktop/Apps/document-workflow-platform/node_modules/.bin/eslint --version)",
+      "Bash(grep -v \"^$\")"
+    ]
+  }
+}

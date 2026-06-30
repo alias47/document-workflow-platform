@@ -1,0 +1,57 @@
+{
+  "name": "document-workflow-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Document Workflow Platform – monorepo root",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\" --ignore-path .gitignore",
+    "type-check": "turbo type-check",
+    "clean": "turbo clean && find . -name node_modules -type d -prune -exec rm -rf {} + 2>/dev/null; true",
+    "prepare": "husky",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "dotenv -e .env -- ts-node --project apps/api/tsconfig.json prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "dotenv-cli": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import-x": "^4.6.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.4.2",
+    "prisma": "6.19.3",
+    "ts-node": "^10.9.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.3"
+  },
+  "lint-staged": {
+    "{apps,packages}/**/*.{ts,tsx}": [
+      "eslint --fix --no-warn-ignored --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{js,mjs,json,md,css}": [
+      "prettier --write"
+    ],
+    "{apps,packages}/**/*.{js,mjs,json,css}": [
+      "prettier --write"
+    ]
+  },
+  "packageManager": "pnpm@11.9.0"
+}
