@@ -1,32 +1,32 @@
-# Sprint 8.1
+# Sprint 8.2
 
 ## Database
 
-- Added WorkflowStage model
-- Added ApplicantWorkflow model
-- Added WorkflowHistory model
-- Added relationships
-- Added indexes
+- Added searchable metadata to Document
 - Added migration
-- Updated seed data
+- Updated seed
 
 ## Backend
 
-- Added Workflow module
-- Added repository
-- Added service
-- Added controller
-- Added DTOs
-- Added RBAC permissions
-- Added transaction-based stage transitions
-- Added audit logging
-- Added workflow history
+- Added SearchModule
+- Added SearchProvider abstraction
+- Added PrismaSearchProvider
+- Added search endpoint
+- Added organization-scoped search
+
+## Frontend
+
+- Added search service
+- Added React Query hooks
+- Added SearchBar
+- Added SearchResults
+- Added loading, empty and error states
 
 ## Quality
 
 - Added unit tests
+- Added provider tests
 - Added repository tests
-- Added controller tests
 
 ## Validation
 

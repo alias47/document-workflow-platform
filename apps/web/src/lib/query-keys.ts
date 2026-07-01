@@ -40,6 +40,11 @@ export const queryKeys = {
     lists: () => [...queryKeys.notifications.all, 'list'] as const,
   },
 
+  search: {
+    all: ['search'] as const,
+    results: (params: Record<string, unknown>) => [...queryKeys.search.all, params] as const,
+  },
+
   dashboard: {
     all: ['dashboard'] as const,
     summary: () => [...queryKeys.dashboard.all, 'summary'] as const,

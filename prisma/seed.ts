@@ -27,6 +27,8 @@ const PERMISSIONS = [
     description: 'Update workflow stages and move applicants between stages',
   },
   { action: 'workflow.archive', description: 'Archive (soft-delete) workflow stages' },
+  // Search
+  { action: 'search.view', description: 'Use the global search feature' },
   // Audit
   { action: 'audit.view', description: 'View audit logs' },
   // Settings
@@ -111,7 +113,7 @@ async function main(): Promise<void> {
   // --- Consultant role (limited permissions) ---
   const consultantPerms = ['applicant.view', 'applicant.create', 'applicant.update',
     'document.view', 'document.create', 'document.update',
-    'workflow.view', 'workflow.update'];
+    'workflow.view', 'workflow.update', 'search.view'];
   const consultantRole = await prisma.role.upsert({
     where: { organizationId_name: { organizationId: orgId, name: 'Consultant' } },
     create: {
@@ -309,6 +311,9 @@ async function main(): Promise<void> {
           uploadedBy: adminStaff.id,
           category: 'identity',
           status: 'pending',
+          title: 'Passport',
+          description: 'Applicant passport document',
+          tags: ['identity', 'passport'],
           originalFilename: 'passport.pdf',
           storedFilename: `${applicant.id}-passport.pdf`,
           mimeType: 'application/pdf',

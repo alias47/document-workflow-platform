@@ -1,197 +1,167 @@
-# Sprint 8.1 – Workflow Domain (Database & Backend)
+# Sprint 8.2 – Search Foundation
 
 ## Goal
 
-Introduce the Applicant Workflow domain.
+Implement the platform-wide Search domain.
 
-This sprint establishes the workflow engine at the database and backend layers only.
+This sprint establishes a unified search architecture across Applicants, Documents, and Workflow using PostgreSQL-compatible Prisma queries (ILIKE), with an abstraction that can later be replaced by PostgreSQL Full Text Search without affecting consumers.
 
-No frontend changes.
-
----
-
-## Scope
-
-### Database
-
-Create:
-
-- WorkflowStage
-- ApplicantWorkflow
-- WorkflowHistory
-
-WorkflowStage stores the master list of stages.
-
-ApplicantWorkflow stores the applicant's current workflow state.
-
-WorkflowHistory stores immutable transition history.
+No Full Text Search implementation in this sprint.
 
 ---
 
-## Relationships
+# Scope
 
-Organization
-└── WorkflowStage[]
+## Database
 
-Applicant
-├── ApplicantWorkflow (1:1)
-└── WorkflowHistory[]
+Extend the Document model.
 
-Staff
-└── WorkflowHistory.changedBy
+Add:
 
----
-
-## WorkflowStage
-
-Fields
-
-- id
-- organizationId
-- name
+- title
 - description
-- color
-- icon
-- order
-- isDefault
-- isFinal
+- tags (String[])
 
-Audit fields
+Create migration.
 
-Soft delete
-
-Indexes
-
----
-
-## ApplicantWorkflow
-
-Fields
-
-- id
-- organizationId
-- applicantId
-- currentStageId
-- enteredStageAt
-- expectedCompletionDate
-- notes
-
-Audit fields
-
-Soft delete
-
-One workflow per applicant.
-
----
-
-## WorkflowHistory
-
-Immutable log.
-
-Fields
-
-- id
-- organizationId
-- applicantId
-- fromStageId
-- toStageId
-- changedBy
-- changedAt
-- comment
-
-No updates.
-
-Append only.
+Update seed data.
 
 ---
 
 ## Backend
 
-Create
+Create SearchModule.
 
-Workflow Module
+Create:
 
-Repository
+- SearchController
+- SearchService
+- SearchRepository
+- SearchProvider interface
+- PrismaSearchProvider implementation
 
-Service
+The service must depend only on SearchProvider.
 
-Controller
+---
 
-DTOs
+## Search Targets
+
+Applicants
+
+Search by:
+
+- applicantNumber
+- firstName
+- middleName
+- lastName
+- email
+- phone
+
+Documents
+
+Search by:
+
+- title
+- filename
+- description
+- tags
+- category
+
+Workflow
+
+Search by:
+
+- current stage name
 
 ---
 
 ## Endpoints
 
-GET /workflow/stages
+GET /search
 
-POST /workflow/stages
+Parameters
 
-PATCH /workflow/stages/:id
+q
 
-DELETE /workflow/stages/:id
+entity
 
-GET /workflow/:applicantId
+page
 
-PATCH /workflow/:applicantId
+pageSize
 
-GET /workflow/:applicantId/history
+Example
 
----
+/search?q=john
 
-## Business Rules
+/search?q=visa&entity=document
 
-Every applicant has exactly one current workflow.
-
-Changing stage must
-
-- update ApplicantWorkflow
-- insert WorkflowHistory
-- create AuditLog
-
-inside one transaction.
-
-Default stage automatically assigned to newly created applicants.
-
-Cannot move to deleted stages.
-
-Cannot delete a stage currently used by applicants.
+/search?q=approved&entity=workflow
 
 ---
 
 ## Permissions
 
-workflow.view
-
-workflow.create
-
-workflow.update
-
-workflow.archive
+search.view
 
 ---
 
-## Seed
+## Security
 
-Create default workflow stages
+Organization isolation.
 
-1. New Inquiry
-2. Documents Pending
-3. Documents Verified
-4. Offer Issued
-5. Offer Accepted
-6. Visa Processing
-7. Visa Approved
-8. Enrolled
-9. Closed
+Permission filtering.
 
-Grant permissions to Admin.
+Soft-deleted records excluded.
 
-Consultant receives
+---
 
-workflow.view
+## Frontend
 
-workflow.update
+Create
+
+services/search.service.ts
+
+features/search/
+
+hooks/
+
+components/
+
+SearchBar
+
+SearchResults
+
+SearchEmptyState
+
+SearchSkeleton
+
+React Query hooks.
+
+Use existing QueryProvider.
+
+No direct axios imports.
+
+---
+
+## UI
+
+Global search bar.
+
+Debounced search.
+
+300 ms debounce.
+
+URL persistence.
+
+Loading state.
+
+Empty state.
+
+Error state.
+
+Pagination.
+
+Entity filters.
 
 ---
 
@@ -199,11 +169,13 @@ workflow.update
 
 Repository
 
+Provider
+
 Service
 
 Controller
 
-Transaction tests
+Frontend hook tests
 
 Validation tests
 
@@ -219,20 +191,22 @@ pnpm type-check
 
 pnpm build
 
-All tests must pass.
+All tests pass.
 
 ---
 
 ## Out of Scope
 
-Kanban UI
+PostgreSQL Full Text Search
 
-Drag & Drop
+GIN indexes
 
-Workflow dashboard
+tsvector
 
-Analytics
+Ranking
 
-Automation
+Autocomplete
 
-Notifications
+Recent searches
+
+Search analytics

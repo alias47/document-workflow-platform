@@ -360,6 +360,9 @@ model Document {
   mimeType          String
   fileSize          Int
   storageKey        String
+  title             String?
+  description       String?
+  tags              String[]
   checksum          String?
   expiresAt         DateTime?
   verifiedAt        DateTime?
