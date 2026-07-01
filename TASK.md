@@ -1,187 +1,178 @@
-# Sprint 8.2 – Search Foundation
+# Sprint 8.3 – Applicant Notes
 
 ## Goal
 
-Implement the platform-wide Search domain.
+Implement an internal Notes system for applicants.
 
-This sprint establishes a unified search architecture across Applicants, Documents, and Workflow using PostgreSQL-compatible Prisma queries (ILIKE), with an abstraction that can later be replaced by PostgreSQL Full Text Search without affecting consumers.
+Notes allow consultants and staff to record private information about an applicant. Notes are never visible to applicants and are intended for internal collaboration.
 
-No Full Text Search implementation in this sprint.
-
----
-
-# Scope
-
-## Database
-
-Extend the Document model.
-
-Add:
-
-- title
-- description
-- tags (String[])
-
-Create migration.
-
-Update seed data.
+This sprint includes both backend and frontend implementation.
 
 ---
 
-## Backend
+# Database
 
-Create SearchModule.
+Create ApplicantNote model.
 
-Create:
+Fields:
 
-- SearchController
-- SearchService
-- SearchRepository
-- SearchProvider interface
-- PrismaSearchProvider implementation
+- id
+- organizationId
+- applicantId
+- authorId
+- content
+- createdAt
+- updatedAt
+- deletedAt
+- createdBy
+- updatedBy
+- deletedBy
 
-The service must depend only on SearchProvider.
+Relationships
 
----
+Organization
 
-## Search Targets
+Applicant
 
-Applicants
+Staff (author)
 
-Search by:
-
-- applicantNumber
-- firstName
-- middleName
-- lastName
-- email
-- phone
-
-Documents
-
-Search by:
-
-- title
-- filename
-- description
-- tags
-- category
-
-Workflow
-
-Search by:
-
-- current stage name
-
----
-
-## Endpoints
-
-GET /search
-
-Parameters
-
-q
-
-entity
-
-page
-
-pageSize
-
-Example
-
-/search?q=john
-
-/search?q=visa&entity=document
-
-/search?q=approved&entity=workflow
-
----
-
-## Permissions
-
-search.view
-
----
-
-## Security
+Soft delete.
 
 Organization isolation.
 
-Permission filtering.
-
-Soft-deleted records excluded.
-
 ---
 
-## Frontend
+# Backend
+
+Create NotesModule.
 
 Create
 
-services/search.service.ts
+- NotesController
+- NotesService
+- NotesRepository
 
-features/search/
+DTOs
 
-hooks/
+- CreateApplicantNoteDto
+- UpdateApplicantNoteDto
+- ApplicantNoteResponseDto
 
-components/
+Permissions
 
-SearchBar
+notes.view
 
-SearchResults
+notes.create
 
-SearchEmptyState
+notes.update
 
-SearchSkeleton
-
-React Query hooks.
-
-Use existing QueryProvider.
-
-No direct axios imports.
+notes.archive
 
 ---
 
-## UI
+# API
 
-Global search bar.
+GET
 
-Debounced search.
+/applicants/:id/notes
 
-300 ms debounce.
+POST
 
-URL persistence.
+/applicants/:id/notes
 
-Loading state.
+PATCH
 
-Empty state.
+/notes/:id
 
-Error state.
+DELETE
 
-Pagination.
-
-Entity filters.
+/notes/:id
 
 ---
 
-## Tests
+# Business Rules
+
+Only staff members can access notes.
+
+Applicants never see notes.
+
+Notes belong to one applicant.
+
+Soft delete.
+
+Every create/update/delete generates an AuditLog entry.
+
+---
+
+# Frontend
+
+Replace Timeline tab with Notes.
+
+Create
+
+services/note.service.ts
+
+hooks/use-notes.ts
+
+ApplicantNotes.tsx
+
+CreateNoteDialog.tsx
+
+EditNoteDialog.tsx
+
+DeleteNoteDialog.tsx
+
+Features
+
+Reverse chronological order
+
+Author
+
+Created date
+
+Updated indicator
+
+Loading skeleton
+
+Empty state
+
+Error state
+
+Retry button
+
+Optimistic updates
+
+Confirmation before delete
+
+---
+
+# Validation
+
+Content required
+
+Maximum 5000 characters
+
+Trim whitespace
+
+Reject empty notes
+
+---
+
+# Tests
 
 Repository
-
-Provider
 
 Service
 
 Controller
 
-Frontend hook tests
+Frontend hooks
 
-Validation tests
+Validation
 
 ---
 
-## Validation
+# Validation
 
 Run
 
@@ -195,18 +186,18 @@ All tests pass.
 
 ---
 
-## Out of Scope
+# Out of Scope
 
-PostgreSQL Full Text Search
+Mentions
 
-GIN indexes
+Attachments
 
-tsvector
+Rich text editor
 
-Ranking
+Pin notes
 
-Autocomplete
+Categories
 
-Recent searches
+Search inside notes
 
-Search analytics
+Version history

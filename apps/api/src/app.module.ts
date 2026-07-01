@@ -22,6 +22,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { DocumentModule } from './modules/document/document.module';
+import { NotesModule } from './modules/notes/notes.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { SearchModule } from './modules/search/search.module';
 import { StaffModule } from './modules/staff/staff.module';
@@ -74,6 +75,7 @@ const ENV_FILES = [
     DocumentModule,
     WorkflowModule,
     SearchModule,
+    NotesModule,
   ],
   controllers: [AppController],
   providers: [

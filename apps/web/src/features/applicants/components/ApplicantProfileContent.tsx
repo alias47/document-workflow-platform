@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { ApplicantNotes } from './ApplicantNotes';
 import { ArchiveApplicantDialog } from './ArchiveApplicantDialog';
 import { useApplicant, useArchiveApplicant } from '../hooks/use-applicants';
 
@@ -12,12 +13,12 @@ import { useToast } from '@/components/ui/toast';
 import { ApplicantDocuments } from '@/features/documents/components/ApplicantDocuments';
 import { cn } from '@/lib/cn';
 
-type Tab = 'info' | 'documents' | 'timeline';
+type Tab = 'info' | 'documents' | 'notes';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'info', label: 'Info' },
   { id: 'documents', label: 'Documents' },
-  { id: 'timeline', label: 'Timeline' },
+  { id: 'notes', label: 'Notes' },
 ];
 
 function getInitials(firstName: string, lastName: string): string {
@@ -355,22 +356,10 @@ export function ApplicantProfileContent({ id }: Props) {
         </div>
       )}
 
-      {activeTab === 'timeline' && (
+      {activeTab === 'notes' && (
         <div className="card">
-          <div
-            className="card-body"
-            style={{
-              padding: 'var(--space-12) var(--space-6)',
-              textAlign: 'center',
-              color: '#94A3B8',
-            }}
-          >
-            <p style={{ fontSize: '14px', marginBottom: '4px', color: '#64748B', fontWeight: 500 }}>
-              Timeline coming soon
-            </p>
-            <p style={{ fontSize: '13px' }}>
-              This section will be available once the timeline module is integrated.
-            </p>
+          <div className="card-body">
+            <ApplicantNotes applicantId={applicantId} />
           </div>
         </div>
       )}
@@ -424,7 +413,7 @@ function ApplicantProfileSkeleton() {
           marginBottom: 'var(--space-5)',
         }}
       >
-        {['Info', 'Documents', 'Timeline'].map((t) => (
+        {['Info', 'Documents', 'Notes'].map((t) => (
           <Skeleton key={t} className="h-9 w-20 mx-2" />
         ))}
       </div>

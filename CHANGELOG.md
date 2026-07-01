@@ -1,32 +1,28 @@
-# Sprint 8.2
+# Sprint 8.3
 
 ## Database
 
-- Added searchable metadata to Document
-- Added migration
-- Updated seed
+- Added ApplicantNote model
 
 ## Backend
 
-- Added SearchModule
-- Added SearchProvider abstraction
-- Added PrismaSearchProvider
-- Added search endpoint
-- Added organization-scoped search
+- Added NotesModule
+- Added CRUD API
+- Added RBAC permissions
+- Added AuditLog integration
 
 ## Frontend
 
-- Added search service
+- Replaced Timeline tab with Notes
+- Added Notes list
+- Added Create/Edit/Delete dialogs
 - Added React Query hooks
-- Added SearchBar
-- Added SearchResults
-- Added loading, empty and error states
 
 ## Quality
 
 - Added unit tests
-- Added provider tests
 - Added repository tests
+- Added validation tests
 
 ## Validation
 

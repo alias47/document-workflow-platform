@@ -45,6 +45,12 @@ export const queryKeys = {
     results: (params: Record<string, unknown>) => [...queryKeys.search.all, params] as const,
   },
 
+  notes: {
+    all: ['notes'] as const,
+    byApplicant: (applicantId: string) =>
+      [...queryKeys.notes.all, 'applicant', applicantId] as const,
+  },
+
   dashboard: {
     all: ['dashboard'] as const,
     summary: () => [...queryKeys.dashboard.all, 'summary'] as const,

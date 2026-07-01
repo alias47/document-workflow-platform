@@ -82,6 +82,7 @@ model Organization {
   assignments    ApplicantAssignment[]
   documents      Document[]
   workflowStages WorkflowStage[]
+  notes          ApplicantNote[]
 
   @@map("organizations")
 }
@@ -169,6 +170,7 @@ model Staff {
   uploadedDocuments   Document[]            @relation("UploadedDocuments")
   verifiedDocuments   Document[]            @relation("VerifiedDocuments")
   workflowChanges     WorkflowHistory[]     @relation("WorkflowChangedBy")
+  authoredNotes       ApplicantNote[]       @relation("NoteAuthor")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -306,6 +308,7 @@ model Applicant {
   documents       Document[]
   workflow        ApplicantWorkflow?
   workflowHistory WorkflowHistory[]
+  notes           ApplicantNote[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -387,6 +390,36 @@ model Document {
   @@index([uploadedBy])
   @@index([organizationId, status])
   @@map("documents")
+}
+
+// ---------------------------------------------------------------------------
+// APPLICANT NOTE (TASK 8.3)
+// Internal staff notes on an applicant. Never visible to applicants.
+// Soft-deleted; organization-isolated; immutable audit trail via AuditLog.
+// ---------------------------------------------------------------------------
+
+model ApplicantNote {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @db.Uuid
+  applicantId    String    @db.Uuid
+  authorId       String    @db.Uuid
+  content        String
+  createdAt      DateTime  @default(now())
+  createdBy      String?   @db.Uuid
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?   @db.Uuid
+  deletedAt      DateTime?
+  deletedBy      String?   @db.Uuid
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  applicant    Applicant    @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  author       Staff        @relation("NoteAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([applicantId])
+  @@index([authorId])
+  @@index([applicantId, createdAt])
+  @@map("applicant_notes")
 }
 
 // ---------------------------------------------------------------------------

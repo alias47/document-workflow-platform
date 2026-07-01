@@ -27,6 +27,11 @@ const PERMISSIONS = [
     description: 'Update workflow stages and move applicants between stages',
   },
   { action: 'workflow.archive', description: 'Archive (soft-delete) workflow stages' },
+  // Notes
+  { action: 'notes.view', description: 'View applicant notes' },
+  { action: 'notes.create', description: 'Create applicant notes' },
+  { action: 'notes.update', description: 'Edit applicant notes' },
+  { action: 'notes.archive', description: 'Delete (soft-delete) applicant notes' },
   // Search
   { action: 'search.view', description: 'Use the global search feature' },
   // Audit
@@ -113,7 +118,9 @@ async function main(): Promise<void> {
   // --- Consultant role (limited permissions) ---
   const consultantPerms = ['applicant.view', 'applicant.create', 'applicant.update',
     'document.view', 'document.create', 'document.update',
-    'workflow.view', 'workflow.update', 'search.view'];
+    'workflow.view', 'workflow.update',
+    'notes.view', 'notes.create', 'notes.update', 'notes.archive',
+    'search.view'];
   const consultantRole = await prisma.role.upsert({
     where: { organizationId_name: { organizationId: orgId, name: 'Consultant' } },
     create: {
