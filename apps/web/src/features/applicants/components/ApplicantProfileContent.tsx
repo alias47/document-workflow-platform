@@ -9,6 +9,7 @@ import { useApplicant, useArchiveApplicant } from '../hooks/use-applicants';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { ApplicantDocuments } from '@/features/documents/components/ApplicantDocuments';
 import { cn } from '@/lib/cn';
 
 type Tab = 'info' | 'documents' | 'timeline';
@@ -341,7 +342,20 @@ export function ApplicantProfileContent({ id }: Props) {
         </div>
       )}
 
-      {(activeTab === 'documents' || activeTab === 'timeline') && (
+      {activeTab === 'documents' && (
+        <div className="card">
+          <div className="card-header">
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
+              Documents
+            </h3>
+          </div>
+          <div className="card-body">
+            <ApplicantDocuments applicantId={applicantId} />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'timeline' && (
         <div className="card">
           <div
             className="card-body"
@@ -352,10 +366,10 @@ export function ApplicantProfileContent({ id }: Props) {
             }}
           >
             <p style={{ fontSize: '14px', marginBottom: '4px', color: '#64748B', fontWeight: 500 }}>
-              {activeTab === 'documents' ? 'Documents' : 'Timeline'} coming soon
+              Timeline coming soon
             </p>
             <p style={{ fontSize: '13px' }}>
-              This section will be available once the {activeTab} module is integrated.
+              This section will be available once the timeline module is integrated.
             </p>
           </div>
         </div>
