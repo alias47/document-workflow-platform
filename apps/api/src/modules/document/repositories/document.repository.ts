@@ -121,4 +121,17 @@ export class DocumentRepository {
       data: { deletedAt: new Date(), deletedBy, status: 'archived' },
     });
   }
+
+  /**
+   * Record that the physical file was removed while retaining the metadata row
+   * for audit. Sets status to `archived` and stamps the actor. The DB record is
+   * intentionally NOT soft-deleted — only the underlying file is gone.
+   */
+  async markFileDeleted(id: string, updatedBy: string) {
+    return this.prisma.document.update({
+      where: { id },
+      data: { status: 'archived', updatedBy },
+      include: UPLOADER_INCLUDE,
+    });
+  }
 }

@@ -9,7 +9,14 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { appConfig, corsConfig, databaseConfig, envValidationSchema, jwtConfig } from './config';
+import {
+  appConfig,
+  corsConfig,
+  databaseConfig,
+  envValidationSchema,
+  jwtConfig,
+  storageConfig,
+} from './config';
 import { ApplicantModule } from './modules/applicant/applicant.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -29,7 +36,7 @@ const ENV_FILES = [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ENV_FILES,
-      load: [appConfig, databaseConfig, jwtConfig, corsConfig],
+      load: [appConfig, databaseConfig, jwtConfig, corsConfig, storageConfig],
       validationSchema: envValidationSchema,
       validationOptions: {
         abortEarly: false,

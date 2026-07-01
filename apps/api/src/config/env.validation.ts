@@ -23,4 +23,9 @@ export const envValidationSchema = Joi.object({
 
   // Multi-tenancy (MVP = single org)
   DEFAULT_ORG_ID: Joi.string().uuid().required(),
+
+  // Storage (MVP = local disk; provider swappable to R2/S3 post-pilot)
+  STORAGE_PROVIDER: Joi.string().valid('local').default('local'),
+  STORAGE_LOCAL_ROOT: Joi.string().default('storage'),
+  STORAGE_MAX_FILE_SIZE_BYTES: Joi.number().integer().min(1).default(10485760),
 });
