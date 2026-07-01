@@ -64,13 +64,17 @@ export class AuthController {
     const jwtCfg = this.config.get<JwtConfig>(JWT_CONFIG_KEY) as JwtConfig;
     const refreshMaxAge = refreshExpiryMs(jwtCfg.refreshExpiresIn);
 
-    // Access token — short-lived (15 min default), no explicit maxAge so it
-    // expires when the browser session ends or the token itself expires.
+    // Access token cookie. The JWT inside is short-lived (15 min); the cookie
+    // itself is given the refresh window as maxAge so it survives a browser
+    // restart. That lets middleware treat the user as "possibly authenticated"
+    // and defer to the client-side /auth/me + silent-refresh flow, rather than
+    // hard-bouncing to /login the moment the browser reopens.
     res.cookie(ACCESS_TOKEN_COOKIE, accessToken, {
       httpOnly: true,
       secure: IS_PROD,
       sameSite: 'lax',
       path: '/',
+      maxAge: refreshMaxAge,
     });
 
     // Refresh token — persisted for the configured window (default 7 days).

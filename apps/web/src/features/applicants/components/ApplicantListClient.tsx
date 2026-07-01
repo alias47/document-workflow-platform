@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useRef, useState, useTransition } from 'react';
 
+import { ArchiveApplicantDialog } from './ArchiveApplicantDialog';
 import { useApplicants, useArchiveApplicant } from '../hooks/use-applicants';
 
 import type { ApplicantStatus } from '@/services/applicant.service';
@@ -48,6 +49,7 @@ export function ApplicantListClient() {
   const selectAllRef = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<{ id: string; name: string } | null>(null);
 
   // --- URL-driven state ---
   const page = Number(searchParams.get('page') ?? '1');
@@ -107,7 +109,14 @@ export function ApplicantListClient() {
   }, [allSelected, applicants]);
 
   // --- Archive ---
-  function handleArchive(id: string, name: string) {
+  function handleArchiveRequest(id: string, name: string) {
+    setOpenMenu(null);
+    setArchiveTarget({ id, name });
+  }
+
+  function handleArchiveConfirm() {
+    if (!archiveTarget) return;
+    const { id, name } = archiveTarget;
     archiveMutation.mutate(id, {
       onSuccess: () => {
         toast({ type: 'success', title: 'Archived', message: `${name} has been archived.` });
@@ -116,10 +125,11 @@ export function ApplicantListClient() {
           next.delete(id);
           return next;
         });
-        setOpenMenu(null);
+        setArchiveTarget(null);
       },
       onError: () => {
         toast({ type: 'error', title: 'Error', message: 'Failed to archive applicant.' });
+        setArchiveTarget(null);
       },
     });
   }
@@ -205,13 +215,7 @@ export function ApplicantListClient() {
             </svg>
             Export
           </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() =>
-              toast({ type: 'info', title: 'Coming soon', message: 'Create applicant flow.' })
-            }
-          >
+          <Link href="/applicants/new" className="btn btn-primary">
             <svg
               width="15"
               height="15"
@@ -224,7 +228,7 @@ export function ApplicantListClient() {
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
             Add Applicant
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -595,13 +599,27 @@ export function ApplicantListClient() {
                             >
                               View Profile
                             </Link>
+                            <Link
+                              href={`/applicants/${applicant.id}/edit`}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 12px',
+                                fontSize: 'var(--font-size-sm)',
+                                color: '#0F172A',
+                                textDecoration: 'none',
+                              }}
+                            >
+                              Edit
+                            </Link>
                             <div
                               style={{ height: '1px', background: '#F1F5F9', margin: '4px 0' }}
                             />
                             <button
                               type="button"
                               disabled={archiveMutation.isPending}
-                              onClick={() => handleArchive(applicant.id, fullName)}
+                              onClick={() => handleArchiveRequest(applicant.id, fullName)}
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -643,6 +661,14 @@ export function ApplicantListClient() {
           </div>
         )}
       </div>
+
+      <ArchiveApplicantDialog
+        applicantName={archiveTarget?.name ?? ''}
+        isOpen={archiveTarget !== null}
+        isPending={archiveMutation.isPending}
+        onConfirm={handleArchiveConfirm}
+        onCancel={() => setArchiveTarget(null)}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
@@ -35,18 +37,33 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await login(email, password);
-      toast({
-        type: 'success',
-        title: 'Signed in',
-        message: 'Redirecting to dashboard...',
-      });
-      router.push('/dashboard');
+      const { mustChangePassword } = await login(email, password);
+      if (mustChangePassword) {
+        toast({
+          type: 'success',
+          title: 'Signed in',
+          message: 'Please change your password to continue.',
+        });
+        router.push('/change-password');
+      } else {
+        toast({
+          type: 'success',
+          title: 'Signed in',
+          message: 'Redirecting to dashboard...',
+        });
+        router.push('/dashboard');
+      }
     } catch (err) {
+      const status = (err as { status?: number })?.status;
       toast({
         type: 'error',
         title: 'Sign in failed',
-        message: err instanceof Error ? err.message : 'Invalid email or password.',
+        message:
+          status === 401 || status === 400
+            ? 'Invalid email or password.'
+            : err instanceof Error
+              ? err.message
+              : 'Something went wrong. Please try again.',
       });
     } finally {
       setLoading(false);
@@ -55,8 +72,8 @@ export default function LoginPage() {
 
   function prefill(role: 'admin' | 'applicant') {
     if (role === 'admin') {
-      setEmail('admin@consultancy.com');
-      setPassword('password123');
+      setEmail('admin@example.com');
+      setPassword('NewPass@1234!');
     } else {
       setEmail('applicant@example.com');
       setPassword('password123');
@@ -124,19 +141,29 @@ export default function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="current-password"
-                className="field-input"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (errors.password) setErrors(({ password: _p, ...rest }) => rest);
-                }}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className="field-input pr-10"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors(({ password: _p, ...rest }) => rest);
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((show) => !show)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#0F172A] transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
           </div>
 

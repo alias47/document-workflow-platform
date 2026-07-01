@@ -17,7 +17,15 @@ import { usePathname } from 'next/navigation';
 import { Avatar } from '@/components/ui/avatar';
 import { Logo } from '@/components/ui/logo';
 import { ADMIN_NAV, type NavSection } from '@/constants/navigation';
+import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/cn';
+
+function formatRole(role: string): string {
+  return role
+    .split(/[_\s-]+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -32,8 +40,6 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 interface SidebarProps {
   nav?: NavSection[];
-  userName?: string;
-  userRole?: string;
 }
 
 function NavLink({
@@ -75,11 +81,11 @@ function NavLink({
   );
 }
 
-export function Sidebar({
-  nav = ADMIN_NAV,
-  userName = 'Admin User',
-  userRole = 'Administrator',
-}: SidebarProps) {
+export function Sidebar({ nav = ADMIN_NAV }: SidebarProps) {
+  const { user } = useAuth();
+  const userName = user ? `${user.firstName} ${user.lastName}` : 'Account';
+  const userRole = user ? formatRole(user.role) : '';
+
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col bg-[#0F172A] border-r border-[#1E293B]">
       {/* Logo */}

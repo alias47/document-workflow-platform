@@ -103,6 +103,53 @@ function normalizeError(error: unknown): HttpError {
   return new HttpError(status, message, extractValidationErrors(data));
 }
 
+// --- Silent token refresh ----------------------------------------------------
+// Access tokens are short-lived. When a request 401s we transparently call
+// /auth/refresh (which rotates the HttpOnly cookies) exactly once and replay the
+// original request. Cookies are the only auth mechanism — no token is ever read
+// in JS. See docs/07 §21 and CLAUDE.md §9.
+
+/** Endpoints that must never trigger a refresh-and-retry cycle. */
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/refresh', '/auth/logout', '/auth/me'];
+
+/** Marks a request config that has already been retried after a refresh. */
+interface RetriableConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
+
+// Single-flight guard: concurrent 401s share one in-flight refresh call so we
+// never fire duplicate /auth/refresh requests.
+let refreshPromise: Promise<void> | null = null;
+
+/**
+ * Invoked when refresh fails (or a protected request 401s with no way to
+ * recover). The auth provider registers a handler that clears user state and
+ * redirects to /login. Kept as a hook so `http` has no React/router dependency.
+ */
+let onAuthFailure: (() => void) | null = null;
+
+export function setAuthFailureHandler(handler: (() => void) | null): void {
+  onAuthFailure = handler;
+}
+
+function isAuthEndpoint(url: string | undefined): boolean {
+  if (!url) return false;
+  return AUTH_ENDPOINTS.some((path) => url.includes(path));
+}
+
+/** Fire a single shared refresh call; subsequent callers await the same promise. */
+function refreshSession(): Promise<void> {
+  if (!refreshPromise) {
+    refreshPromise = http
+      .post('/auth/refresh', {})
+      .then(() => undefined)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
 // --- Request interceptor -----------------------------------------------------
 // Cookies are attached automatically via withCredentials; this hook is the
 // single place to add correlation headers or dev logging later.
@@ -112,9 +159,31 @@ http.interceptors.request.use(
 );
 
 // --- Response interceptor ----------------------------------------------------
-// Pass successful responses straight through; normalize every failure into a
-// safe HttpError so callers never see raw backend messages.
+// Pass successful responses through. On a 401 from a non-auth endpoint, attempt
+// one silent refresh + replay; otherwise normalize into a safe HttpError.
 http.interceptors.response.use(
   (response: AxiosResponse) => response,
-  (error: unknown) => Promise.reject(normalizeError(error)),
+  async (error: unknown) => {
+    if (error instanceof AxiosError && error.response?.status === 401) {
+      const original = error.config as RetriableConfig | undefined;
+
+      // Don't try to refresh for auth calls themselves, or if we already retried.
+      if (original && !original._retry && !isAuthEndpoint(original.url)) {
+        original._retry = true;
+        try {
+          await refreshSession();
+          return http(original);
+        } catch {
+          onAuthFailure?.();
+          return Promise.reject(normalizeError(error));
+        }
+      }
+
+      // A failed refresh/login/me, or an already-retried request: session is gone.
+      if (isAuthEndpoint(original?.url) && original?.url?.includes('/auth/refresh')) {
+        onAuthFailure?.();
+      }
+    }
+    return Promise.reject(normalizeError(error));
+  },
 );

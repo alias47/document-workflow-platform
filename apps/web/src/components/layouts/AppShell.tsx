@@ -4,23 +4,13 @@ import { Sidebar } from './Sidebar';
 interface AppShellProps {
   children: React.ReactNode;
   title?: string;
-  userName?: string;
-  userRole?: string;
 }
 
-export function AppShell({ children, title, userName, userRole }: AppShellProps) {
-  const sidebarProps = {
-    ...(userName !== undefined && { userName }),
-    ...(userRole !== undefined && { userRole }),
-  };
-  const headerProps = {
-    ...(title !== undefined && { title }),
-    ...(userName !== undefined && { userName }),
-    ...(userRole !== undefined && { userRole }),
-  };
+export function AppShell({ children, title }: AppShellProps) {
+  const headerProps = title !== undefined ? { title } : {};
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <Sidebar {...sidebarProps} />
+      <Sidebar />
       <Header {...headerProps} />
       <main className="pl-[240px] pt-[60px]">{children}</main>
     </div>

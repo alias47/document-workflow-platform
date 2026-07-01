@@ -1,23 +1,60 @@
 'use client';
 
-import { Bell, Search } from 'lucide-react';
+import { Bell, LogOut, Search } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Avatar } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/cn';
 
 interface HeaderProps {
   title?: string;
-  userName?: string;
-  userRole?: string;
   className?: string;
 }
 
-export function Header({
-  title,
-  userName = 'Admin User',
-  userRole = 'Administrator',
-  className,
-}: HeaderProps) {
+function formatRole(role: string): string {
+  return role
+    .split(/[_\s-]+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+export function Header({ title, className }: HeaderProps) {
+  const { user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const userName = user ? `${user.firstName} ${user.lastName}` : 'Account';
+  const userRole = user ? formatRole(user.role) : '';
+
+  // Close the menu on outside click or Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onPointerDown(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [menuOpen]);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setLoggingOut(false);
+      setMenuOpen(false);
+    }
+  }
+
   return (
     <header
       className={cn(
@@ -53,13 +90,48 @@ export function Header({
         <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full ring-2 ring-white" />
       </button>
 
-      {/* User */}
-      <div className="flex items-center gap-2.5">
-        <Avatar name={userName} size="md" />
-        <div className="hidden sm:block">
-          <p className="text-sm font-semibold text-[#0F172A] leading-none">{userName}</p>
-          <p className="text-[11px] text-[#64748B] mt-0.5 leading-none">{userRole}</p>
-        </div>
+      {/* User menu */}
+      <div className="relative" ref={menuRef}>
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          className="flex items-center gap-2.5 rounded-[8px] px-1.5 py-1 hover:bg-[#F1F5F9] transition-colors"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          aria-label="Open account menu"
+        >
+          <Avatar name={userName} size="md" />
+          <div className="hidden sm:block text-left">
+            <p className="text-sm font-semibold text-[#0F172A] leading-none">{userName}</p>
+            {userRole && (
+              <p className="text-[11px] text-[#64748B] mt-0.5 leading-none">{userRole}</p>
+            )}
+          </div>
+        </button>
+
+        {menuOpen && (
+          <div
+            role="menu"
+            className="absolute right-0 top-[calc(100%+8px)] w-52 rounded-[10px] border border-[#E2E8F0] bg-white py-1.5 shadow-lg"
+          >
+            {user && (
+              <div className="px-3 py-2 border-b border-[#F1F5F9]">
+                <p className="text-sm font-semibold text-[#0F172A] truncate">{userName}</p>
+                <p className="text-[11px] text-[#64748B] truncate">{user.email}</p>
+              </div>
+            )}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm font-medium text-[#DC2626] hover:bg-[#FEF2F2] disabled:opacity-60 transition-colors"
+            >
+              <LogOut size={16} />
+              {loggingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

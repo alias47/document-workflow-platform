@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { ArchiveApplicantDialog } from './ArchiveApplicantDialog';
 import { useApplicant, useArchiveApplicant } from '../hooks/use-applicants';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,7 +29,9 @@ interface Props {
 
 export function ApplicantProfileContent({ id }: Props) {
   const { toast } = useToast();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('info');
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   const { data, isLoading, isError, error } = useApplicant(id);
   const archiveMutation = useArchiveApplicant();
@@ -80,10 +84,12 @@ export function ApplicantProfileContent({ id }: Props) {
   const fullName = `${applicant.firstName} ${applicant.lastName}`;
   const initials = getInitials(applicant.firstName, applicant.lastName);
 
-  function handleArchive() {
+  function handleArchiveConfirm() {
     archiveMutation.mutate(applicantId, {
       onSuccess: () => {
         toast({ type: 'success', title: 'Archived', message: `${fullName} has been archived.` });
+        setShowArchiveDialog(false);
+        router.push('/applicants');
       },
       onError: () => {
         toast({ type: 'error', title: 'Error', message: 'Failed to archive applicant.' });
@@ -233,20 +239,14 @@ export function ApplicantProfileContent({ id }: Props) {
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() =>
-                toast({ type: 'info', title: 'Coming soon', message: 'Edit applicant form.' })
-              }
-            >
+            <Link href={`/applicants/${applicantId}/edit`} className="btn btn-secondary btn-sm">
               Edit
-            </button>
+            </Link>
             <button
               type="button"
               className="btn btn-ghost btn-sm"
               style={{ color: '#DC2626' }}
-              onClick={handleArchive}
+              onClick={() => setShowArchiveDialog(true)}
               disabled={archiveMutation.isPending || applicant.status === 'archived'}
             >
               Archive
@@ -360,6 +360,14 @@ export function ApplicantProfileContent({ id }: Props) {
           </div>
         </div>
       )}
+
+      <ArchiveApplicantDialog
+        applicantName={fullName}
+        isOpen={showArchiveDialog}
+        isPending={archiveMutation.isPending}
+        onConfirm={handleArchiveConfirm}
+        onCancel={() => setShowArchiveDialog(false)}
+      />
     </div>
   );
 }

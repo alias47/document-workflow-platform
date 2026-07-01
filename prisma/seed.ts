@@ -104,7 +104,7 @@ async function main(): Promise<void> {
   console.log(`Role: Consultant (${consultantRole.id}) — ${consultantPerms.length} permissions`);
 
   // --- Admin staff user ---
-  const adminPassword = process.env['SEED_ADMIN_PASSWORD'] ?? 'Admin@123456!';
+  const adminPassword = process.env['SEED_ADMIN_PASSWORD'] ?? 'NewPass@1234!';
   const passwordHash = await argon2.hash(adminPassword);
 
   const adminStaff = await prisma.staff.upsert({
