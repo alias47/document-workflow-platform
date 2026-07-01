@@ -35,6 +35,27 @@ enum ApplicantStatus {
   archived
 }
 
+// Document classification. Kept industry-neutral — org settings map these to
+// customer-facing labels ("Passport", "Transcript", …) on the frontend only.
+enum DocumentCategory {
+  identity
+  academic
+  financial
+  language
+  reference
+  visa
+  other
+}
+
+// Document verification lifecycle (upload implementation lands in a later sprint).
+enum DocumentStatus {
+  pending
+  verified
+  rejected
+  expired
+  archived
+}
+
 // ---------------------------------------------------------------------------
 // ORGANIZATION
 // ---------------------------------------------------------------------------
@@ -59,6 +80,7 @@ model Organization {
   roles       Role[]
   applicants  Applicant[]
   assignments ApplicantAssignment[]
+  documents   Document[]
 
   @@map("organizations")
 }
@@ -143,6 +165,8 @@ model Staff {
   passwordResetTokens PasswordResetToken[]
   assignments         ApplicantAssignment[] @relation("AssignedStaff")
   assignmentsMade     ApplicantAssignment[] @relation("AssignedByStaff")
+  uploadedDocuments   Document[]            @relation("UploadedDocuments")
+  verifiedDocuments   Document[]            @relation("VerifiedDocuments")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -277,6 +301,7 @@ model Applicant {
   organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   portalAccount PortalAccount?
   assignments   ApplicantAssignment[]
+  documents     Document[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -311,4 +336,48 @@ model ApplicantAssignment {
   @@index([staffId])
   @@index([organizationId])
   @@map("applicant_assignments")
+}
+
+// ---------------------------------------------------------------------------
+// DOCUMENT (domain doc §12, DB design §13.4)
+// File-storage metadata only; upload/versioning implementation lands in a later
+// sprint. Soft-deleted; organization-isolated like every business entity.
+// ---------------------------------------------------------------------------
+
+model Document {
+  id                String           @id @default(uuid()) @db.Uuid
+  organizationId    String           @db.Uuid
+  applicantId       String           @db.Uuid
+  uploadedBy        String?          @db.Uuid
+  category          DocumentCategory @default(other)
+  status            DocumentStatus   @default(pending)
+  originalFilename  String
+  storedFilename    String
+  mimeType          String
+  fileSize          Int
+  storageKey        String
+  checksum          String?
+  expiresAt         DateTime?
+  verifiedAt        DateTime?
+  verifiedBy        String?          @db.Uuid
+  verificationNotes String?
+  createdAt         DateTime         @default(now())
+  createdBy         String?          @db.Uuid
+  updatedAt         DateTime         @updatedAt
+  updatedBy         String?          @db.Uuid
+  deletedAt         DateTime?
+  deletedBy         String?          @db.Uuid
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  applicant      Applicant    @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  uploadedByStaff Staff?      @relation("UploadedDocuments", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  verifiedByStaff Staff?      @relation("VerifiedDocuments", fields: [verifiedBy], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([applicantId])
+  @@index([status])
+  @@index([category])
+  @@index([uploadedBy])
+  @@index([organizationId, status])
+  @@map("documents")
 }

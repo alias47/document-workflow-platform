@@ -16,10 +16,9 @@ const PERMISSIONS = [
   { action: 'applicant.archive', description: 'Archive (soft-delete) applicants' },
   // Documents
   { action: 'document.view', description: 'View documents' },
-  { action: 'document.upload', description: 'Upload documents' },
-  { action: 'document.approve', description: 'Approve documents' },
-  { action: 'document.reject', description: 'Reject documents' },
-  { action: 'document.delete', description: 'Delete documents' },
+  { action: 'document.create', description: 'Create document records' },
+  { action: 'document.update', description: 'Update document details' },
+  { action: 'document.archive', description: 'Archive (soft-delete) documents' },
   // Workflow
   { action: 'workflow.view', description: 'View workflow templates' },
   { action: 'workflow.manage', description: 'Create and edit workflow templates' },
@@ -80,7 +79,7 @@ async function main(): Promise<void> {
 
   // --- Consultant role (limited permissions) ---
   const consultantPerms = ['applicant.view', 'applicant.create', 'applicant.update',
-    'document.view', 'document.upload', 'workflow.view'];
+    'document.view', 'document.create', 'document.update', 'workflow.view'];
   const consultantRole = await prisma.role.upsert({
     where: { organizationId_name: { organizationId: orgId, name: 'Consultant' } },
     create: {
@@ -204,8 +203,31 @@ async function main(): Promise<void> {
         },
       });
     }
+
+    // Sample document metadata record (upload comes in a later sprint —
+    // storageKey/storedFilename are placeholders, no physical file exists yet).
+    const existingDocument = await prisma.document.findFirst({
+      where: { applicantId: applicant.id, storageKey: `seed/${applicant.id}/passport.pdf` },
+    });
+    if (!existingDocument) {
+      await prisma.document.create({
+        data: {
+          organizationId: orgId,
+          applicantId: applicant.id,
+          uploadedBy: adminStaff.id,
+          category: 'identity',
+          status: 'pending',
+          originalFilename: 'passport.pdf',
+          storedFilename: `${applicant.id}-passport.pdf`,
+          mimeType: 'application/pdf',
+          fileSize: 204_800,
+          storageKey: `seed/${applicant.id}/passport.pdf`,
+          createdBy: adminStaff.id,
+        },
+      });
+    }
   }
-  console.log(`Applicants: ${SAMPLE_APPLICANTS.length} seeded (with portal accounts + assignments)`);
+  console.log(`Applicants: ${SAMPLE_APPLICANTS.length} seeded (with portal accounts + assignments + documents)`);
 
   console.log(`\nSeed complete.`);
   console.log(`DEFAULT_ORG_ID=${orgId}`);

@@ -14,6 +14,7 @@ import { ApplicantModule } from './modules/applicant/applicant.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { DocumentModule } from './modules/document/document.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -61,6 +62,7 @@ const ENV_FILES = [
     OrganizationModule,
     StaffModule,
     ApplicantModule,
+    DocumentModule,
   ],
   controllers: [AppController],
   providers: [
