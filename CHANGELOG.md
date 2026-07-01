@@ -1,44 +1,42 @@
 # Upcoming
 
-## Sprint 6.4 – Applicant CRUD UI
+## Sprint 7.1 – Document Domain
 
 ### Planned
 
-#### Create Applicant
+#### Database
 
-- New Applicant page
-- Shared ApplicantForm component
-- Backend integration
-- Validation
-- Success redirect
+- Document model
+- DocumentCategory enum
+- DocumentStatus enum
+- Relationships
+- Migration
+- Seed
 
-#### Edit Applicant
+#### Backend
 
-- Edit page
-- Shared ApplicantForm reuse
-- Backend integration
-- Validation
-- Success redirect
+- DTOs
+- Repository
+- Service
+- Controller
+- Module
 
-#### Archive Applicant
+#### API
 
-- Confirmation dialog
-- Backend integration
-- Cache invalidation
-- Redirect
+- GET /documents
+- GET /documents/:id
+- POST /documents
+- PATCH /documents/:id
+- DELETE /documents/:id
 
-#### UX
+#### Validation
 
-- Loading indicators
-- Disabled submit buttons
-- Toast notifications
-- Unsaved changes protection
+- Organization isolation
+- Soft delete
+- Audit logging
 
 #### Testing
 
-- Create
-- Edit
-- Archive
-- Validation
-- Navigation
-- React Query cache
+- Repository
+- Service
+- Controller
