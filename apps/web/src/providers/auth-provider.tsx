@@ -17,35 +17,26 @@ export interface AuthContextValue extends AuthState {
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
-const SESSION_KEY = 'auth:user';
-
-function loadPersistedUser(): StaffUser | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as StaffUser) : null;
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<StaffUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Rehydrate session on mount (replaces cookie check until backend is live)
+  // Bootstrap auth state from the server on mount.
+  // Tokens live in HttpOnly cookies — JS cannot read them.
+  // /auth/me returns the profile if the access_token cookie is valid.
   useEffect(() => {
-    const persisted = loadPersistedUser();
-    setUser(persisted);
-    setIsLoading(false);
+    authService
+      .me()
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
       const res = await authService.login({ email, password });
-      setUser(res.data.user);
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(res.data.user));
+      setUser(res.data.staff);
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authService.logout();
     } finally {
       setUser(null);
-      sessionStorage.removeItem(SESSION_KEY);
       setIsLoading(false);
     }
   }, []);

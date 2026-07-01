@@ -13,6 +13,7 @@ import { appConfig, corsConfig, databaseConfig, envValidationSchema, jwtConfig }
 import { ApplicantModule } from './modules/applicant/applicant.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -62,6 +63,11 @@ const ENV_FILES = [
     ApplicantModule,
   ],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Registered via DI so Reflector resolves correctly and @Public() is respected.
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+  ],
 })
 export class AppModule {}

@@ -1,22 +1,48 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 import { ChangePasswordDto } from '../dto/change-password.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { LoginDto } from '../dto/login.dto';
-import { RefreshTokenDto } from '../dto/refresh-token.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { AuthService } from '../services/auth.service';
 
 import type { JwtPayload } from '../interfaces/jwt-payload.interface';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { Public } from '@/common/decorators/public.decorator';
 import { APP_CONFIG_KEY, type AppConfig } from '@/config/app.config';
+import { JWT_CONFIG_KEY, type JwtConfig } from '@/config/jwt.config';
+
+// Cookie names used across login, refresh, and logout.
+export const ACCESS_TOKEN_COOKIE = 'access_token';
+export const REFRESH_TOKEN_COOKIE = 'refresh_token';
+
+const IS_PROD = process.env['NODE_ENV'] === 'production';
+
+/** Milliseconds derived from the JWT refresh expiry string (e.g. "7d"). */
+function refreshExpiryMs(expiry: string): number {
+  const unit = expiry.slice(-1);
+  const value = parseInt(expiry.slice(0, -1), 10);
+  if (unit === 'd') return value * 86_400_000;
+  if (unit === 'h') return value * 3_600_000;
+  return value * 60_000;
+}
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -34,21 +60,55 @@ export class AuthController {
     return cfg.defaultOrganizationId;
   }
 
+  private setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
+    const jwtCfg = this.config.get<JwtConfig>(JWT_CONFIG_KEY) as JwtConfig;
+    const refreshMaxAge = refreshExpiryMs(jwtCfg.refreshExpiresIn);
+
+    // Access token — short-lived (15 min default), no explicit maxAge so it
+    // expires when the browser session ends or the token itself expires.
+    res.cookie(ACCESS_TOKEN_COOKIE, accessToken, {
+      httpOnly: true,
+      secure: IS_PROD,
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    // Refresh token — persisted for the configured window (default 7 days).
+    res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
+      httpOnly: true,
+      secure: IS_PROD,
+      sameSite: 'lax',
+      path: '/api/v1/auth/refresh',
+      maxAge: refreshMaxAge,
+    });
+  }
+
+  private clearAuthCookies(res: Response): void {
+    res.clearCookie(ACCESS_TOKEN_COOKIE, { path: '/' });
+    res.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/api/v1/auth/refresh' });
+  }
+
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @Throttle({ short: { ttl: 60_000, limit: 5 } })
-  @ApiOperation({ summary: 'Staff login' })
-  async login(@Body() dto: LoginDto, @Req() req: Request) {
-    const ip = req.ip;
-    const ua = req.headers['user-agent'];
-    const result = await this.authService.login(dto, this.defaultOrgId, ip, ua);
+  @ApiOperation({ summary: 'Staff login — sets HttpOnly auth cookies' })
+  async login(
+    @Body() dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(
+      dto,
+      this.defaultOrgId,
+      req.ip,
+      req.headers['user-agent'],
+    );
+    this.setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
     return {
       success: true,
       message: 'Login successful',
       data: {
-        accessToken: result.tokens.accessToken,
-        refreshToken: result.tokens.refreshToken,
         mustChangePassword: result.mustChangePass,
         staff: result.staff,
       },
@@ -58,36 +118,42 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Refresh access token' })
-  async refresh(@Body() dto: RefreshTokenDto, @Req() req: Request) {
-    const tokens = await this.authService.refresh(
-      dto.refreshToken,
-      req.ip,
-      req.headers['user-agent'],
-    );
-    return { success: true, message: 'Token refreshed', data: tokens };
+  @ApiOperation({ summary: 'Rotate tokens using the refresh cookie' })
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const cookies = req.cookies as Record<string, string | undefined>;
+    const rawToken = cookies[REFRESH_TOKEN_COOKIE];
+    if (!rawToken) throw new UnauthorizedException('No refresh token provided');
+    const tokens = await this.authService.refresh(rawToken, req.ip, req.headers['user-agent']);
+    this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
+    return { success: true, message: 'Token refreshed', data: null };
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Logout (revoke refresh token)' })
-  async logout(@Body() dto: RefreshTokenDto) {
-    await this.authService.logout(dto.refreshToken);
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Logout — revokes refresh token and clears cookies' })
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const cookies = req.cookies as Record<string, string | undefined>;
+    const rawToken = cookies[REFRESH_TOKEN_COOKIE];
+    if (rawToken) {
+      await this.authService.logout(rawToken);
+    }
+    this.clearAuthCookies(res);
     return { success: true, message: 'Logged out successfully', data: null };
   }
 
   @Post('logout-all')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Logout from all devices' })
-  async logoutAll(@CurrentUser() user: JwtPayload) {
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Logout from all devices — revokes all tokens' })
+  async logoutAll(@CurrentUser() user: JwtPayload, @Res({ passthrough: true }) res: Response) {
     await this.authService.logoutAll(user.sub);
+    this.clearAuthCookies(res);
     return { success: true, message: 'All sessions revoked', data: null };
   }
 
   @Get('me')
-  @ApiBearerAuth()
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Get current authenticated staff profile' })
   async me(@CurrentUser() user: JwtPayload) {
     const staff = await this.authService.getMe(user.sub);
@@ -96,7 +162,7 @@ export class AuthController {
 
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Change password' })
   async changePassword(@CurrentUser() user: JwtPayload, @Body() dto: ChangePasswordDto) {
     await this.authService.changePassword(user.sub, dto);

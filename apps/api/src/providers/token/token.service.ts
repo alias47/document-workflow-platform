@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 import type { JwtPayload } from '@/modules/auth/interfaces/jwt-payload.interface';
-import type { ConfigService } from '@nestjs/config';
-import type { JwtService } from '@nestjs/jwt';
 import type { StringValue } from 'ms';
 
 import { JWT_CONFIG_KEY, type JwtConfig } from '@/config/jwt.config';

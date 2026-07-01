@@ -13,7 +13,7 @@ const PERMISSIONS = [
   { action: 'applicant.view', description: 'View applicants' },
   { action: 'applicant.create', description: 'Create new applicants' },
   { action: 'applicant.update', description: 'Update applicant details' },
-  { action: 'applicant.delete', description: 'Soft-delete applicants' },
+  { action: 'applicant.archive', description: 'Archive (soft-delete) applicants' },
   // Documents
   { action: 'document.view', description: 'View documents' },
   { action: 'document.upload', description: 'Upload documents' },

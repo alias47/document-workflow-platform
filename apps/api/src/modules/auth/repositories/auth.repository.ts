@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
-import type { PrismaService } from '@/prisma/prisma.service';
 import type { Staff, RefreshToken, PasswordResetToken } from '@prisma/client';
+
+import { PrismaService } from '@/prisma/prisma.service';
 
 export type StaffWithPermissions = Staff & {
   role: { name: string; permissions: { permission: { action: string } }[] };

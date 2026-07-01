@@ -3,6 +3,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 const PROTECTED = ['/dashboard', '/applicants'];
 const PUBLIC = ['/login', '/forgot-password', '/reset-password', '/register'];
 
+const ACCESS_TOKEN_COOKIE = 'access_token';
+
 function isProtected(pathname: string) {
   return PROTECTED.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
@@ -19,15 +21,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // In development, skip middleware auth checks entirely.
-  // The AuthContext (via sessionStorage) handles auth state.
-  // In production, the backend will set HTTP-only cookies on login.
-  if (process.env.NODE_ENV === 'development') {
-    return NextResponse.next();
-  }
-
-  const sessionCookie = req.cookies.get('session') ?? req.cookies.get('access_token');
-  const isLoggedIn = Boolean(sessionCookie);
+  const isLoggedIn = Boolean(req.cookies.get(ACCESS_TOKEN_COOKIE));
 
   if (isProtected(pathname) && !isLoggedIn) {
     const loginUrl = req.nextUrl.clone();

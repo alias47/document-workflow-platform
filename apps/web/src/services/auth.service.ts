@@ -17,8 +17,9 @@ export interface StaffUser {
   organizationId: string;
 }
 
-export interface AuthTokens {
-  accessToken: string;
+export interface LoginResponseData {
+  staff: StaffUser;
+  mustChangePassword: boolean;
 }
 
 // ---------- mock data (used until the backend is wired to the UI) ----------
@@ -37,15 +38,19 @@ const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // ---------- service ----------
 // All HTTP communication for auth lives here. Components never call axios.
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: StaffUser }>> {
+  async login(credentials: LoginCredentials): Promise<ApiResponse<LoginResponseData>> {
     if (env.isDev) {
       await delay(MOCK_DELAY);
       if (credentials.email && credentials.password) {
-        return { success: true, message: 'Login successful', data: { user: MOCK_USER } };
+        return {
+          success: true,
+          message: 'Login successful',
+          data: { staff: MOCK_USER, mustChangePassword: false },
+        };
       }
       throw new Error('Invalid credentials');
     }
-    const res = await http.post<ApiResponse<{ user: StaffUser }>>('/auth/login', credentials);
+    const res = await http.post<ApiResponse<LoginResponseData>>('/auth/login', credentials);
     return res.data;
   },
 
@@ -57,12 +62,12 @@ export const authService = {
     await http.post('/auth/logout', {});
   },
 
-  async refreshToken(): Promise<ApiResponse<AuthTokens>> {
+  async refreshToken(): Promise<ApiResponse<null>> {
     if (env.isDev) {
       await delay(200);
-      return { success: true, message: 'Token refreshed', data: { accessToken: 'mock-token' } };
+      return { success: true, message: 'Token refreshed', data: null };
     }
-    const res = await http.post<ApiResponse<AuthTokens>>('/auth/refresh', {});
+    const res = await http.post<ApiResponse<null>>('/auth/refresh', {});
     return res.data;
   },
 

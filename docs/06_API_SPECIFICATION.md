@@ -338,10 +338,11 @@ multipart/form-data
 
 ## Headers
 
-Authenticated requests require:
+Authenticated requests are identified by the `access_token` HttpOnly cookie set on login/refresh.
+No `Authorization` header is required or accepted — tokens are never exposed to JavaScript.
 
 ```http
-Authorization: Bearer <access_token>
+Cookie: access_token=<jwt>
 ```
 
 Optional

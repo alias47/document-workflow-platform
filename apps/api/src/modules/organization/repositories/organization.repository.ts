@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
-import type { PrismaService } from '@/prisma/prisma.service';
 import type { Organization } from '@prisma/client';
+
+import { PrismaService } from '@/prisma/prisma.service';
 
 export interface UpdateOrganizationData {
   name?: string;

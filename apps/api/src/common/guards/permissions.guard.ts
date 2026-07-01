@@ -4,11 +4,11 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 
 import type { JwtPayload } from '@/modules/auth/interfaces/jwt-payload.interface';
-import type { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 
 @Injectable()

@@ -2,28 +2,40 @@
 
 Version
 
-v0.5.0
-
-Current Sprint
-
-Sprint 6.3
-
-Applicant End-to-End Integration
+v0.5.1
 
 Status
 
-🚧 In Progress
+🟡 Phase 0 Foundation Fixes Applied
 
 Completed
 
-✅ Frontend MVP
+✅ Documentation
 
-✅ Authentication
+✅ Monorepo Foundation
 
-✅ Applicant Backend
+✅ UI Foundation
+
+✅ Authentication Backend (HTTP-only cookie auth, JWT strategy, RBAC)
+
+✅ Authentication UI
+
+✅ Dashboard
+
+✅ Applicant Database
+
+✅ Applicant Backend CRUD
 
 ✅ Frontend API Infrastructure
 
-Current
+⚠️ Applicant End-to-End Integration (scaffolded; mock data still active behind env.isDev gate)
 
-Applicant End-to-End Integration
+Current Focus
+
+Sprint 7 – Document Management
+
+Notes
+
+- Auth uses HttpOnly cookies (access_token + refresh_token); no Bearer tokens in body or JS
+- Applicant mock data remains active for dev; production requires backend running with valid DB
+- Permission name applicant.archive (not applicant.delete) is the canonical soft-delete action

@@ -6,15 +6,23 @@ import { AuthController } from '../controllers/auth.controller';
 import { AuthService } from '../services/auth.service';
 
 import type { LoginDto } from '../dto/login.dto';
-import type { RefreshTokenDto } from '../dto/refresh-token.dto';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 
-const mockRequest = {
-  ip: '127.0.0.1',
-  headers: { 'user-agent': 'jest-test-runner' },
-} as unknown as Request;
+const mockResponse = {
+  cookie: jest.fn(),
+  clearCookie: jest.fn(),
+  status: jest.fn().mockReturnThis(),
+  json: jest.fn().mockReturnThis(),
+} as unknown as Response;
+
+const makeRequest = (cookies: Record<string, string> = {}): Request =>
+  ({
+    ip: '127.0.0.1',
+    headers: { 'user-agent': 'jest-test-runner' },
+    cookies,
+  }) as unknown as Request;
 
 const mockTokenPair = {
   accessToken: 'access-jwt',
@@ -39,13 +47,19 @@ describe('AuthController', () => {
   let authService: jest.Mocked<AuthService>;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
         {
           provide: ConfigService,
           useValue: {
-            get: () => ({ defaultOrganizationId: 'org-uuid-default' }),
+            get: (key: string) => {
+              if (key === 'app') return { defaultOrganizationId: 'org-uuid-default' };
+              if (key === 'jwt') return { refreshExpiresIn: '7d' };
+              return undefined;
+            },
           },
         },
         {
@@ -55,6 +69,7 @@ describe('AuthController', () => {
             refresh: jest.fn(),
             logout: jest.fn(),
             logoutAll: jest.fn(),
+            getMe: jest.fn(),
             changePassword: jest.fn(),
             forgotPassword: jest.fn(),
             resetPassword: jest.fn(),
@@ -74,40 +89,59 @@ describe('AuthController', () => {
   describe('POST /auth/login', () => {
     const dto: LoginDto = { email: 'admin@test.com', password: 'Password123!' };
 
-    it('returns 200 with tokens on valid credentials', async () => {
+    it('sets cookies and returns staff + mustChangePassword on valid credentials', async () => {
       authService.login.mockResolvedValue(mockLoginResult);
+      const req = makeRequest();
 
-      const result = await controller.login(dto, mockRequest);
+      const result = await controller.login(dto, req, mockResponse);
 
       expect(result.success).toBe(true);
-      expect(result.data.accessToken).toBe(mockTokenPair.accessToken);
-      expect(result.data.refreshToken).toBe(mockTokenPair.refreshToken);
       expect(result.data.mustChangePassword).toBe(false);
+      expect(result.data.staff.id).toBe('staff-uuid');
+      expect(mockResponse.cookie as jest.Mock).toHaveBeenCalledWith(
+        'access_token',
+        mockTokenPair.accessToken,
+        expect.objectContaining({ httpOnly: true }),
+      );
       expect(authService.login).toHaveBeenCalledWith(
         dto,
-        expect.any(String), // DEFAULT_ORG_ID
-        mockRequest.ip,
-        mockRequest.headers['user-agent'],
+        expect.any(String),
+        req.ip,
+        req.headers['user-agent'],
       );
     });
 
     it('propagates UnauthorizedException from service', async () => {
       authService.login.mockRejectedValue(new UnauthorizedException('Invalid email or password'));
 
-      await expect(controller.login(dto, mockRequest)).rejects.toThrow(UnauthorizedException);
+      await expect(controller.login(dto, makeRequest(), mockResponse)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
   describe('POST /auth/refresh', () => {
-    const dto: RefreshTokenDto = { refreshToken: 'raw-refresh-token' };
-
-    it('returns new token pair', async () => {
+    it('rotates cookies and returns success when refresh cookie is present', async () => {
       authService.refresh.mockResolvedValue(mockTokenPair);
+      const req = makeRequest({ refresh_token: 'raw-refresh-token' });
 
-      const result = await controller.refresh(dto, mockRequest);
+      const result = await controller.refresh(req, mockResponse);
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockTokenPair);
+      expect(result.data).toBeNull();
+      expect(authService.refresh).toHaveBeenCalledWith(
+        'raw-refresh-token',
+        req.ip,
+        req.headers['user-agent'],
+      );
+      expect(mockResponse.cookie as jest.Mock).toHaveBeenCalled();
+    });
+
+    it('throws UnauthorizedException when refresh cookie is absent', async () => {
+      await expect(controller.refresh(makeRequest(), mockResponse)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(authService.refresh).not.toHaveBeenCalled();
     });
 
     it('propagates UnauthorizedException when token is invalid', async () => {
@@ -115,23 +149,35 @@ describe('AuthController', () => {
         new UnauthorizedException('Invalid or expired refresh token'),
       );
 
-      await expect(controller.refresh(dto, mockRequest)).rejects.toThrow(UnauthorizedException);
+      await expect(
+        controller.refresh(makeRequest({ refresh_token: 'bad-token' }), mockResponse),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
   describe('POST /auth/logout', () => {
-    it('revokes token and returns success', async () => {
+    it('revokes token and clears cookies', async () => {
       authService.logout.mockResolvedValue();
+      const req = makeRequest({ refresh_token: 'raw-token' });
 
-      const result = await controller.logout({ refreshToken: 'raw-token' });
+      const result = await controller.logout(req, mockResponse);
 
       expect(result.success).toBe(true);
       expect(authService.logout).toHaveBeenCalledWith('raw-token');
+      expect(mockResponse.clearCookie as jest.Mock).toHaveBeenCalled();
+    });
+
+    it('clears cookies even when no refresh token cookie is present', async () => {
+      const result = await controller.logout(makeRequest(), mockResponse);
+
+      expect(result.success).toBe(true);
+      expect(authService.logout).not.toHaveBeenCalled();
+      expect(mockResponse.clearCookie as jest.Mock).toHaveBeenCalled();
     });
   });
 
   describe('POST /auth/logout-all', () => {
-    it('revokes all sessions for current user', async () => {
+    it('revokes all sessions for current user and clears cookies', async () => {
       authService.logoutAll.mockResolvedValue();
       const user = {
         sub: 'staff-uuid',
@@ -141,10 +187,11 @@ describe('AuthController', () => {
         permissions: [],
       };
 
-      const result = await controller.logoutAll(user);
+      const result = await controller.logoutAll(user, mockResponse);
 
       expect(result.success).toBe(true);
       expect(authService.logoutAll).toHaveBeenCalledWith('staff-uuid');
+      expect(mockResponse.clearCookie as jest.Mock).toHaveBeenCalled();
     });
   });
 
