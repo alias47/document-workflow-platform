@@ -2,30 +2,28 @@
 
 Version
 
-v0.4.3
+v0.5.0
 
 Current Sprint
 
-✅ Sprint 6.2.5 Complete
+Sprint 6.3
+
+Applicant End-to-End Integration
+
+Status
+
+🚧 In Progress
 
 Completed
-
-✅ Documentation
-
-✅ Foundation
 
 ✅ Frontend MVP
 
 ✅ Authentication
 
-✅ Applicant Database
-
-✅ Applicant Backend CRUD
+✅ Applicant Backend
 
 ✅ Frontend API Infrastructure
 
-Next
+Current
 
-Sprint 6.3
-
-Applicant Frontend Integration
+Applicant End-to-End Integration

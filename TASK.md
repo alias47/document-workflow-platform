@@ -1,155 +1,116 @@
 # TASK.md
 
-# Sprint 6.2.5 – Frontend API Infrastructure
+# Sprint 6.3 – Applicant End-to-End Integration
 
 ## Objective
 
-Build the shared frontend infrastructure required for all backend communication.
+Replace the applicant mock data with the real backend API.
 
-This sprint creates the API foundation only.
+This sprint delivers the first complete feature running from:
 
-No Applicant UI integration.
-
-No new pages.
-
-No feature implementation.
+PostgreSQL
+↓
+Prisma
+↓
+Repository
+↓
+Service
+↓
+Controller
+↓
+HTTP
+↓
+TanStack Query
+↓
+React UI
 
 ---
 
-## Read Before Starting
+## Read First
 
 - CLAUDE.md
 - docs/06_API_SPECIFICATION.md
 - docs/07_FRONTEND_ARCHITECTURE.md
-- docs/12_UI_UX_GUIDELINES.md
-- docs/13_COMPONENT_LIBRARY.md
 
 ---
 
 # Scope
 
-## HTTP Client
+## React Query Hooks
 
-Create:
+Create
 
-src/lib/http.ts
-
-Responsibilities:
-
-- Axios instance
-- Base URL from environment
-- withCredentials enabled
-- Default headers
-- Request interceptor
-- Response interceptor
-- Global error handling
-
-Do not call axios directly anywhere else.
-
----
-
-## API Types
-
-Create:
-
-src/types/api.ts
-
-Define:
-
-ApiResponse<T>
-
-PaginatedResponse<T>
-
-PaginationMeta
-
-ApiError
-
-ValidationError
-
-These types will be reused by every service.
-
----
-
-## Services
-
-Create:
-
-src/services/
+src/features/applicants/hooks/
 
 Implement:
 
-auth.service.ts
+useApplicants()
 
-applicant.service.ts
+useApplicant()
 
-Each service owns all HTTP communication.
+useCreateApplicant()
 
-Components must never import axios.
+useUpdateApplicant()
 
----
+useArchiveApplicant()
 
-## React Query
+Use the shared services created in Sprint 6.2.5.
 
-Install and configure:
-
-- QueryClient
-- QueryClientProvider
-
-Create:
-
-src/providers/QueryProvider.tsx
-
-Configure:
-
-- staleTime
-- retry policy
-- devtools (development only)
-
-Wrap the application.
+Never call axios directly.
 
 ---
 
-## Query Keys
+## Applicant List
 
-Create:
+Replace mock data.
 
-src/lib/query-keys.ts
+Connect
 
-Centralize every query key.
+GET /applicants
 
-Example:
+Implement:
 
-auth
+- search
+- pagination
+- status filter
+- assigned staff filter
+- sorting
 
-applicants
-
-documents
-
-workflow
-
-notifications
-
-Never hardcode query keys.
+Everything should be server-driven.
 
 ---
 
-## Environment
+## Applicant Profile
 
-Create:
+Replace
 
-.env.local.example
+getApplicantById()
 
-NEXT_PUBLIC_API_URL
+with
 
-Update README if necessary.
+GET /applicants/:id
 
 ---
 
-## Error Handling
+## Loading States
 
-Create reusable helpers.
+Use loading skeletons.
 
-Handle:
+No layout shift.
+
+---
+
+## Empty States
+
+When no applicants exist:
+
+Show the designed empty state.
+
+---
+
+## Error States
+
+Gracefully handle:
 
 401
 
@@ -157,29 +118,57 @@ Handle:
 
 404
 
-422
-
 500
 
-Do not expose raw backend messages.
+No browser crashes.
 
 ---
 
-## Authentication
+## Cache
 
-Prepare support for:
+Invalidate:
 
-HTTP-only cookie authentication
+Applicants list
 
-Do NOT implement login logic.
+Applicant detail
 
-Only prepare the infrastructure.
+after
+
+Create
+
+Update
+
+Archive
+
+---
+
+## URL State
+
+Keep
+
+page
+
+search
+
+status
+
+sort
+
+inside URL search params.
+
+Refreshing the page must preserve state.
+
+---
+
+## Remove Mock Data
+
+Delete applicant mock usage from production code.
+
+Keep mock files only if used for Storybook/testing.
 
 ---
 
 ## Validation
-
-Verify:
 
 pnpm lint
 
@@ -187,13 +176,11 @@ pnpm type-check
 
 pnpm build
 
+Manual browser verification
+
 ---
 
 # Out of Scope
-
-Do NOT implement:
-
-Applicant pages
 
 Documents
 
@@ -201,10 +188,6 @@ Workflow
 
 Notifications
 
-Settings
+Dashboard API
 
-File uploads
-
-Business logic
-
-React UI changes
+Authentication UI

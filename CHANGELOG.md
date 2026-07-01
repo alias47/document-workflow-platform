@@ -1,23 +1,21 @@
 # CHANGELOG
 
-## Sprint 6.2.5
+## Sprint 6.3
 
 ### Added
 
-- Shared Axios HTTP client
-- Global API response types
-- Query Provider
-- Query Keys
-- Error normalization
-- Environment configuration
+- Applicant React Query hooks
+- Backend integration
+- Server-side search
+- Server-side pagination
+- Server-side filtering
 
-### Refactored
+### Removed
 
-- Consolidated all services onto one HTTP client
-- Removed duplicate fetch API client
+- Applicant mock data
 
 ### Improved
 
-- Cookie authentication support
-- Retry policy
-- Pagination consistency
+- Loading states
+- Empty states
+- Error handling

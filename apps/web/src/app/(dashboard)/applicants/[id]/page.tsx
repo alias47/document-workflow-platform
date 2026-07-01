@@ -1,4 +1,4 @@
-import { ApplicantProfileClient } from '@/features/applicants/components/ApplicantProfileClient';
+import { ApplicantProfileContent } from '@/features/applicants/components/ApplicantProfileContent';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -6,5 +6,5 @@ interface Props {
 
 export default async function ApplicantProfilePage({ params }: Props) {
   const { id } = await params;
-  return <ApplicantProfileClient id={id} />;
+  return <ApplicantProfileContent id={id} />;
 }

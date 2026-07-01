@@ -12,7 +12,9 @@
       "Bash(grep -v \"^$\")",
       "Bash(pnpm -w exec eslint apps/web/src/features/applicants/components/ApplicantTable.tsx apps/web/src/features/applicants/components/ApplicantTableRow.tsx --no-warn-ignored --fix)",
       "Bash(npx jest *)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(pnpm -w exec eslint apps/web/src --fix --no-warn-ignored)",
+      "Bash(pnpm --filter @repo/web lint)"
     ]
   }
 }
