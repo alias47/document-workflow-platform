@@ -20,12 +20,43 @@ const PERMISSIONS = [
   { action: 'document.update', description: 'Update document details' },
   { action: 'document.archive', description: 'Archive (soft-delete) documents' },
   // Workflow
-  { action: 'workflow.view', description: 'View workflow templates' },
-  { action: 'workflow.manage', description: 'Create and edit workflow templates' },
+  { action: 'workflow.view', description: 'View workflow stages and applicant workflow state' },
+  { action: 'workflow.create', description: 'Create workflow stages' },
+  {
+    action: 'workflow.update',
+    description: 'Update workflow stages and move applicants between stages',
+  },
+  { action: 'workflow.archive', description: 'Archive (soft-delete) workflow stages' },
   // Audit
   { action: 'audit.view', description: 'View audit logs' },
   // Settings
   { action: 'settings.manage', description: 'Manage organization settings' },
+];
+
+// Default workflow stages (TASK 8.1). The first stage (New Inquiry) is the
+// default assigned to newly created applicants; the last (Closed) is terminal.
+const WORKFLOW_STAGES = [
+  { name: 'New Inquiry', color: '#6B7280', icon: 'inbox', isDefault: true, isFinal: false },
+  { name: 'Documents Pending', color: '#F59E0B', icon: 'folder', isDefault: false, isFinal: false },
+  {
+    name: 'Documents Verified',
+    color: '#3B82F6',
+    icon: 'badge-check',
+    isDefault: false,
+    isFinal: false,
+  },
+  { name: 'Offer Issued', color: '#8B5CF6', icon: 'mail', isDefault: false, isFinal: false },
+  {
+    name: 'Offer Accepted',
+    color: '#10B981',
+    icon: 'check-circle',
+    isDefault: false,
+    isFinal: false,
+  },
+  { name: 'Visa Processing', color: '#0EA5E9', icon: 'plane', isDefault: false, isFinal: false },
+  { name: 'Visa Approved', color: '#22C55E', icon: 'stamp', isDefault: false, isFinal: false },
+  { name: 'Enrolled', color: '#16A34A', icon: 'graduation-cap', isDefault: false, isFinal: false },
+  { name: 'Closed', color: '#4B5563', icon: 'archive', isDefault: false, isFinal: true },
 ];
 
 async function main(): Promise<void> {
@@ -79,7 +110,8 @@ async function main(): Promise<void> {
 
   // --- Consultant role (limited permissions) ---
   const consultantPerms = ['applicant.view', 'applicant.create', 'applicant.update',
-    'document.view', 'document.create', 'document.update', 'workflow.view'];
+    'document.view', 'document.create', 'document.update',
+    'workflow.view', 'workflow.update'];
   const consultantRole = await prisma.role.upsert({
     where: { organizationId_name: { organizationId: orgId, name: 'Consultant' } },
     create: {
@@ -101,6 +133,38 @@ async function main(): Promise<void> {
     });
   }
   console.log(`Role: Consultant (${consultantRole.id}) — ${consultantPerms.length} permissions`);
+
+  // --- Workflow stages ---
+  let defaultStageId: string | null = null;
+  for (const [index, stage] of WORKFLOW_STAGES.entries()) {
+    const existing = await prisma.workflowStage.findFirst({
+      where: { organizationId: orgId, name: stage.name, deletedAt: null },
+    });
+    const record = existing
+      ? await prisma.workflowStage.update({
+          where: { id: existing.id },
+          data: {
+            color: stage.color,
+            icon: stage.icon,
+            order: index,
+            isDefault: stage.isDefault,
+            isFinal: stage.isFinal,
+          },
+        })
+      : await prisma.workflowStage.create({
+          data: {
+            organizationId: orgId,
+            name: stage.name,
+            color: stage.color,
+            icon: stage.icon,
+            order: index,
+            isDefault: stage.isDefault,
+            isFinal: stage.isFinal,
+          },
+        });
+    if (stage.isDefault) defaultStageId = record.id;
+  }
+  console.log(`Workflow stages: ${WORKFLOW_STAGES.length} seeded (default: New Inquiry)`);
 
   // --- Admin staff user ---
   const adminPassword = process.env['SEED_ADMIN_PASSWORD'] ?? 'NewPass@1234!';
@@ -202,6 +266,34 @@ async function main(): Promise<void> {
           isPrimary: true,
         },
       });
+    }
+
+    // Default workflow position for the applicant (mirrors the runtime rule of
+    // auto-assigning the default stage on applicant creation).
+    if (defaultStageId) {
+      const existingWorkflow = await prisma.applicantWorkflow.findUnique({
+        where: { applicantId: applicant.id },
+      });
+      if (!existingWorkflow) {
+        await prisma.applicantWorkflow.create({
+          data: {
+            organizationId: orgId,
+            applicantId: applicant.id,
+            currentStageId: defaultStageId,
+            createdBy: adminStaff.id,
+          },
+        });
+        await prisma.workflowHistory.create({
+          data: {
+            organizationId: orgId,
+            applicantId: applicant.id,
+            fromStageId: null,
+            toStageId: defaultStageId,
+            changedBy: adminStaff.id,
+            comment: 'Workflow initialized',
+          },
+        });
+      }
     }
 
     // Sample document metadata record (upload comes in a later sprint —

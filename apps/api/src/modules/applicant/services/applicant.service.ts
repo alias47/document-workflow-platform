@@ -7,6 +7,7 @@ import type { CreateApplicantDto } from '../dto/create-applicant.dto';
 import type { UpdateApplicantDto } from '../dto/update-applicant.dto';
 
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { WorkflowService } from '@/modules/workflow/services/workflow.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class ApplicantService {
   constructor(
     private readonly applicantRepo: ApplicantRepository,
     private readonly auditService: AuditService,
+    private readonly workflowService: WorkflowService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -86,6 +88,14 @@ export class ApplicantService {
           assignedBy: staffId,
           isPrimary: true,
         },
+      });
+
+      // Business rule: a newly created applicant is placed into the org's
+      // default workflow stage as part of the same atomic transaction.
+      await this.workflowService.assignDefaultStageInTransaction(tx, {
+        organizationId,
+        applicantId: created.id,
+        staffId,
       });
 
       return created;

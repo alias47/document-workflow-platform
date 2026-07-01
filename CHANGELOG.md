@@ -1,42 +1,36 @@
-# Upcoming
+# Sprint 8.1
 
-## Sprint 7.1 – Document Domain
+## Database
 
-### Planned
+- Added WorkflowStage model
+- Added ApplicantWorkflow model
+- Added WorkflowHistory model
+- Added relationships
+- Added indexes
+- Added migration
+- Updated seed data
 
-#### Database
+## Backend
 
-- Document model
-- DocumentCategory enum
-- DocumentStatus enum
-- Relationships
-- Migration
-- Seed
+- Added Workflow module
+- Added repository
+- Added service
+- Added controller
+- Added DTOs
+- Added RBAC permissions
+- Added transaction-based stage transitions
+- Added audit logging
+- Added workflow history
 
-#### Backend
+## Quality
 
-- DTOs
-- Repository
-- Service
-- Controller
-- Module
+- Added unit tests
+- Added repository tests
+- Added controller tests
 
-#### API
+## Validation
 
-- GET /documents
-- GET /documents/:id
-- POST /documents
-- PATCH /documents/:id
-- DELETE /documents/:id
-
-#### Validation
-
-- Organization isolation
-- Soft delete
-- Audit logging
-
-#### Testing
-
-- Repository
-- Service
-- Controller
+- lint passed
+- type-check passed
+- build passed
+- tests passed

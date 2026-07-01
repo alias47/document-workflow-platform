@@ -1,29 +1,12 @@
-# TASK.md
+# Sprint 8.1 – Workflow Domain (Database & Backend)
 
-## Current Sprint
+## Goal
 
-Sprint 7.1 – Document Domain (Database & Backend API)
+Introduce the Applicant Workflow domain.
 
----
-
-## Objective
-
-Implement the complete Document domain at the backend layer.
-
-This sprint covers only:
-
-- Prisma models
-- Migration
-- Seed
-- Repository
-- Service
-- Controller
-- DTOs
-- Tests
+This sprint establishes the workflow engine at the database and backend layers only.
 
 No frontend changes.
-
-No file upload yet.
 
 ---
 
@@ -31,167 +14,225 @@ No file upload yet.
 
 ### Database
 
-Create the Document domain.
+Create:
 
-Models
+- WorkflowStage
+- ApplicantWorkflow
+- WorkflowHistory
 
-- Document
-- DocumentCategory (enum)
-- DocumentStatus (enum)
+WorkflowStage stores the master list of stages.
 
-Relationships
+ApplicantWorkflow stores the applicant's current workflow state.
 
-Organization
-└── Documents
-
-Applicant
-└── Documents
-
-Staff
-└── Uploaded Documents
+WorkflowHistory stores immutable transition history.
 
 ---
 
-### Document fields
+## Relationships
+
+Organization
+└── WorkflowStage[]
+
+Applicant
+├── ApplicantWorkflow (1:1)
+└── WorkflowHistory[]
+
+Staff
+└── WorkflowHistory.changedBy
+
+---
+
+## WorkflowStage
+
+Fields
+
+- id
+- organizationId
+- name
+- description
+- color
+- icon
+- order
+- isDefault
+- isFinal
+
+Audit fields
+
+Soft delete
+
+Indexes
+
+---
+
+## ApplicantWorkflow
+
+Fields
 
 - id
 - organizationId
 - applicantId
-- uploadedBy
-- category
-- status
-- originalFilename
-- storedFilename
-- mimeType
-- fileSize
-- storageKey
-- checksum (optional)
-- expiresAt (optional)
-- verifiedAt (optional)
-- verifiedBy (optional)
-- verificationNotes (optional)
-- createdAt
-- updatedAt
-- deletedAt
-- createdBy
-- updatedBy
-- deletedBy
+- currentStageId
+- enteredStageAt
+- expectedCompletionDate
+- notes
+
+Audit fields
+
+Soft delete
+
+One workflow per applicant.
 
 ---
 
-### Repository
+## WorkflowHistory
 
-Implement
+Immutable log.
 
-- findById
-- list
-- create
-- update
-- softDelete
+Fields
 
----
+- id
+- organizationId
+- applicantId
+- fromStageId
+- toStageId
+- changedBy
+- changedAt
+- comment
 
-### Service
+No updates.
 
-Implement
-
-- list
-- getById
-- create
-- update
-- archive
-
-Business rules
-
-- Organization isolation
-- Soft delete
-- Audit logging
+Append only.
 
 ---
 
-### Controller
-
-Endpoints
-
-GET /documents
-
-GET /documents/:id
-
-POST /documents
-
-PATCH /documents/:id
-
-DELETE /documents/:id
-
-RBAC
-
-document.view
-
-document.create
-
-document.update
-
-document.archive
-
----
-
-### DTOs
+## Backend
 
 Create
 
-CreateDocumentDto
+Workflow Module
 
-UpdateDocumentDto
+Repository
 
-DocumentResponseDto
+Service
 
-DocumentQueryDto
+Controller
 
----
-
-### Tests
-
-Repository tests
-
-Service tests
-
-Controller tests
+DTOs
 
 ---
 
-## Out of Scope
+## Endpoints
 
-No Multer
+GET /workflow/stages
 
-No uploads
+POST /workflow/stages
 
-No S3
+PATCH /workflow/stages/:id
 
-No local storage
+DELETE /workflow/stages/:id
 
-No frontend
+GET /workflow/:applicantId
 
-No React Query
+PATCH /workflow/:applicantId
 
-No HTML changes
+GET /workflow/:applicantId/history
+
+---
+
+## Business Rules
+
+Every applicant has exactly one current workflow.
+
+Changing stage must
+
+- update ApplicantWorkflow
+- insert WorkflowHistory
+- create AuditLog
+
+inside one transaction.
+
+Default stage automatically assigned to newly created applicants.
+
+Cannot move to deleted stages.
+
+Cannot delete a stage currently used by applicants.
+
+---
+
+## Permissions
+
+workflow.view
+
+workflow.create
+
+workflow.update
+
+workflow.archive
+
+---
+
+## Seed
+
+Create default workflow stages
+
+1. New Inquiry
+2. Documents Pending
+3. Documents Verified
+4. Offer Issued
+5. Offer Accepted
+6. Visa Processing
+7. Visa Approved
+8. Enrolled
+9. Closed
+
+Grant permissions to Admin.
+
+Consultant receives
+
+workflow.view
+
+workflow.update
+
+---
+
+## Tests
+
+Repository
+
+Service
+
+Controller
+
+Transaction tests
+
+Validation tests
 
 ---
 
 ## Validation
 
-- prisma validate
-- prisma generate
-- migration succeeds
-- seed succeeds
-- lint passes
-- type-check passes
-- build passes
-- tests pass
+Run
+
+pnpm lint
+
+pnpm type-check
+
+pnpm build
+
+All tests must pass.
 
 ---
 
-## Definition of Done
+## Out of Scope
 
-Document backend is production ready.
+Kanban UI
 
-Upload functionality begins in Sprint 7.2.
+Drag & Drop
+
+Workflow dashboard
+
+Analytics
+
+Automation
+
+Notifications

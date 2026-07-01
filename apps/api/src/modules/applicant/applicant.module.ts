@@ -6,9 +6,10 @@ import { ApplicantService } from './services/applicant.service';
 
 import { AuditModule } from '@/modules/audit/audit.module';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { WorkflowModule } from '@/modules/workflow/workflow.module';
 
 @Module({
-  imports: [AuthModule, AuditModule],
+  imports: [AuthModule, AuditModule, WorkflowModule],
   controllers: [ApplicantController],
   providers: [ApplicantService, ApplicantRepository],
   exports: [ApplicantService],

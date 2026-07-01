@@ -76,11 +76,12 @@ model Organization {
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
-  staff       Staff[]
-  roles       Role[]
-  applicants  Applicant[]
-  assignments ApplicantAssignment[]
-  documents   Document[]
+  staff          Staff[]
+  roles          Role[]
+  applicants     Applicant[]
+  assignments    ApplicantAssignment[]
+  documents      Document[]
+  workflowStages WorkflowStage[]
 
   @@map("organizations")
 }
@@ -167,6 +168,7 @@ model Staff {
   assignmentsMade     ApplicantAssignment[] @relation("AssignedByStaff")
   uploadedDocuments   Document[]            @relation("UploadedDocuments")
   verifiedDocuments   Document[]            @relation("VerifiedDocuments")
+  workflowChanges     WorkflowHistory[]     @relation("WorkflowChangedBy")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -298,10 +300,12 @@ model Applicant {
   deletedAt       DateTime?
   deletedBy       String?         @db.Uuid
 
-  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  portalAccount PortalAccount?
-  assignments   ApplicantAssignment[]
-  documents     Document[]
+  organization    Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  portalAccount   PortalAccount?
+  assignments     ApplicantAssignment[]
+  documents       Document[]
+  workflow        ApplicantWorkflow?
+  workflowHistory WorkflowHistory[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -380,4 +384,92 @@ model Document {
   @@index([uploadedBy])
   @@index([organizationId, status])
   @@map("documents")
+}
+
+// ---------------------------------------------------------------------------
+// WORKFLOW STAGE (TASK 8.1)
+// Master list of configurable stages an applicant moves through. Kept
+// industry-neutral: customer-facing labels are set per stage via `name`.
+// ---------------------------------------------------------------------------
+
+model WorkflowStage {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @db.Uuid
+  name           String
+  description    String?
+  color          String?
+  icon           String?
+  order          Int       @default(0)
+  isDefault      Boolean   @default(false)
+  isFinal        Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  createdBy      String?   @db.Uuid
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?   @db.Uuid
+  deletedAt      DateTime?
+  deletedBy      String?   @db.Uuid
+
+  organization      Organization        @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  currentWorkflows  ApplicantWorkflow[] @relation("CurrentStage")
+  historyFromStages WorkflowHistory[]   @relation("HistoryFromStage")
+  historyToStages   WorkflowHistory[]   @relation("HistoryToStage")
+
+  @@index([organizationId])
+  @@index([organizationId, order])
+  @@index([isDefault])
+  @@map("workflow_stages")
+}
+
+// ---------------------------------------------------------------------------
+// APPLICANT WORKFLOW (TASK 8.1)
+// The applicant's current workflow position. Exactly one per applicant.
+// ---------------------------------------------------------------------------
+
+model ApplicantWorkflow {
+  id                     String    @id @default(uuid()) @db.Uuid
+  organizationId         String    @db.Uuid
+  applicantId            String    @unique @db.Uuid
+  currentStageId         String    @db.Uuid
+  enteredStageAt         DateTime  @default(now())
+  expectedCompletionDate DateTime?
+  notes                  String?
+  createdAt              DateTime  @default(now())
+  createdBy              String?   @db.Uuid
+  updatedAt              DateTime  @updatedAt
+  updatedBy              String?   @db.Uuid
+  deletedAt              DateTime?
+  deletedBy              String?   @db.Uuid
+
+  applicant    Applicant     @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  currentStage WorkflowStage @relation("CurrentStage", fields: [currentStageId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([currentStageId])
+  @@map("applicant_workflows")
+}
+
+// ---------------------------------------------------------------------------
+// WORKFLOW HISTORY (TASK 8.1)
+// Immutable, append-only transition log. Never updated or deleted.
+// ---------------------------------------------------------------------------
+
+model WorkflowHistory {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @db.Uuid
+  applicantId    String   @db.Uuid
+  fromStageId    String?  @db.Uuid
+  toStageId      String   @db.Uuid
+  changedBy      String?  @db.Uuid
+  changedAt      DateTime @default(now())
+  comment        String?
+
+  applicant       Applicant      @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  fromStage       WorkflowStage? @relation("HistoryFromStage", fields: [fromStageId], references: [id], onDelete: Restrict)
+  toStage         WorkflowStage  @relation("HistoryToStage", fields: [toStageId], references: [id], onDelete: Restrict)
+  changedByStaff  Staff?         @relation("WorkflowChangedBy", fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([applicantId])
+  @@index([applicantId, changedAt])
+  @@map("workflow_history")
 }

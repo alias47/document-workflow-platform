@@ -9,6 +9,7 @@ import type { CreateApplicantDto } from '../dto/create-applicant.dto';
 import type { UpdateApplicantDto } from '../dto/update-applicant.dto';
 
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { WorkflowService } from '@/modules/workflow/services/workflow.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
 const ORG_ID = 'org-uuid-1';
@@ -44,6 +45,7 @@ describe('ApplicantService', () => {
   let service: ApplicantService;
   let repo: jest.Mocked<ApplicantRepository>;
   let auditService: jest.Mocked<AuditService>;
+  let workflowService: jest.Mocked<WorkflowService>;
   let prisma: { $transaction: jest.Mock };
 
   beforeEach(async () => {
@@ -83,6 +85,12 @@ describe('ApplicantService', () => {
           useValue: { log: jest.fn().mockResolvedValue(undefined) },
         },
         {
+          provide: WorkflowService,
+          useValue: {
+            assignDefaultStageInTransaction: jest.fn().mockResolvedValue(undefined),
+          } satisfies Partial<Record<keyof WorkflowService, jest.Mock>>,
+        },
+        {
           provide: PrismaService,
           useValue: prisma,
         },
@@ -92,6 +100,7 @@ describe('ApplicantService', () => {
     service = module.get(ApplicantService);
     repo = module.get(ApplicantRepository) as jest.Mocked<ApplicantRepository>;
     auditService = module.get(AuditService) as jest.Mocked<AuditService>;
+    workflowService = module.get(WorkflowService) as jest.Mocked<WorkflowService>;
   });
 
   describe('list', () => {
@@ -163,6 +172,10 @@ describe('ApplicantService', () => {
 
       expect(result.applicantNumber).toBe('APP-2026-0001');
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(workflowService.assignDefaultStageInTransaction).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ organizationId: ORG_ID, staffId: STAFF_ID }),
+      );
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'applicant.created' }),
       );
