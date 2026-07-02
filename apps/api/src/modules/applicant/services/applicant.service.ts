@@ -6,6 +6,8 @@ import type { ApplicantQueryDto } from '../dto/applicant-query.dto';
 import type { CreateApplicantDto } from '../dto/create-applicant.dto';
 import type { UpdateApplicantDto } from '../dto/update-applicant.dto';
 
+import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
+import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 import { WorkflowService } from '@/modules/workflow/services/workflow.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -16,6 +18,7 @@ export class ApplicantService {
     private readonly applicantRepo: ApplicantRepository,
     private readonly auditService: AuditService,
     private readonly workflowService: WorkflowService,
+    private readonly activityService: ActivityService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -110,6 +113,14 @@ export class ApplicantService {
       resourceId: applicant.id,
     });
 
+    void this.activityService.record({
+      organizationId,
+      applicantId: applicant.id,
+      actorId: staffId,
+      type: ACTIVITY_TYPES.APPLICANT_CREATED,
+      title: 'Applicant created',
+    });
+
     return { id: applicant.id, applicantNumber: applicant.applicantNumber };
   }
 
@@ -144,6 +155,14 @@ export class ApplicantService {
       action: 'applicant.updated',
       resourceType: 'applicant',
       resourceId: id,
+    });
+
+    void this.activityService.record({
+      organizationId,
+      applicantId: id,
+      actorId: staffId,
+      type: ACTIVITY_TYPES.APPLICANT_UPDATED,
+      title: 'Applicant details updated',
     });
 
     return updated;

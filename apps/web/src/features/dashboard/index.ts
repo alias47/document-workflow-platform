@@ -1,9 +1,10 @@
-export { StatCard } from './components/StatCard';
-export { StatCardGrid } from './components/StatCardGrid';
-export { RecentActivity } from './components/RecentActivity';
-export { PendingTasks } from './components/PendingTasks';
-export { UpcomingDeadlines } from './components/UpcomingDeadlines';
-export { QuickActions } from './components/QuickActions';
-export { NotificationWidget } from './components/NotificationWidget';
-export { DASHBOARD_MOCK } from './mock/dashboard.mock';
+export { ApplicantStatusChart } from './components/ApplicantStatusChart';
+export { DashboardEmpty } from './components/DashboardEmpty';
+export { DashboardError } from './components/DashboardError';
+export { DashboardSkeleton } from './components/DashboardSkeleton';
+export { DashboardSummaryCards } from './components/DashboardSummaryCards';
+export { DocumentStatusChart } from './components/DocumentStatusChart';
+export { RecentActivities } from './components/RecentActivities';
+export { RecentApplicants } from './components/RecentApplicants';
+export { useDashboard } from './hooks/use-dashboard';
 export type * from './types/dashboard.types';

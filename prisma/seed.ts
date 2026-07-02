@@ -34,6 +34,8 @@ const PERMISSIONS = [
   { action: 'notes.archive', description: 'Delete (soft-delete) applicant notes' },
   // Search
   { action: 'search.view', description: 'Use the global search feature' },
+  // Dashboard
+  { action: 'dashboard.view', description: 'View the aggregated dashboard' },
   // Audit
   { action: 'audit.view', description: 'View audit logs' },
   // Settings
@@ -120,7 +122,7 @@ async function main(): Promise<void> {
     'document.view', 'document.create', 'document.update',
     'workflow.view', 'workflow.update',
     'notes.view', 'notes.create', 'notes.update', 'notes.archive',
-    'search.view'];
+    'search.view', 'dashboard.view'];
   const consultantRole = await prisma.role.upsert({
     where: { organizationId_name: { organizationId: orgId, name: 'Consultant' } },
     create: {
@@ -303,6 +305,24 @@ async function main(): Promise<void> {
           },
         });
       }
+    }
+
+    // Seed a baseline activity entry (TASK 8.4). Activity is append-only and
+    // normally system-generated; this gives the Activity Log tab data to show.
+    const existingActivity = await prisma.applicantActivity.findFirst({
+      where: { applicantId: applicant.id, type: 'system.created' },
+    });
+    if (!existingActivity) {
+      await prisma.applicantActivity.create({
+        data: {
+          organizationId: orgId,
+          applicantId: applicant.id,
+          actorId: adminStaff.id,
+          type: 'system.created',
+          title: 'Applicant record created',
+          description: 'Seeded during initial setup',
+        },
+      });
     }
 
     // Sample document metadata record (upload comes in a later sprint —

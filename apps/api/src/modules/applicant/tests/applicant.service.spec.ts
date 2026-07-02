@@ -8,6 +8,7 @@ import type { ApplicantQueryDto } from '../dto/applicant-query.dto';
 import type { CreateApplicantDto } from '../dto/create-applicant.dto';
 import type { UpdateApplicantDto } from '../dto/update-applicant.dto';
 
+import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 import { WorkflowService } from '@/modules/workflow/services/workflow.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -46,6 +47,7 @@ describe('ApplicantService', () => {
   let repo: jest.Mocked<ApplicantRepository>;
   let auditService: jest.Mocked<AuditService>;
   let workflowService: jest.Mocked<WorkflowService>;
+  let activityService: jest.Mocked<ActivityService>;
   let prisma: { $transaction: jest.Mock };
 
   beforeEach(async () => {
@@ -91,6 +93,10 @@ describe('ApplicantService', () => {
           } satisfies Partial<Record<keyof WorkflowService, jest.Mock>>,
         },
         {
+          provide: ActivityService,
+          useValue: { record: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
           provide: PrismaService,
           useValue: prisma,
         },
@@ -101,6 +107,7 @@ describe('ApplicantService', () => {
     repo = module.get(ApplicantRepository) as jest.Mocked<ApplicantRepository>;
     auditService = module.get(AuditService) as jest.Mocked<AuditService>;
     workflowService = module.get(WorkflowService) as jest.Mocked<WorkflowService>;
+    activityService = module.get(ActivityService) as jest.Mocked<ActivityService>;
   });
 
   describe('list', () => {
@@ -179,6 +186,9 @@ describe('ApplicantService', () => {
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'applicant.created' }),
       );
+      expect(activityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'applicant.created' }),
+      );
     });
 
     it('throws ConflictException when email already exists', async () => {
@@ -225,6 +235,9 @@ describe('ApplicantService', () => {
       expect(result.phone).toBe('+9779811111111');
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'applicant.updated' }),
+      );
+      expect(activityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'applicant.updated', applicantId: APPLICANT_ID }),
       );
     });
 

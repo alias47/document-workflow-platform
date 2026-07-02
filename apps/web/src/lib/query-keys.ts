@@ -51,6 +51,12 @@ export const queryKeys = {
       [...queryKeys.notes.all, 'applicant', applicantId] as const,
   },
 
+  activity: {
+    all: ['activity'] as const,
+    byApplicant: (applicantId: string) =>
+      [...queryKeys.activity.all, 'applicant', applicantId] as const,
+  },
+
   dashboard: {
     all: ['dashboard'] as const,
     summary: () => [...queryKeys.dashboard.all, 'summary'] as const,

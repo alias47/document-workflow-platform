@@ -7,6 +7,7 @@ import { NotesService } from '../services/notes.service';
 import type { CreateApplicantNoteDto } from '../dto/create-applicant-note.dto';
 import type { UpdateApplicantNoteDto } from '../dto/update-applicant-note.dto';
 
+import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 
 const ORG = 'org-1';
@@ -34,6 +35,7 @@ describe('NotesService', () => {
   let service: NotesService;
   let repo: jest.Mocked<NotesRepository>;
   let audit: jest.Mocked<AuditService>;
+  let activity: jest.Mocked<ActivityService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -53,12 +55,17 @@ describe('NotesService', () => {
           provide: AuditService,
           useValue: { log: jest.fn().mockResolvedValue(undefined) },
         },
+        {
+          provide: ActivityService,
+          useValue: { record: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 
     service = module.get(NotesService);
     repo = module.get(NotesRepository);
     audit = module.get(AuditService);
+    activity = module.get(ActivityService);
   });
 
   describe('listByApplicant', () => {
@@ -77,6 +84,9 @@ describe('NotesService', () => {
       const result = await service.create(APPLICANT, ORG, STAFF, dto);
       expect(result.id).toBe(NOTE_ID);
       expect(audit.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'note.created' }));
+      expect(activity.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'note.created', applicantId: APPLICANT }),
+      );
     });
   });
 
@@ -103,6 +113,9 @@ describe('NotesService', () => {
       } as UpdateApplicantNoteDto);
       expect(result.content).toBe('Updated');
       expect(audit.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'note.updated' }));
+      expect(activity.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'note.updated', applicantId: APPLICANT }),
+      );
     });
   });
 
@@ -123,6 +136,9 @@ describe('NotesService', () => {
       await service.remove(NOTE_ID, ORG, STAFF);
       expect(repo.softDelete).toHaveBeenCalledWith(NOTE_ID, STAFF);
       expect(audit.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'note.deleted' }));
+      expect(activity.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'note.deleted', applicantId: APPLICANT }),
+      );
     });
   });
 });

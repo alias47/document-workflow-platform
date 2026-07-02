@@ -17,10 +17,12 @@ import {
   jwtConfig,
   storageConfig,
 } from './config';
+import { ActivityModule } from './modules/activity/activity.module';
 import { ApplicantModule } from './modules/applicant/applicant.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DocumentModule } from './modules/document/document.module';
 import { NotesModule } from './modules/notes/notes.module';
 import { OrganizationModule } from './modules/organization/organization.module';
@@ -68,6 +70,7 @@ const ENV_FILES = [
     }),
     PrismaModule,
     AuditModule,
+    ActivityModule,
     AuthModule,
     OrganizationModule,
     StaffModule,
@@ -76,6 +79,7 @@ const ENV_FILES = [
     WorkflowModule,
     SearchModule,
     NotesModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

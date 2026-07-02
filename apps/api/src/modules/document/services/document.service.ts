@@ -7,6 +7,8 @@ import type { DocumentQueryDto } from '../dto/document-query.dto';
 import type { UpdateDocumentDto } from '../dto/update-document.dto';
 import type { DocumentCategory, DocumentStatus } from '@prisma/client';
 
+import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
+import { ActivityService } from '@/modules/activity/services/activity.service';
 import { ApplicantService } from '@/modules/applicant/services/applicant.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 
@@ -16,6 +18,7 @@ export class DocumentService {
     private readonly documentRepo: DocumentRepository,
     private readonly applicantService: ApplicantService,
     private readonly auditService: AuditService,
+    private readonly activityService: ActivityService,
   ) {}
 
   async list(organizationId: string, query: DocumentQueryDto) {
@@ -77,6 +80,16 @@ export class DocumentService {
       resourceId: document.id,
     });
 
+    void this.activityService.record({
+      organizationId,
+      applicantId: dto.applicantId,
+      actorId: staffId,
+      type: ACTIVITY_TYPES.DOCUMENT_UPLOADED,
+      title: 'Document added',
+      ...(dto.originalFilename !== undefined ? { description: dto.originalFilename } : {}),
+      metadata: { documentId: document.id },
+    });
+
     return { id: document.id };
   }
 
@@ -105,6 +118,20 @@ export class DocumentService {
       resourceId: id,
     });
 
+    // A verification decision is a distinct activity worth surfacing on the log.
+    if (dto.status === 'verified' || dto.status === 'rejected') {
+      const verified = dto.status === 'verified';
+      void this.activityService.record({
+        organizationId,
+        applicantId: existing.applicantId,
+        actorId: staffId,
+        type: verified ? ACTIVITY_TYPES.DOCUMENT_VERIFIED : ACTIVITY_TYPES.DOCUMENT_REJECTED,
+        title: verified ? 'Document verified' : 'Document rejected',
+        description: existing.originalFilename,
+        metadata: { documentId: id },
+      });
+    }
+
     return updated;
   }
 
@@ -121,6 +148,16 @@ export class DocumentService {
       action: 'document.archived',
       resourceType: 'document',
       resourceId: id,
+    });
+
+    void this.activityService.record({
+      organizationId,
+      applicantId: existing.applicantId,
+      actorId: staffId,
+      type: ACTIVITY_TYPES.DOCUMENT_DELETED,
+      title: 'Document deleted',
+      description: existing.originalFilename,
+      metadata: { documentId: id },
     });
   }
 }

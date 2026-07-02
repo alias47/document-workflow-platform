@@ -8,6 +8,7 @@ import type { CreateDocumentDto } from '../dto/create-document.dto';
 import type { DocumentQueryDto } from '../dto/document-query.dto';
 import type { UpdateDocumentDto } from '../dto/update-document.dto';
 
+import { ActivityService } from '@/modules/activity/services/activity.service';
 import { ApplicantService } from '@/modules/applicant/services/applicant.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 
@@ -47,6 +48,7 @@ describe('DocumentService', () => {
   let repo: jest.Mocked<DocumentRepository>;
   let applicantService: jest.Mocked<ApplicantService>;
   let auditService: jest.Mocked<AuditService>;
+  let activityService: jest.Mocked<ActivityService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -70,6 +72,10 @@ describe('DocumentService', () => {
           provide: AuditService,
           useValue: { log: jest.fn().mockResolvedValue(undefined) },
         },
+        {
+          provide: ActivityService,
+          useValue: { record: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 
@@ -77,6 +83,7 @@ describe('DocumentService', () => {
     repo = module.get(DocumentRepository) as jest.Mocked<DocumentRepository>;
     applicantService = module.get(ApplicantService) as jest.Mocked<ApplicantService>;
     auditService = module.get(AuditService) as jest.Mocked<AuditService>;
+    activityService = module.get(ActivityService) as jest.Mocked<ActivityService>;
   });
 
   describe('list', () => {
@@ -157,6 +164,9 @@ describe('DocumentService', () => {
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'document.created' }),
       );
+      expect(activityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'document.uploaded', applicantId: APPLICANT_ID }),
+      );
     });
 
     it('propagates NotFoundException when applicant is in another org', async () => {
@@ -183,6 +193,31 @@ describe('DocumentService', () => {
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'document.updated' }),
       );
+      expect(activityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'document.verified', applicantId: APPLICANT_ID }),
+      );
+    });
+
+    it('records a rejected activity when status becomes rejected', async () => {
+      const dto: UpdateDocumentDto = { status: 'rejected', verificationNotes: 'Blurry scan' };
+      repo.findById.mockResolvedValue(mockDocument as never);
+      repo.update.mockResolvedValue({ ...mockDocument, status: 'rejected' } as never);
+
+      await service.update(DOCUMENT_ID, ORG_ID, dto, STAFF_ID);
+
+      expect(activityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'document.rejected' }),
+      );
+    });
+
+    it('does not record a verification activity for a plain category change', async () => {
+      const dto: UpdateDocumentDto = { category: 'academic' };
+      repo.findById.mockResolvedValue(mockDocument as never);
+      repo.update.mockResolvedValue(mockDocument as never);
+
+      await service.update(DOCUMENT_ID, ORG_ID, dto, STAFF_ID);
+
+      expect(activityService.record).not.toHaveBeenCalled();
     });
 
     it('does not stamp a verifier for a plain category change', async () => {
@@ -214,6 +249,9 @@ describe('DocumentService', () => {
       expect(repo.softDelete).toHaveBeenCalledWith(DOCUMENT_ID, STAFF_ID);
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'document.archived' }),
+      );
+      expect(activityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'document.deleted', applicantId: APPLICANT_ID }),
       );
     });
 

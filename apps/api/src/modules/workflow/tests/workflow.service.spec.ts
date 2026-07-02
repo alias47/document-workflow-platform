@@ -7,6 +7,7 @@ import { WorkflowService } from '../services/workflow.service';
 import type { CreateWorkflowStageDto } from '../dto/create-workflow-stage.dto';
 import type { UpdateApplicantWorkflowDto } from '../dto/update-applicant-workflow.dto';
 
+import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -49,6 +50,7 @@ describe('WorkflowService', () => {
   let service: WorkflowService;
   let repo: jest.Mocked<WorkflowRepository>;
   let auditService: jest.Mocked<AuditService>;
+  let activityService: jest.Mocked<ActivityService>;
   let prisma: { $transaction: jest.Mock };
 
   beforeEach(async () => {
@@ -89,6 +91,10 @@ describe('WorkflowService', () => {
           } satisfies Partial<Record<keyof WorkflowRepository, jest.Mock>>,
         },
         { provide: AuditService, useValue: { log: jest.fn().mockResolvedValue(undefined) } },
+        {
+          provide: ActivityService,
+          useValue: { record: jest.fn().mockResolvedValue(undefined) },
+        },
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
@@ -96,6 +102,7 @@ describe('WorkflowService', () => {
     service = module.get(WorkflowService);
     repo = module.get(WorkflowRepository) as jest.Mocked<WorkflowRepository>;
     auditService = module.get(AuditService) as jest.Mocked<AuditService>;
+    activityService = module.get(ActivityService) as jest.Mocked<ActivityService>;
   });
 
   describe('listStages', () => {
@@ -225,6 +232,22 @@ describe('WorkflowService', () => {
           toStageId: 'stage-uuid-2',
           changedBy: STAFF_ID,
           comment: 'moving on',
+        }),
+      );
+    });
+
+    it('records a workflow.stage_changed activity for the applicant', async () => {
+      repo.findWorkflowByApplicant.mockResolvedValue(mockWorkflow as never);
+      repo.findStageById.mockResolvedValue({ ...mockStage, id: 'stage-uuid-2' } as never);
+      repo.changeStage.mockResolvedValue(mockWorkflow as never);
+
+      await service.changeStage(APPLICANT_ID, ORG_ID, dto, STAFF_ID);
+
+      expect(activityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'workflow.stage_changed',
+          applicantId: APPLICANT_ID,
+          actorId: STAFF_ID,
         }),
       );
     });

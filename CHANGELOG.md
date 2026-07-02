@@ -1,28 +1,26 @@
-# Sprint 8.3
+# Sprint 8.4
 
 ## Database
 
-- Added ApplicantNote model
+- Added ApplicantActivity model
 
 ## Backend
 
-- Added NotesModule
-- Added CRUD API
-- Added RBAC permissions
-- Added AuditLog integration
+- Added ActivityModule
+- Added automatic activity recording
+- Added applicant activity endpoint
 
 ## Frontend
 
-- Replaced Timeline tab with Notes
-- Added Notes list
-- Added Create/Edit/Delete dialogs
-- Added React Query hooks
+- Added Activity Log tab
+- Added Activity components
+- Replaced Timeline with Activity Log
 
 ## Quality
 
-- Added unit tests
 - Added repository tests
-- Added validation tests
+- Added service tests
+- Added controller tests
 
 ## Validation
 

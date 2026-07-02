@@ -83,6 +83,7 @@ model Organization {
   documents      Document[]
   workflowStages WorkflowStage[]
   notes          ApplicantNote[]
+  activities     ApplicantActivity[]
 
   @@map("organizations")
 }
@@ -171,6 +172,7 @@ model Staff {
   verifiedDocuments   Document[]            @relation("VerifiedDocuments")
   workflowChanges     WorkflowHistory[]     @relation("WorkflowChangedBy")
   authoredNotes       ApplicantNote[]       @relation("NoteAuthor")
+  activities          ApplicantActivity[]   @relation("ActivityActor")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -309,6 +311,7 @@ model Applicant {
   workflow        ApplicantWorkflow?
   workflowHistory WorkflowHistory[]
   notes           ApplicantNote[]
+  activities      ApplicantActivity[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -420,6 +423,36 @@ model ApplicantNote {
   @@index([authorId])
   @@index([applicantId, createdAt])
   @@map("applicant_notes")
+}
+
+// ---------------------------------------------------------------------------
+// APPLICANT ACTIVITY (TASK 8.4)
+// Read-only, append-only chronological history of important applicant events.
+// Generated automatically by the system via ActivityService — never edited or
+// deleted. Organization-isolated; retained even when the applicant is
+// soft-deleted (applicants are never hard-deleted). No updatedAt / deletedAt:
+// the model has no mutable lifecycle by design.
+// ---------------------------------------------------------------------------
+
+model ApplicantActivity {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @db.Uuid
+  applicantId    String   @db.Uuid
+  type           String
+  title          String
+  description    String?
+  actorId        String?  @db.Uuid
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  applicant    Applicant    @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  actor        Staff?       @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([applicantId])
+  @@index([applicantId, createdAt(sort: Desc)])
+  @@map("applicant_activities")
 }
 
 // ---------------------------------------------------------------------------

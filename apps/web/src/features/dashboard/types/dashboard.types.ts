@@ -1,74 +1,55 @@
-export type TrendDirection = 'up' | 'down' | 'neutral';
-
-export interface StatCardData {
-  id: string;
-  label: string;
-  value: number | string;
-  trend?: {
-    direction: TrendDirection;
-    value: string;
-    label: string;
-  };
-  iconName: string;
-  colorScheme: 'blue' | 'green' | 'amber' | 'violet';
+export interface DashboardSummary {
+  totalApplicants: number;
+  activeApplicants: number;
+  archivedApplicants: number;
+  totalDocuments: number;
+  pendingDocuments: number;
+  verifiedDocuments: number;
+  rejectedDocuments: number;
 }
 
-export type ActivityType =
-  | 'applicant_created'
-  | 'document_uploaded'
-  | 'document_approved'
-  | 'document_rejected'
-  | 'workflow_updated'
-  | 'task_completed'
-  | 'comment_added';
-
-export interface ActivityItem {
+export interface RecentApplicant {
   id: string;
-  type: ActivityType;
-  actor: string;
-  action: string;
-  subject: string;
-  timestamp: string;
-  iconName: string;
+  applicantNumber: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  status: string;
+  createdAt: string;
 }
 
-export type TaskPriority = 'high' | 'medium' | 'low';
-
-export interface PendingTask {
+export interface RecentActivityActor {
   id: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface RecentActivity {
+  id: string;
+  applicantId: string;
+  type: string;
   title: string;
-  description: string;
-  priority: TaskPriority;
-  dueDate: string;
-  assignee?: string;
+  description: string | null;
+  actor: RecentActivityActor | null;
+  createdAt: string;
 }
 
-export type DeadlineStatus = 'overdue' | 'due_soon' | 'upcoming';
-
-export interface DeadlineItem {
-  id: string;
-  title: string;
-  applicantName: string;
-  dueDate: string;
-  status: DeadlineStatus;
+export interface ApplicantSummary {
+  active: number;
+  archived: number;
 }
 
-export type NotificationType = 'info' | 'success' | 'warning' | 'danger';
-
-export interface NotificationItem {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  iconName: string;
+export interface DocumentSummary {
+  pending: number;
+  verified: number;
+  rejected: number;
+  expired: number;
 }
 
-export interface DashboardMockData {
-  stats: StatCardData[];
-  activity: ActivityItem[];
-  tasks: PendingTask[];
-  deadlines: DeadlineItem[];
-  notifications: NotificationItem[];
+export interface DashboardResponse {
+  summary: DashboardSummary;
+  recentApplicants: RecentApplicant[];
+  recentActivities: RecentActivity[];
+  applicantSummary: ApplicantSummary;
+  documentSummary: DocumentSummary;
 }

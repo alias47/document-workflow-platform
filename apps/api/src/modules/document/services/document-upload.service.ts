@@ -12,6 +12,8 @@ import type { UploadDocumentDto } from '../dto/upload-document.dto';
 import type { DocumentCategory } from '@prisma/client';
 import type { Readable } from 'stream';
 
+import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
+import { ActivityService } from '@/modules/activity/services/activity.service';
 import { ApplicantService } from '@/modules/applicant/services/applicant.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 import {
@@ -32,6 +34,7 @@ export class DocumentUploadService {
     private readonly fileValidation: FileValidationService,
     private readonly applicantService: ApplicantService,
     private readonly auditService: AuditService,
+    private readonly activityService: ActivityService,
     @Inject(STORAGE_PROVIDER) private readonly storage: StorageProvider,
   ) {}
 
@@ -84,6 +87,16 @@ export class DocumentUploadService {
         resourceId: document.id,
       });
 
+      void this.activityService.record({
+        organizationId,
+        applicantId: dto.applicantId,
+        actorId: staffId,
+        type: ACTIVITY_TYPES.DOCUMENT_UPLOADED,
+        title: 'Document uploaded',
+        description: originalFilename,
+        metadata: { documentId: document.id },
+      });
+
       return { id: document.id, storageKey, checksum };
     } catch (err) {
       // Persistence failed after the file landed — remove the orphaned object.
@@ -122,6 +135,16 @@ export class DocumentUploadService {
       action: 'document.file_deleted',
       resourceType: 'document',
       resourceId: id,
+    });
+
+    void this.activityService.record({
+      organizationId,
+      applicantId: document.applicantId,
+      actorId: staffId,
+      type: ACTIVITY_TYPES.DOCUMENT_DELETED,
+      title: 'Document file deleted',
+      description: document.originalFilename,
+      metadata: { documentId: id },
     });
   }
 }

@@ -1,180 +1,326 @@
-# Sprint 8.3 – Applicant Notes
+# Sprint 9.2 — Dashboard Frontend Integration
 
-## Goal
+## Objective
 
-Implement an internal Notes system for applicants.
+Replace the existing static/mock dashboard with a fully functional dashboard connected to the Dashboard Backend implemented in Sprint 9.1.
 
-Notes allow consultants and staff to record private information about an applicant. Notes are never visible to applicants and are intended for internal collaboration.
-
-This sprint includes both backend and frontend implementation.
+Do not modify any backend code unless required to fix a genuine integration bug.
 
 ---
 
-# Database
+# 1. Service Layer
 
-Create ApplicantNote model.
+Create:
 
-Fields:
+apps/web/src/services/dashboard.service.ts
 
-- id
-- organizationId
-- applicantId
-- authorId
-- content
-- createdAt
-- updatedAt
-- deletedAt
-- createdBy
-- updatedBy
-- deletedBy
+Implement:
 
-Relationships
+- getDashboard()
 
-Organization
+GET /dashboard
 
-Applicant
+Return typed response matching backend.
 
-Staff (author)
+Use the shared HTTP client.
 
-Soft delete.
-
-Organization isolation.
+No direct axios usage.
 
 ---
 
-# Backend
+# 2. Types
 
-Create NotesModule.
+Create:
 
-Create
+apps/web/src/features/dashboard/types/dashboard.types.ts
 
-- NotesController
-- NotesService
-- NotesRepository
+Include:
 
-DTOs
+DashboardSummary
 
-- CreateApplicantNoteDto
-- UpdateApplicantNoteDto
-- ApplicantNoteResponseDto
+RecentApplicant
 
-Permissions
+RecentActivity
 
-notes.view
+ApplicantSummary
 
-notes.create
+DocumentSummary
 
-notes.update
+DashboardResponse
 
-notes.archive
+Match backend exactly.
 
 ---
 
-# API
+# 3. React Query
 
-GET
+Create:
 
-/applicants/:id/notes
+apps/web/src/features/dashboard/hooks/use-dashboard.ts
 
-POST
+Requirements:
 
-/applicants/:id/notes
+- useDashboard()
 
-PATCH
+Query Key:
 
-/notes/:id
+dashboard.summary()
 
-DELETE
+Stale Time:
 
-/notes/:id
+60 seconds
 
----
+Retry:
 
-# Business Rules
-
-Only staff members can access notes.
-
-Applicants never see notes.
-
-Notes belong to one applicant.
-
-Soft delete.
-
-Every create/update/delete generates an AuditLog entry.
+Default project behavior
 
 ---
 
-# Frontend
+# 4. Query Keys
 
-Replace Timeline tab with Notes.
+Update:
 
-Create
+apps/web/src/lib/query-keys.ts
 
-services/note.service.ts
+Add:
 
-hooks/use-notes.ts
+dashboard.summary()
 
-ApplicantNotes.tsx
+---
 
-CreateNoteDialog.tsx
+# 5. Dashboard Components
 
-EditNoteDialog.tsx
+Replace every mock dashboard component.
 
-DeleteNoteDialog.tsx
+Create or update:
 
-Features
+DashboardSummaryCards.tsx
 
-Reverse chronological order
+RecentApplicants.tsx
 
-Author
+RecentActivities.tsx
+
+ApplicantStatusChart.tsx
+
+DocumentStatusChart.tsx
+
+DashboardSkeleton.tsx
+
+DashboardError.tsx
+
+DashboardEmpty.tsx
+
+Use existing UI styling.
+
+Do not redesign.
+
+---
+
+# 6. Summary Cards
+
+Display:
+
+Total Applicants
+
+Active Applicants
+
+Archived Applicants
+
+Total Documents
+
+Pending Documents
+
+Verified Documents
+
+Rejected Documents
+
+Values must come from API.
+
+No hardcoded numbers.
+
+---
+
+# 7. Recent Applicants
+
+Display:
+
+Applicant name
+
+Email
+
+Country
+
+Current status
 
 Created date
 
-Updated indicator
+Maximum:
 
-Loading skeleton
+10 applicants
 
-Empty state
+Clicking a row opens applicant profile.
+
+Newest first.
+
+---
+
+# 8. Recent Activities
+
+Display:
+
+Activity icon
+
+Activity title
+
+Description
+
+Actor
+
+Timestamp
+
+Maximum:
+
+15 activities
+
+Newest first.
+
+---
+
+# 9. Applicant Summary
+
+Display:
+
+Active
+
+Archived
+
+Visualize using the existing chart component if available.
+
+Otherwise create a simple chart.
+
+No external chart libraries.
+
+---
+
+# 10. Document Summary
+
+Display:
+
+Pending
+
+Verified
+
+Rejected
+
+Expired
+
+Use existing chart style.
+
+---
+
+# 11. Dashboard Page
+
+Replace mock implementation.
+
+Use:
+
+useDashboard()
+
+Loading
+
+Error
+
+Empty
+
+Success
+
+states.
+
+---
+
+# 12. Loading State
+
+Show:
+
+DashboardSkeleton
+
+No layout shift.
+
+---
+
+# 13. Error State
+
+Show:
+
+DashboardError
+
+Retry button must refetch query.
+
+---
+
+# 14. Empty State
+
+Show DashboardEmpty if:
+
+No applicants
+
+AND
+
+No documents
+
+---
+
+# 15. Business Rules
+
+Dashboard is read-only.
+
+Never mutate data.
+
+Never poll automatically.
+
+Use React Query caching only.
+
+---
+
+# 16. API Contract
+
+Consume:
+
+GET /dashboard
+
+Do not transform backend field names.
+
+Frontend types must match backend DTOs exactly.
+
+---
+
+# 17. Tests
+
+Add tests for:
+
+dashboard.service
+
+useDashboard
+
+Summary cards rendering
+
+Recent applicants
+
+Recent activities
+
+Loading state
 
 Error state
 
-Retry button
+Empty state
 
-Optimistic updates
-
-Confirmation before delete
+Success state
 
 ---
 
-# Validation
+# 18. Validation
 
-Content required
-
-Maximum 5000 characters
-
-Trim whitespace
-
-Reject empty notes
-
----
-
-# Tests
-
-Repository
-
-Service
-
-Controller
-
-Frontend hooks
-
-Validation
-
----
-
-# Validation
-
-Run
+Must pass:
 
 pnpm lint
 
@@ -182,22 +328,36 @@ pnpm type-check
 
 pnpm build
 
-All tests pass.
+Dashboard loads using real backend.
+
+No mock data remains.
 
 ---
 
-# Out of Scope
+# 19. Completion Report
 
-Mentions
+Provide:
 
-Attachments
+1. Sprint Completion Report
 
-Rich text editor
+2. Files Created
 
-Pin notes
+3. Files Modified
 
-Categories
+4. Components Created
 
-Search inside notes
+5. Hooks Created
 
-Version history
+6. Services Created
+
+7. Business Rules Implemented
+
+8. Tests Added
+
+9. Validation Results
+
+10. Documentation Inconsistencies
+
+11. TASK.md Completion Confirmation
+
+Do not commit any code.

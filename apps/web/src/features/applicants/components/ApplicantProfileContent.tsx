@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { ApplicantActivity } from './ApplicantActivity';
 import { ApplicantNotes } from './ApplicantNotes';
 import { ArchiveApplicantDialog } from './ArchiveApplicantDialog';
 import { useApplicant, useArchiveApplicant } from '../hooks/use-applicants';
@@ -13,12 +14,13 @@ import { useToast } from '@/components/ui/toast';
 import { ApplicantDocuments } from '@/features/documents/components/ApplicantDocuments';
 import { cn } from '@/lib/cn';
 
-type Tab = 'info' | 'documents' | 'notes';
+type Tab = 'info' | 'documents' | 'notes' | 'activity';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'info', label: 'Info' },
   { id: 'documents', label: 'Documents' },
   { id: 'notes', label: 'Notes' },
+  { id: 'activity', label: 'Activity Log' },
 ];
 
 function getInitials(firstName: string, lastName: string): string {
@@ -364,6 +366,19 @@ export function ApplicantProfileContent({ id }: Props) {
         </div>
       )}
 
+      {activeTab === 'activity' && (
+        <div className="card">
+          <div className="card-header">
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
+              Activity Log
+            </h3>
+          </div>
+          <div className="card-body">
+            <ApplicantActivity applicantId={applicantId} />
+          </div>
+        </div>
+      )}
+
       <ArchiveApplicantDialog
         applicantName={fullName}
         isOpen={showArchiveDialog}
@@ -413,7 +428,7 @@ function ApplicantProfileSkeleton() {
           marginBottom: 'var(--space-5)',
         }}
       >
-        {['Info', 'Documents', 'Notes'].map((t) => (
+        {['Info', 'Documents', 'Notes', 'Activity Log'].map((t) => (
           <Skeleton key={t} className="h-9 w-20 mx-2" />
         ))}
       </div>

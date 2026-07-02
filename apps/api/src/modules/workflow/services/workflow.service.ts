@@ -12,6 +12,8 @@ import type { CreateWorkflowStageDto } from '../dto/create-workflow-stage.dto';
 import type { UpdateApplicantWorkflowDto } from '../dto/update-applicant-workflow.dto';
 import type { UpdateWorkflowStageDto } from '../dto/update-workflow-stage.dto';
 
+import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
+import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -20,6 +22,7 @@ export class WorkflowService {
   constructor(
     private readonly workflowRepo: WorkflowRepository,
     private readonly auditService: AuditService,
+    private readonly activityService: ActivityService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -154,7 +157,9 @@ export class WorkflowService {
       throw new BadRequestException('Target workflow stage does not exist or has been deleted');
     }
 
-    return this.workflowRepo.changeStage({
+    const fromStageName = workflow.currentStage.name;
+
+    const updated = await this.workflowRepo.changeStage({
       organizationId,
       applicantId,
       workflowId: workflow.id,
@@ -167,6 +172,21 @@ export class WorkflowService {
         ? { expectedCompletionDate: new Date(dto.expectedCompletionDate) }
         : {}),
     });
+
+    void this.activityService.record({
+      organizationId,
+      applicantId,
+      actorId: staffId,
+      type: ACTIVITY_TYPES.WORKFLOW_STAGE_CHANGED,
+      title: 'Workflow stage changed',
+      description: `${fromStageName} → ${targetStage.name}`,
+      metadata: {
+        fromStageId: workflow.currentStageId,
+        toStageId: dto.stageId,
+      },
+    });
+
+    return updated;
   }
 
   /**
