@@ -61,4 +61,14 @@ export const queryKeys = {
     all: ['dashboard'] as const,
     summary: () => [...queryKeys.dashboard.all, 'summary'] as const,
   },
+
+  staff: {
+    all: ['staff'] as const,
+    lists: () => [...queryKeys.staff.all, 'list'] as const,
+    list: (params: Record<string, unknown>) => [...queryKeys.staff.lists(), params] as const,
+    details: () => [...queryKeys.staff.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.staff.details(), id] as const,
+    applicants: (id: string) => [...queryKeys.staff.all, 'applicants', id] as const,
+    roles: () => [...queryKeys.staff.all, 'roles'] as const,
+  },
 } as const;

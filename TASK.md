@@ -1,324 +1,441 @@
-# Sprint 9.2 — Dashboard Frontend Integration
+# Sprint 10.1 — Staff Management
 
 ## Objective
 
-Replace the existing static/mock dashboard with a fully functional dashboard connected to the Dashboard Backend implemented in Sprint 9.1.
+Implement a complete Staff Management module that allows Organization Super Admins to manage organization staff members.
 
-Do not modify any backend code unless required to fix a genuine integration bug.
+Staff are internal users of the organization.
+
+Every staff member belongs to exactly one organization.
+
+Applicants are assigned to staff members.
+
+The existing authentication and RBAC system must be reused.
+
+Do not create a separate "Super Admin" entity.
+Super Admin is a Staff member with the appropriate Role.
 
 ---
 
-# 1. Service Layer
+# 1. Database Review
 
-Create:
+Review the existing Staff, Role and Permission models.
 
-apps/web/src/services/dashboard.service.ts
+Reuse existing models whenever possible.
+
+Only create migrations if absolutely required.
+
+If fields are missing, extend the existing Staff model.
+
+Required fields:
+
+- id
+- organizationId
+- firstName
+- lastName
+- email
+- phone
+- avatarUrl (nullable)
+- roleId
+- isActive
+- lastLoginAt (nullable)
+- createdAt
+- updatedAt
+- deletedAt
+
+Applicants must continue referencing assignedStaffId.
+
+Do not break existing relations.
+
+---
+
+# 2. Backend
+
+Create StaffModule if one does not already exist.
 
 Implement:
 
-- getDashboard()
+Repository
 
-GET /dashboard
+Service
 
-Return typed response matching backend.
+Controller
 
-Use the shared HTTP client.
+DTOs
 
-No direct axios usage.
+Tests
 
 ---
 
-# 2. Types
+# 3. Endpoints
+
+GET /staff
+
+GET /staff/:id
+
+POST /staff
+
+PATCH /staff/:id
+
+PATCH /staff/:id/status
+
+DELETE /staff/:id
+
+GET /staff/:id/applicants
+
+---
+
+# 4. Business Rules
+
+Organization scoped.
+
+Soft delete only.
+
+Email unique within organization.
+
+Cannot delete yourself.
+
+Cannot deactivate yourself.
+
+Cannot delete the last active Super Admin.
+
+Cannot deactivate the last active Super Admin.
+
+Inactive staff cannot login.
+
+Archived staff remain in historical data.
+
+Applicant assignments remain intact.
+
+---
+
+# 5. Applicant Assignment
+
+When creating staff:
+
+No applicants assigned.
+
+When editing:
+
+Allow reassignment.
+
+Provide endpoint:
+
+PATCH /staff/:id/applicants
+
+Accept:
+
+list of applicant IDs.
+
+Update assignments atomically.
+
+Record activity.
+
+---
+
+# 6. Roles
+
+Reuse existing Role system.
+
+Display available roles.
+
+Allow changing role.
+
+Prevent privilege escalation.
+
+Only Super Admin can assign Super Admin.
+
+---
+
+# 7. Search
+
+Support:
+
+name
+
+email
+
+role
+
+status
+
+Sorting:
+
+name
+
+createdAt
+
+lastLoginAt
+
+Pagination required.
+
+---
+
+# 8. Activity Log
+
+Automatically record:
+
+staff.created
+
+staff.updated
+
+staff.deactivated
+
+staff.activated
+
+staff.deleted
+
+staff.role_changed
+
+staff.applicants_reassigned
+
+---
+
+# 9. Dashboard Integration
+
+Dashboard counts should continue working.
+
+No hardcoded values.
+
+---
+
+# 10. Frontend
 
 Create:
 
-apps/web/src/features/dashboard/types/dashboard.types.ts
+features/staff/
 
-Include:
+Structure:
 
-DashboardSummary
+components/
 
-RecentApplicant
+hooks/
 
-RecentActivity
+types/
 
-ApplicantSummary
+services/
 
-DocumentSummary
-
-DashboardResponse
-
-Match backend exactly.
+pages/
 
 ---
 
-# 3. React Query
-
-Create:
-
-apps/web/src/features/dashboard/hooks/use-dashboard.ts
-
-Requirements:
-
-- useDashboard()
-
-Query Key:
-
-dashboard.summary()
-
-Stale Time:
-
-60 seconds
-
-Retry:
-
-Default project behavior
-
----
-
-# 4. Query Keys
-
-Update:
-
-apps/web/src/lib/query-keys.ts
-
-Add:
-
-dashboard.summary()
-
----
-
-# 5. Dashboard Components
-
-Replace every mock dashboard component.
-
-Create or update:
-
-DashboardSummaryCards.tsx
-
-RecentApplicants.tsx
-
-RecentActivities.tsx
-
-ApplicantStatusChart.tsx
-
-DocumentStatusChart.tsx
-
-DashboardSkeleton.tsx
-
-DashboardError.tsx
-
-DashboardEmpty.tsx
-
-Use existing UI styling.
-
-Do not redesign.
-
----
-
-# 6. Summary Cards
+# 11. Staff List
 
 Display:
 
-Total Applicants
+Avatar
 
-Active Applicants
-
-Archived Applicants
-
-Total Documents
-
-Pending Documents
-
-Verified Documents
-
-Rejected Documents
-
-Values must come from API.
-
-No hardcoded numbers.
-
----
-
-# 7. Recent Applicants
-
-Display:
-
-Applicant name
+Full name
 
 Email
 
-Country
+Phone
 
-Current status
+Role
 
-Created date
+Status
 
-Maximum:
+Assigned Applicant Count
 
-10 applicants
+Last Login
 
-Clicking a row opens applicant profile.
+Actions
 
-Newest first.
+Search
+
+Pagination
+
+Sorting
+
+Status filter
+
+Role filter
 
 ---
 
-# 8. Recent Activities
+# 12. Staff Details
 
 Display:
 
-Activity icon
+Profile
 
-Activity title
+Role
 
-Description
+Assigned Applicants
 
-Actor
+Activity Summary
 
-Timestamp
+Created Date
 
-Maximum:
-
-15 activities
-
-Newest first.
+Last Login
 
 ---
 
-# 9. Applicant Summary
+# 13. Create Staff
 
-Display:
+Fields:
 
-Active
+First Name
 
-Archived
+Last Name
 
-Visualize using the existing chart component if available.
+Email
 
-Otherwise create a simple chart.
+Phone
 
-No external chart libraries.
+Role
 
----
+Password
 
-# 10. Document Summary
+Confirm Password
 
-Display:
+Active Status
 
-Pending
+Validation:
 
-Verified
+Required
 
-Rejected
+Email
 
-Expired
+Password rules
 
-Use existing chart style.
-
----
-
-# 11. Dashboard Page
-
-Replace mock implementation.
-
-Use:
-
-useDashboard()
-
-Loading
-
-Error
-
-Empty
-
-Success
-
-states.
+Duplicate email
 
 ---
 
-# 12. Loading State
+# 14. Edit Staff
 
-Show:
+Editable:
 
-DashboardSkeleton
+Name
 
-No layout shift.
+Phone
+
+Avatar
+
+Role
+
+Status
+
+Password reset (optional)
+
+Cannot edit immutable fields.
 
 ---
 
-# 13. Error State
+# 15. Applicant Assignment UI
 
-Show:
+View assigned applicants.
 
-DashboardError
+Search applicants.
 
-Retry button must refetch query.
+Assign.
+
+Remove.
+
+Bulk assignment.
+
+Bulk removal.
+
+Confirmation before reassignment.
 
 ---
 
-# 14. Empty State
+# 16. Delete
 
-Show DashboardEmpty if:
+Confirmation dialog.
+
+Explain soft delete.
+
+Prevent deleting protected accounts.
+
+---
+
+# 17. Loading States
+
+Skeleton
+
+Buttons
+
+Dialogs
+
+Tables
+
+---
+
+# 18. Empty States
+
+No staff
 
 No applicants
 
-AND
-
-No documents
+No search results
 
 ---
 
-# 15. Business Rules
+# 19. Error States
 
-Dashboard is read-only.
+Permission denied
 
-Never mutate data.
+Duplicate email
 
-Never poll automatically.
+Cannot delete last Super Admin
 
-Use React Query caching only.
+Network failure
 
----
-
-# 16. API Contract
-
-Consume:
-
-GET /dashboard
-
-Do not transform backend field names.
-
-Frontend types must match backend DTOs exactly.
+Validation errors
 
 ---
 
-# 17. Tests
+# 20. Permissions
 
-Add tests for:
+Reuse existing RBAC.
 
-dashboard.service
+Only Super Admin may:
 
-useDashboard
+Create staff
 
-Summary cards rendering
+Delete staff
 
-Recent applicants
+Deactivate staff
 
-Recent activities
+Assign Super Admin role
 
-Loading state
+Assign applicants
 
-Error state
+Staff may:
 
-Empty state
+View own profile.
 
-Success state
+View assigned applicants.
+
+No privilege escalation.
 
 ---
 
-# 18. Validation
+# 21. Tests
+
+Repository
+
+Service
+
+Controller
+
+Permission
+
+Assignment
+
+Validation
+
+Frontend hooks
+
+Frontend components
+
+If frontend test infrastructure does not exist, document it instead of introducing one.
+
+---
+
+# 22. Validation
 
 Must pass:
 
@@ -328,13 +445,11 @@ pnpm type-check
 
 pnpm build
 
-Dashboard loads using real backend.
-
-No mock data remains.
+Backend tests.
 
 ---
 
-# 19. Completion Report
+# 23. Completion Report
 
 Provide:
 
@@ -344,20 +459,22 @@ Provide:
 
 3. Files Modified
 
-4. Components Created
+4. Database Changes
 
-5. Hooks Created
+5. Backend Endpoints
 
-6. Services Created
+6. Frontend Components
 
-7. Business Rules Implemented
+7. Business Rules
 
-8. Tests Added
+8. Activity Types Added
 
-9. Validation Results
+9. Tests Added
 
-10. Documentation Inconsistencies
+10. Validation Results
 
-11. TASK.md Completion Confirmation
+11. Documentation Inconsistencies
 
-Do not commit any code.
+12. TASK.md Completion Confirmation
+
+Do not commit code.

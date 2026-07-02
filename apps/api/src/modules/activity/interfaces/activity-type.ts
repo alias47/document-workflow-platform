@@ -17,6 +17,13 @@ export const ACTIVITY_TYPES = {
   NOTE_DELETED: 'note.deleted',
   WORKFLOW_STAGE_CHANGED: 'workflow.stage_changed',
   SYSTEM_CREATED: 'system.created',
+  STAFF_CREATED: 'staff.created',
+  STAFF_UPDATED: 'staff.updated',
+  STAFF_DEACTIVATED: 'staff.deactivated',
+  STAFF_ACTIVATED: 'staff.activated',
+  STAFF_DELETED: 'staff.deleted',
+  STAFF_ROLE_CHANGED: 'staff.role_changed',
+  STAFF_APPLICANTS_REASSIGNED: 'staff.applicants_reassigned',
 } as const;
 
 export type ActivityType = (typeof ACTIVITY_TYPES)[keyof typeof ACTIVITY_TYPES];

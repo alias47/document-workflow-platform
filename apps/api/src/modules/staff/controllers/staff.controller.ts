@@ -14,8 +14,11 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { AssignApplicantsDto } from '../dto/assign-applicants.dto';
 import { CreateStaffDto } from '../dto/create-staff.dto';
+import { StaffQueryDto } from '../dto/staff-query.dto';
 import { StaffResponseDto } from '../dto/staff-response.dto';
+import { UpdateStaffStatusDto } from '../dto/update-staff-status.dto';
 import { UpdateStaffDto } from '../dto/update-staff.dto';
 import { StaffService } from '../services/staff.service';
 
@@ -41,22 +44,20 @@ export class StaffController {
     return { success: true, message: 'Profile retrieved', data: staff };
   }
 
+  @Get('roles')
+  @Permissions('staff.view')
+  @ApiOperation({ summary: 'List roles available in organization' })
+  async listRoles(@CurrentUser() user: JwtPayload) {
+    const roles = await this.staffService.listRoles(user.organizationId);
+    return { success: true, message: 'Roles retrieved', data: roles };
+  }
+
   @Get()
   @Permissions('staff.view')
   @ApiOperation({ summary: 'List staff in organization' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'pageSize', required: false, type: Number })
   @ApiResponse({ status: 200, type: [StaffResponseDto] })
-  async list(
-    @CurrentUser() user: JwtPayload,
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 25,
-  ) {
-    const result = await this.staffService.list(
-      user.organizationId,
-      Number(page),
-      Number(pageSize),
-    );
+  async list(@CurrentUser() user: JwtPayload, @Query() query: StaffQueryDto) {
+    const result = await this.staffService.list(user.organizationId, query);
     return {
       success: true,
       message: 'Staff retrieved',
@@ -77,7 +78,7 @@ export class StaffController {
   @ApiResponse({ status: 201, type: StaffResponseDto })
   @ApiResponse({ status: 409, description: 'Email already in use' })
   async create(@CurrentUser() user: JwtPayload, @Body() dto: CreateStaffDto) {
-    const staff = await this.staffService.create(dto, user.organizationId);
+    const staff = await this.staffService.create(dto, user.organizationId, user.sub);
     return { success: true, message: 'Staff member created successfully', data: staff };
   }
 
@@ -93,7 +94,7 @@ export class StaffController {
 
   @Patch(':id')
   @Permissions('staff.update')
-  @ApiOperation({ summary: 'Update staff member' })
+  @ApiOperation({ summary: 'Update staff member profile' })
   @ApiResponse({ status: 200, type: StaffResponseDto })
   @ApiResponse({ status: 404, description: 'Staff not found' })
   async update(
@@ -101,18 +102,76 @@ export class StaffController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateStaffDto,
   ) {
-    const staff = await this.staffService.update(id, user.organizationId, dto);
+    const staff = await this.staffService.update(id, user.organizationId, dto, user.sub);
     return { success: true, message: 'Staff updated successfully', data: staff };
+  }
+
+  @Patch(':id/status')
+  @Permissions('staff.update')
+  @ApiOperation({ summary: 'Activate or deactivate a staff member' })
+  @ApiResponse({ status: 200, type: StaffResponseDto })
+  @ApiResponse({ status: 403, description: 'Cannot deactivate yourself or last Super Admin' })
+  async updateStatus(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateStaffStatusDto,
+  ) {
+    const staff = await this.staffService.updateStatus(id, user.organizationId, dto, user.sub);
+    return { success: true, message: 'Staff status updated', data: staff };
   }
 
   @Delete(':id')
   @Permissions('staff.delete')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Soft-delete staff member' })
-  @ApiResponse({ status: 200, description: 'Staff member deactivated' })
+  @ApiResponse({ status: 200, description: 'Staff member deleted' })
+  @ApiResponse({ status: 403, description: 'Cannot delete yourself or last Super Admin' })
   @ApiResponse({ status: 404, description: 'Staff not found' })
   async delete(@CurrentUser() user: JwtPayload, @Param('id', ParseUUIDPipe) id: string) {
-    await this.staffService.delete(id, user.organizationId);
-    return { success: true, message: 'Staff member deactivated successfully', data: null };
+    await this.staffService.delete(id, user.organizationId, user.sub);
+    return { success: true, message: 'Staff member deleted successfully', data: null };
+  }
+
+  @Get(':id/applicants')
+  @Permissions('staff.view')
+  @ApiOperation({ summary: 'List applicants assigned to a staff member' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number })
+  async getApplicants(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 25,
+  ) {
+    const result = await this.staffService.getApplicants(
+      id,
+      user.organizationId,
+      Number(page),
+      Number(pageSize),
+    );
+    return {
+      success: true,
+      message: 'Assigned applicants retrieved',
+      data: result.data,
+      meta: {
+        page: Number(page),
+        pageSize: Number(pageSize),
+        totalItems: result.total,
+        totalPages: Math.ceil(result.total / Number(pageSize)),
+      },
+    };
+  }
+
+  @Patch(':id/applicants')
+  @Permissions('staff.update')
+  @ApiOperation({ summary: 'Atomically replace assigned applicants for a staff member' })
+  @ApiResponse({ status: 200, description: 'Assignments updated' })
+  async assignApplicants(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AssignApplicantsDto,
+  ) {
+    await this.staffService.assignApplicants(id, user.organizationId, dto, user.sub);
+    return { success: true, message: 'Applicant assignments updated', data: null };
   }
 }

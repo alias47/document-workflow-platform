@@ -1,5 +1,17 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+const PASSWORD_MSG =
+  'Password must be at least 8 characters and contain uppercase, lowercase, digit and special character.';
 
 export class UpdateStaffDto {
   @ApiPropertyOptional({ example: 'John' })
@@ -32,4 +44,21 @@ export class UpdateStaffDto {
   @IsOptional()
   @IsUUID()
   roleId?: string;
+
+  @ApiPropertyOptional({ description: 'Avatar URL or null to clear' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  avatarUrl?: string | null;
+
+  @ApiPropertyOptional({ description: 'Reset password for this staff member' })
+  @IsOptional()
+  @IsString()
+  @Matches(PASSWORD_REGEX, { message: PASSWORD_MSG })
+  password?: string;
+
+  @ApiPropertyOptional({ description: 'Whether the account should be active' })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

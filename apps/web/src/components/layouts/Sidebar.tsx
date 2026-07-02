@@ -9,6 +9,7 @@ import {
   type LucideIcon,
   Settings,
   Upload,
+  UserCog,
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -30,6 +31,7 @@ function formatRole(role: string): string {
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   Users,
+  UserCog,
   FileText,
   Activity,
   Bell,
