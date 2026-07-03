@@ -16,6 +16,7 @@ import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { ApplicantService } from '@/modules/applicant/services/applicant.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { DocumentRequirementRepository } from '@/modules/document-requirement/repositories/document-requirement.repository';
 import {
   STORAGE_PROVIDER,
   type StorageProvider,
@@ -35,6 +36,7 @@ export class DocumentUploadService {
     private readonly applicantService: ApplicantService,
     private readonly auditService: AuditService,
     private readonly activityService: ActivityService,
+    private readonly requirementRepo: DocumentRequirementRepository,
     @Inject(STORAGE_PROVIDER) private readonly storage: StorageProvider,
   ) {}
 
@@ -76,7 +78,12 @@ export class DocumentUploadService {
         checksum,
         createdBy: staffId,
         ...(dto.expiresAt !== undefined ? { expiresAt: new Date(dto.expiresAt) } : {}),
+        ...(dto.requirementId !== undefined ? { requirementId: dto.requirementId } : {}),
       });
+
+      if (dto.requirementId !== undefined) {
+        await this.requirementRepo.updateApplicantRequirementStatus(dto.requirementId, 'uploaded');
+      }
 
       void this.auditService.log({
         organizationId,
@@ -127,6 +134,14 @@ export class DocumentUploadService {
     // Remove the physical object but keep the metadata row for audit history.
     await this.storage.delete(document.storageKey);
     await this.documentRepo.markFileDeleted(id, staffId);
+
+    // If document was linked to a requirement, revert the requirement status to pending.
+    if (document.requirementId !== null && document.requirementId !== undefined) {
+      await this.requirementRepo.updateApplicantRequirementStatus(
+        document.requirementId,
+        'pending',
+      );
+    }
 
     void this.auditService.log({
       organizationId,

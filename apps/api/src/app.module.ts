@@ -19,11 +19,14 @@ import {
 } from './config';
 import { ActivityModule } from './modules/activity/activity.module';
 import { ApplicantModule } from './modules/applicant/applicant.module';
+import { ApplicantAuthModule } from './modules/applicant-auth/applicant-auth.module';
+import { ApplicantPortalModule } from './modules/applicant-portal/applicant-portal.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DocumentModule } from './modules/document/document.module';
+import { DocumentRequirementModule } from './modules/document-requirement/document-requirement.module';
 import { NotesModule } from './modules/notes/notes.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { SearchModule } from './modules/search/search.module';
@@ -72,14 +75,17 @@ const ENV_FILES = [
     AuditModule,
     ActivityModule,
     AuthModule,
+    ApplicantAuthModule,
     OrganizationModule,
     StaffModule,
     ApplicantModule,
     DocumentModule,
+    DocumentRequirementModule,
     WorkflowModule,
     SearchModule,
     NotesModule,
     DashboardModule,
+    ApplicantPortalModule,
   ],
   controllers: [AppController],
   providers: [

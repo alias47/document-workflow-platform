@@ -50,6 +50,7 @@ export interface UploadDocumentData {
   applicantId: string;
   category: DocumentCategory;
   expiresAt?: string;
+  requirementId?: string;
   file: File;
 }
 
@@ -83,6 +84,9 @@ export const documentService = {
     form.append('category', data.category);
     if (data.expiresAt) {
       form.append('expiresAt', data.expiresAt);
+    }
+    if (data.requirementId) {
+      form.append('requirementId', data.requirementId);
     }
 
     const res = await http.post<ApiResponse<UploadedDocument>>('/documents/upload', form, {

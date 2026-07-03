@@ -30,13 +30,17 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { PermissionsGuard } from '@/common/guards/permissions.guard';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { DocumentRequirementService } from '@/modules/document-requirement/services/document-requirement.service';
 
 @ApiTags('Applicants')
 @Controller('applicants')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth()
 export class ApplicantController {
-  constructor(private readonly applicantService: ApplicantService) {}
+  constructor(
+    private readonly applicantService: ApplicantService,
+    private readonly requirementService: DocumentRequirementService,
+  ) {}
 
   @Get()
   @Permissions('applicant.view')
@@ -92,5 +96,28 @@ export class ApplicantController {
   async archive(@CurrentUser() user: JwtPayload, @Param('id', ParseUUIDPipe) id: string) {
     await this.applicantService.archive(id, user.organizationId, user.sub);
     return { success: true, message: 'Applicant archived successfully', data: null };
+  }
+
+  @Get(':id/document-requirements')
+  @Permissions('document.view')
+  @ApiOperation({ summary: "List an applicant's document requirements" })
+  async listDocumentRequirements(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const data = await this.requirementService.listApplicantRequirements(id, user.organizationId);
+    return { success: true, message: 'Applicant document requirements retrieved', data };
+  }
+
+  @Post(':id/document-requirements/sync')
+  @Permissions('document.create')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sync active document requirements onto an applicant' })
+  async syncDocumentRequirements(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    await this.requirementService.syncApplicantRequirements(id, user.organizationId, user.sub);
+    return { success: true, message: 'Document requirements synced', data: null };
   }
 }

@@ -27,6 +27,11 @@ export const ADMIN_NAV: NavSection[] = [
       { iconName: 'Activity', label: 'Timeline', href: '/timeline' },
       { iconName: 'Bell', label: 'Notifications', href: '/notifications', badge: '3' },
       { iconName: 'Settings', label: 'Settings', href: '/settings' },
+      {
+        iconName: 'ClipboardList',
+        label: 'Document Requirements',
+        href: '/settings/document-requirements',
+      },
     ],
   },
 ];

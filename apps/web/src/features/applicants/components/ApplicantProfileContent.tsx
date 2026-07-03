@@ -11,7 +11,7 @@ import { useApplicant, useArchiveApplicant } from '../hooks/use-applicants';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
-import { ApplicantDocuments } from '@/features/documents/components/ApplicantDocuments';
+import { ApplicantRequirements } from '@/features/document-requirements/components/ApplicantRequirements';
 import { cn } from '@/lib/cn';
 
 type Tab = 'info' | 'documents' | 'notes' | 'activity';
@@ -349,11 +349,11 @@ export function ApplicantProfileContent({ id }: Props) {
         <div className="card">
           <div className="card-header">
             <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#0F172A', margin: 0 }}>
-              Documents
+              Document Requirements
             </h3>
           </div>
           <div className="card-body">
-            <ApplicantDocuments applicantId={applicantId} />
+            <ApplicantRequirements applicantId={applicantId} />
           </div>
         </div>
       )}

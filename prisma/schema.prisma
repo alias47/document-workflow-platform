@@ -56,6 +56,14 @@ enum DocumentStatus {
   archived
 }
 
+// Per-applicant status for a document requirement.
+enum RequirementStatus {
+  pending
+  uploaded
+  approved
+  rejected
+}
+
 // ---------------------------------------------------------------------------
 // ORGANIZATION
 // ---------------------------------------------------------------------------
@@ -76,14 +84,15 @@ model Organization {
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
-  staff          Staff[]
-  roles          Role[]
-  applicants     Applicant[]
-  assignments    ApplicantAssignment[]
-  documents      Document[]
-  workflowStages WorkflowStage[]
-  notes          ApplicantNote[]
-  activities     ApplicantActivity[]
+  staff                 Staff[]
+  roles                 Role[]
+  applicants            Applicant[]
+  assignments           ApplicantAssignment[]
+  documents             Document[]
+  workflowStages        WorkflowStage[]
+  notes                 ApplicantNote[]
+  activities            ApplicantActivity[]
+  documentRequirements  DocumentRequirement[]
 
   @@map("organizations")
 }
@@ -268,7 +277,8 @@ model PortalAccount {
   updatedAt           DateTime            @updatedAt
   deletedAt           DateTime?
 
-  applicant Applicant? @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicant      Applicant?           @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  refreshTokens  PortalRefreshToken[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -304,14 +314,15 @@ model Applicant {
   deletedAt       DateTime?
   deletedBy       String?         @db.Uuid
 
-  organization    Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  portalAccount   PortalAccount?
-  assignments     ApplicantAssignment[]
-  documents       Document[]
-  workflow        ApplicantWorkflow?
-  workflowHistory WorkflowHistory[]
-  notes           ApplicantNote[]
-  activities      ApplicantActivity[]
+  organization         Organization                  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  portalAccount        PortalAccount?
+  assignments          ApplicantAssignment[]
+  documents            Document[]
+  workflow             ApplicantWorkflow?
+  workflowHistory      WorkflowHistory[]
+  notes                ApplicantNote[]
+  activities           ApplicantActivity[]
+  documentRequirements ApplicantDocumentRequirement[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -381,16 +392,20 @@ model Document {
   deletedAt         DateTime?
   deletedBy         String?          @db.Uuid
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  applicant      Applicant    @relation(fields: [applicantId], references: [id], onDelete: Restrict)
-  uploadedByStaff Staff?      @relation("UploadedDocuments", fields: [uploadedBy], references: [id], onDelete: SetNull)
-  verifiedByStaff Staff?      @relation("VerifiedDocuments", fields: [verifiedBy], references: [id], onDelete: SetNull)
+  requirementId   String?          @db.Uuid
+
+  organization    Organization                  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  applicant       Applicant                     @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  uploadedByStaff Staff?                        @relation("UploadedDocuments", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  verifiedByStaff Staff?                        @relation("VerifiedDocuments", fields: [verifiedBy], references: [id], onDelete: SetNull)
+  requirement     ApplicantDocumentRequirement? @relation(fields: [requirementId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([applicantId])
   @@index([status])
   @@index([category])
   @@index([uploadedBy])
+  @@index([requirementId])
   @@index([organizationId, status])
   @@map("documents")
 }
@@ -541,4 +556,84 @@ model WorkflowHistory {
   @@index([applicantId])
   @@index([applicantId, changedAt])
   @@map("workflow_history")
+}
+
+// ---------------------------------------------------------------------------
+// DOCUMENT REQUIREMENT (Sprint 10.2)
+// Organization-level template defining which documents applicants must provide.
+// Soft-deleted; industry-neutral names only in this model.
+// ---------------------------------------------------------------------------
+
+model DocumentRequirement {
+  id             String           @id @default(uuid()) @db.Uuid
+  organizationId String           @db.Uuid
+  name           String
+  description    String?
+  category       DocumentCategory @default(other)
+  isRequired     Boolean          @default(true)
+  isActive       Boolean          @default(true)
+  sortOrder      Int              @default(0)
+  createdAt      DateTime         @default(now())
+  createdBy      String?          @db.Uuid
+  updatedAt      DateTime         @updatedAt
+  updatedBy      String?          @db.Uuid
+  deletedAt      DateTime?
+  deletedBy      String?          @db.Uuid
+
+  organization         Organization                   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  applicantRequirements ApplicantDocumentRequirement[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([organizationId, isActive])
+  @@index([organizationId, sortOrder])
+  @@map("document_requirements")
+}
+
+// ---------------------------------------------------------------------------
+// APPLICANT DOCUMENT REQUIREMENT (Sprint 10.2)
+// Per-applicant copy of a requirement — tracks individual completion state.
+// Never shared between applicants; each applicant gets their own row.
+// ---------------------------------------------------------------------------
+
+model ApplicantDocumentRequirement {
+  id            String            @id @default(uuid()) @db.Uuid
+  applicantId   String            @db.Uuid
+  requirementId String            @db.Uuid
+  status        RequirementStatus @default(pending)
+  assignedAt    DateTime          @default(now())
+  completedAt   DateTime?
+
+  applicant   Applicant           @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  requirement DocumentRequirement @relation(fields: [requirementId], references: [id], onDelete: Restrict)
+  documents   Document[]
+
+  @@unique([applicantId, requirementId])
+  @@index([applicantId])
+  @@index([requirementId])
+  @@index([status])
+  @@map("applicant_document_requirements")
+}
+
+// ---------------------------------------------------------------------------
+// PORTAL ACCOUNT REFRESH TOKEN (Sprint 10.3)
+// Separate from staff RefreshToken — applicant sessions are independent.
+// ---------------------------------------------------------------------------
+
+model PortalRefreshToken {
+  id               String    @id @default(uuid()) @db.Uuid
+  portalAccountId  String    @db.Uuid
+  tokenHash        String    @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  replacedBy       String?   @db.Uuid
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime  @default(now())
+
+  portalAccount PortalAccount @relation(fields: [portalAccountId], references: [id], onDelete: Cascade)
+
+  @@index([portalAccountId])
+  @@index([tokenHash])
+  @@map("portal_refresh_tokens")
 }

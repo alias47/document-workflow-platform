@@ -10,12 +10,20 @@ import { ActivityModule } from '@/modules/activity/activity.module';
 import { ApplicantModule } from '@/modules/applicant/applicant.module';
 import { AuditModule } from '@/modules/audit/audit.module';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { DocumentRequirementModule } from '@/modules/document-requirement/document-requirement.module';
 import { StorageModule } from '@/modules/storage/storage.module';
 
 @Module({
-  imports: [AuthModule, AuditModule, ApplicantModule, StorageModule, ActivityModule],
+  imports: [
+    AuthModule,
+    AuditModule,
+    ApplicantModule,
+    StorageModule,
+    ActivityModule,
+    DocumentRequirementModule,
+  ],
   controllers: [DocumentController],
   providers: [DocumentService, DocumentUploadService, FileValidationService, DocumentRepository],
-  exports: [DocumentService],
+  exports: [DocumentService, DocumentUploadService],
 })
 export class DocumentModule {}

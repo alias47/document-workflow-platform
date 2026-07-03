@@ -9,6 +9,7 @@ import type { UpdateApplicantDto } from '../dto/update-applicant.dto';
 import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { DocumentRequirementService } from '@/modules/document-requirement/services/document-requirement.service';
 import { WorkflowService } from '@/modules/workflow/services/workflow.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -20,6 +21,7 @@ export class ApplicantService {
     private readonly workflowService: WorkflowService,
     private readonly activityService: ActivityService,
     private readonly prisma: PrismaService,
+    private readonly requirementService: DocumentRequirementService,
   ) {}
 
   async list(organizationId: string, query: ApplicantQueryDto) {
@@ -100,6 +102,9 @@ export class ApplicantService {
         applicantId: created.id,
         staffId,
       });
+
+      // Assign all active document requirements to this applicant in the same transaction.
+      await this.requirementService.assignRequirementsInTransaction(tx, created.id, organizationId);
 
       return created;
     });

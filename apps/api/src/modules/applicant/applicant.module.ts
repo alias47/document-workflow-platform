@@ -7,12 +7,13 @@ import { ApplicantService } from './services/applicant.service';
 import { ActivityModule } from '@/modules/activity/activity.module';
 import { AuditModule } from '@/modules/audit/audit.module';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { DocumentRequirementModule } from '@/modules/document-requirement/document-requirement.module';
 import { WorkflowModule } from '@/modules/workflow/workflow.module';
 
 @Module({
-  imports: [AuthModule, AuditModule, WorkflowModule, ActivityModule],
+  imports: [AuthModule, AuditModule, WorkflowModule, ActivityModule, DocumentRequirementModule],
   controllers: [ApplicantController],
   providers: [ApplicantService, ApplicantRepository],
-  exports: [ApplicantService],
+  exports: [ApplicantService, ApplicantRepository],
 })
 export class ApplicantModule {}

@@ -1,419 +1,419 @@
-# Sprint 10.1 — Staff Management
-
-## Objective
-
-Implement a complete Staff Management module that allows Organization Super Admins to manage organization staff members.
-
-Staff are internal users of the organization.
-
-Every staff member belongs to exactly one organization.
-
-Applicants are assigned to staff members.
-
-The existing authentication and RBAC system must be reused.
-
-Do not create a separate "Super Admin" entity.
-Super Admin is a Staff member with the appropriate Role.
+# Sprint 10.3 — Applicant Portal (MVP)
 
 ---
 
-# 1. Database Review
+# 1. Objective
 
-Review the existing Staff, Role and Permission models.
+Build the complete Applicant Portal for the MVP.
 
-Reuse existing models whenever possible.
+Applicants must be able to securely log into the system and manage only their own information.
 
-Only create migrations if absolutely required.
+The applicant portal must be completely isolated from the staff portal.
 
-If fields are missing, extend the existing Staff model.
+Applicants must never have access to staff functionality.
 
-Required fields:
+---
 
-- id
-- organizationId
-- firstName
-- lastName
-- email
+# 2. Scope
+
+This sprint includes:
+
+- Applicant authentication
+- Applicant dashboard
+- Applicant profile
+- Applicant document requirements
+- Applicant document upload
+- Applicant document status tracking
+- Applicant password change
+- Applicant logout
+
+This sprint does NOT include:
+
+- Notifications
+- Email
+- Chat
+- Notes
+- Activity Log
+- Workflow management
+- Staff management
+- Organization settings
+
+---
+
+# 3. Backend
+
+## 3.1 Applicant Authentication
+
+Implement applicant authentication independent from staff authentication.
+
+Endpoints
+
+POST /applicant-auth/login
+
+POST /applicant-auth/logout
+
+GET /applicant-auth/me
+
+POST /applicant-auth/change-password
+
+Requirements
+
+- HttpOnly cookie authentication
+- Same JWT strategy used by staff
+- Separate ApplicantAuthModule
+- ApplicantJwtGuard
+- Applicant permissions are not RBAC based
+- Applicant only accesses their own data
+
+---
+
+## 3.2 Applicant Dashboard Endpoint
+
+Create
+
+GET /applicant/dashboard
+
+Return
+
+- applicant profile summary
+- assigned consultant
+- current workflow stage
+- required document count
+- uploaded document count
+- approved document count
+- pending document count
+- rejected document count
+
+---
+
+## 3.3 Applicant Profile
+
+GET /applicant/profile
+
+PATCH /applicant/profile
+
+Editable fields
+
 - phone
-- avatarUrl (nullable)
-- roleId
-- isActive
-- lastLoginAt (nullable)
-- createdAt
-- updatedAt
-- deletedAt
+- address
+- emergency contact
+- profile image
 
-Applicants must continue referencing assignedStaffId.
+Non editable
 
-Do not break existing relations.
-
----
-
-# 2. Backend
-
-Create StaffModule if one does not already exist.
-
-Implement:
-
-Repository
-
-Service
-
-Controller
-
-DTOs
-
-Tests
+- name
+- email
+- organization
+- consultant
+- workflow
 
 ---
 
-# 3. Endpoints
+## 3.4 Applicant Documents
 
-GET /staff
+Applicant can retrieve only their own requirements.
 
-GET /staff/:id
+GET
 
-POST /staff
+/applicant/document-requirements
 
-PATCH /staff/:id
+Return
 
-PATCH /staff/:id/status
-
-DELETE /staff/:id
-
-GET /staff/:id/applicants
-
----
-
-# 4. Business Rules
-
-Organization scoped.
-
-Soft delete only.
-
-Email unique within organization.
-
-Cannot delete yourself.
-
-Cannot deactivate yourself.
-
-Cannot delete the last active Super Admin.
-
-Cannot deactivate the last active Super Admin.
-
-Inactive staff cannot login.
-
-Archived staff remain in historical data.
-
-Applicant assignments remain intact.
+- requirement
+- status
+- uploaded document
+- rejection reason
+- completedAt
 
 ---
 
-# 5. Applicant Assignment
+## 3.5 Applicant Upload
 
-When creating staff:
+POST
 
-No applicants assigned.
+/applicant/documents/upload
 
-When editing:
+Rules
 
-Allow reassignment.
+Applicant may upload only
 
-Provide endpoint:
+- their own requirement
 
-PATCH /staff/:id/applicants
+Applicant cannot upload
 
-Accept:
+- for another applicant
+- archived requirement
+- approved requirement
 
-list of applicant IDs.
+Upload automatically updates
 
-Update assignments atomically.
+Pending
 
-Record activity.
+↓
 
----
-
-# 6. Roles
-
-Reuse existing Role system.
-
-Display available roles.
-
-Allow changing role.
-
-Prevent privilege escalation.
-
-Only Super Admin can assign Super Admin.
+Uploaded
 
 ---
 
-# 7. Search
+## 3.6 Password Change
 
-Support:
+POST
 
-name
+/applicant-auth/change-password
 
-email
+Validation
 
-role
+Current password required
 
-status
+New password confirmation required
 
-Sorting:
-
-name
-
-createdAt
-
-lastLoginAt
-
-Pagination required.
+Minimum password policy follows existing auth module
 
 ---
 
-# 8. Activity Log
+## 3.7 Logout
 
-Automatically record:
-
-staff.created
-
-staff.updated
-
-staff.deactivated
-
-staff.activated
-
-staff.deleted
-
-staff.role_changed
-
-staff.applicants_reassigned
+Clear cookies.
 
 ---
 
-# 9. Dashboard Integration
+# 4. Frontend
 
-Dashboard counts should continue working.
+Create
 
-No hardcoded values.
+features/applicant-portal/
 
----
+Structure
 
-# 10. Frontend
-
-Create:
-
-features/staff/
-
-Structure:
-
-components/
+services/
 
 hooks/
 
-types/
+components/
 
-services/
+types/
 
 pages/
 
 ---
 
-# 11. Staff List
+# 5. Applicant Login
 
-Display:
+Create
 
-Avatar
+/applicant/login
 
-Full name
-
-Email
-
-Phone
-
-Role
-
-Status
-
-Assigned Applicant Count
-
-Last Login
-
-Actions
-
-Search
-
-Pagination
-
-Sorting
-
-Status filter
-
-Role filter
-
----
-
-# 12. Staff Details
-
-Display:
-
-Profile
-
-Role
-
-Assigned Applicants
-
-Activity Summary
-
-Created Date
-
-Last Login
-
----
-
-# 13. Create Staff
-
-Fields:
-
-First Name
-
-Last Name
+Features
 
 Email
-
-Phone
-
-Role
 
 Password
 
-Confirm Password
+Remember me
 
-Active Status
+Forgot password placeholder
 
-Validation:
+Validation
 
-Required
+Loading
 
-Email
+Error state
 
-Password rules
-
-Duplicate email
+Redirect when authenticated
 
 ---
 
-# 14. Edit Staff
+# 6. Applicant Dashboard
 
-Editable:
+Create
 
-Name
+/applicant
+
+Dashboard cards
+
+Required Documents
+
+Uploaded
+
+Approved
+
+Rejected
+
+Pending
+
+Current Workflow Stage
+
+Assigned Consultant
+
+Recent required documents
+
+---
+
+# 7. Applicant Profile
+
+Create
+
+/applicant/profile
+
+Editable
 
 Phone
 
-Avatar
+Address
 
-Role
+Emergency Contact
 
-Status
+Profile image
 
-Password reset (optional)
+Read only
 
-Cannot edit immutable fields.
+Name
 
----
+Email
 
-# 15. Applicant Assignment UI
+Organization
 
-View assigned applicants.
+Assigned Consultant
 
-Search applicants.
-
-Assign.
-
-Remove.
-
-Bulk assignment.
-
-Bulk removal.
-
-Confirmation before reassignment.
+Workflow Stage
 
 ---
 
-# 16. Delete
+# 8. Applicant Documents
 
-Confirmation dialog.
+Create
 
-Explain soft delete.
+/applicant/documents
 
-Prevent deleting protected accounts.
+Show
 
----
+Requirement
 
-# 17. Loading States
+Required badge
 
-Skeleton
+Status badge
 
-Buttons
+Upload button
 
-Dialogs
+Uploaded filename
 
-Tables
+Upload date
 
----
+Approval status
 
-# 18. Empty States
+Rejection reason
 
-No staff
+Completed date
 
-No applicants
+Sorting
 
-No search results
+Pending first
 
----
+Uploaded
 
-# 19. Error States
+Rejected
 
-Permission denied
-
-Duplicate email
-
-Cannot delete last Super Admin
-
-Network failure
-
-Validation errors
+Approved
 
 ---
 
-# 20. Permissions
+# 9. Upload Dialog
 
-Reuse existing RBAC.
+Upload directly against a requirement.
 
-Only Super Admin may:
+No free-form uploads.
 
-Create staff
+Validation
 
-Delete staff
+Allowed file types
 
-Deactivate staff
+Maximum size
 
-Assign Super Admin role
+Drag & drop
 
-Assign applicants
+Browse
 
-Staff may:
+Progress indicator
 
-View own profile.
+Success
 
-View assigned applicants.
-
-No privilege escalation.
+Failure
 
 ---
 
-# 21. Tests
+# 10. Shared Components
+
+Create
+
+ApplicantDashboardCards
+
+ApplicantDocumentCard
+
+ApplicantDocumentList
+
+ApplicantProfileCard
+
+ApplicantUploadDialog
+
+ApplicantSidebar
+
+ApplicantHeader
+
+ApplicantEmptyState
+
+ApplicantSkeleton
+
+ApplicantError
+
+---
+
+# 11. Business Rules
+
+Applicant only accesses own data.
+
+Applicant never supplies applicantId.
+
+Backend derives applicant from JWT.
+
+Applicant cannot approve documents.
+
+Applicant cannot reject documents.
+
+Applicant cannot modify requirements.
+
+Applicant cannot edit workflow.
+
+Applicant cannot view notes.
+
+Applicant cannot view activity.
+
+Applicant cannot upload to completed requirements.
+
+Applicant cannot upload archived requirements.
+
+Organization isolation enforced.
+
+---
+
+# 12. Security
+
+Separate ApplicantJwtGuard.
+
+Separate applicant authentication cookies.
+
+Server validates ownership.
+
+No IDOR vulnerabilities.
+
+No organization leakage.
+
+All uploads ownership validated.
+
+---
+
+# 13. Tests
+
+Backend
 
 Repository
 
@@ -421,23 +421,23 @@ Service
 
 Controller
 
-Permission
+Authentication
 
-Assignment
+Ownership validation
 
-Validation
+Upload validation
 
-Frontend hooks
+Frontend
 
-Frontend components
+Skip if no frontend testing framework exists.
 
-If frontend test infrastructure does not exist, document it instead of introducing one.
+Document the limitation.
 
 ---
 
-# 22. Validation
+# 14. Validation
 
-Must pass:
+Must pass
 
 pnpm lint
 
@@ -445,36 +445,40 @@ pnpm type-check
 
 pnpm build
 
-Backend tests.
+pnpm test
+
+No warnings.
+
+No failing tests.
 
 ---
 
-# 23. Completion Report
+# 15. Documentation Inconsistencies
 
-Provide:
+Document every inconsistency discovered.
 
-1. Sprint Completion Report
+Do not silently change existing behavior.
 
-2. Files Created
+---
 
-3. Files Modified
+# 16. TASK Completion
 
-4. Database Changes
+At completion provide
 
-5. Backend Endpoints
+Sprint Completion Report
 
-6. Frontend Components
+Files Created
 
-7. Business Rules
+Files Modified
 
-8. Activity Types Added
+Endpoints
 
-9. Tests Added
+Business Rules
 
-10. Validation Results
+Validation
 
-11. Documentation Inconsistencies
+Documentation Inconsistencies
 
-12. TASK.md Completion Confirmation
+TASK.md Completion Confirmation
 
-Do not commit code.
+Do not commit.

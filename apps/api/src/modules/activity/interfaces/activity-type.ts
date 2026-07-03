@@ -24,6 +24,10 @@ export const ACTIVITY_TYPES = {
   STAFF_DELETED: 'staff.deleted',
   STAFF_ROLE_CHANGED: 'staff.role_changed',
   STAFF_APPLICANTS_REASSIGNED: 'staff.applicants_reassigned',
+  DOCUMENT_REQUIREMENT_CREATED: 'document.requirement_created',
+  DOCUMENT_REQUIREMENT_UPDATED: 'document.requirement_updated',
+  DOCUMENT_REQUIREMENT_ARCHIVED: 'document.requirement_archived',
+  DOCUMENT_REQUIREMENT_ASSIGNED: 'document.requirement_assigned',
 } as const;
 
 export type ActivityType = (typeof ACTIVITY_TYPES)[keyof typeof ACTIVITY_TYPES];

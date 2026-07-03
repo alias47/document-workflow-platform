@@ -1,0 +1,198 @@
+import { Injectable } from '@nestjs/common';
+import { type DocumentCategory, type RequirementStatus, Prisma } from '@prisma/client';
+
+import { PrismaService } from '@/prisma/prisma.service';
+
+export interface CreateRequirementData {
+  organizationId: string;
+  name: string;
+  category: DocumentCategory;
+  isRequired: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdBy: string;
+  description?: string | undefined;
+}
+
+export interface UpdateRequirementData {
+  name?: string | undefined;
+  description?: string | undefined;
+  category?: DocumentCategory | undefined;
+  isRequired?: boolean | undefined;
+  isActive?: boolean | undefined;
+  sortOrder?: number | undefined;
+  deletedAt?: Date | undefined;
+  deletedBy?: string | undefined;
+  updatedBy?: string | undefined;
+}
+
+export interface RequirementListOptions {
+  page: number;
+  pageSize: number;
+  search?: string | undefined;
+  isActive?: boolean | undefined;
+  category?: DocumentCategory | undefined;
+}
+
+@Injectable()
+export class DocumentRequirementRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findById(id: string, organizationId: string) {
+    return this.prisma.documentRequirement.findFirst({
+      where: { id, organizationId, deletedAt: null },
+      include: {
+        _count: { select: { applicantRequirements: true } },
+      },
+    });
+  }
+
+  async findByName(organizationId: string, name: string) {
+    return this.prisma.documentRequirement.findFirst({
+      where: { organizationId, name, deletedAt: null },
+    });
+  }
+
+  async list(organizationId: string, opts: RequirementListOptions) {
+    const { page, pageSize, search, isActive, category } = opts;
+    const where: Prisma.DocumentRequirementWhereInput = {
+      organizationId,
+      deletedAt: null,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { description: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+      ...(isActive !== undefined ? { isActive } : {}),
+      ...(category !== undefined ? { category } : {}),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.documentRequirement.findMany({
+        where,
+        include: { _count: { select: { applicantRequirements: true } } },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.documentRequirement.count({ where }),
+    ]);
+
+    return { data, total };
+  }
+
+  async listActive(organizationId: string) {
+    return this.prisma.documentRequirement.findMany({
+      where: { organizationId, isActive: true, deletedAt: null },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+    });
+  }
+
+  async create(data: CreateRequirementData) {
+    return this.prisma.documentRequirement.create({
+      data: {
+        organizationId: data.organizationId,
+        name: data.name,
+        category: data.category,
+        isRequired: data.isRequired,
+        isActive: data.isActive,
+        sortOrder: data.sortOrder,
+        createdBy: data.createdBy,
+        ...(data.description !== undefined ? { description: data.description } : {}),
+      },
+    });
+  }
+
+  async update(id: string, data: UpdateRequirementData) {
+    return this.prisma.documentRequirement.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
+        ...(data.category !== undefined ? { category: data.category } : {}),
+        ...(data.isRequired !== undefined ? { isRequired: data.isRequired } : {}),
+        ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+        ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
+        ...(data.deletedAt !== undefined ? { deletedAt: data.deletedAt } : {}),
+        ...(data.deletedBy !== undefined ? { deletedBy: data.deletedBy } : {}),
+        ...(data.updatedBy !== undefined ? { updatedBy: data.updatedBy } : {}),
+      },
+      include: { _count: { select: { applicantRequirements: true } } },
+    });
+  }
+
+  async countAssignedApplicants(requirementId: string): Promise<number> {
+    return this.prisma.applicantDocumentRequirement.count({ where: { requirementId } });
+  }
+
+  // ── Applicant requirements ────────────────────────────────────────────────
+
+  async findApplicantRequirement(id: string) {
+    return this.prisma.applicantDocumentRequirement.findUnique({
+      where: { id },
+      include: {
+        requirement: true,
+        documents: {
+          where: { deletedAt: null },
+          include: { uploadedByStaff: { select: { id: true, firstName: true, lastName: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+  }
+
+  async listApplicantRequirements(applicantId: string, organizationId: string) {
+    return this.prisma.applicantDocumentRequirement.findMany({
+      where: {
+        applicantId,
+        requirement: { organizationId, deletedAt: null },
+      },
+      include: {
+        requirement: true,
+        documents: {
+          where: { deletedAt: null },
+          include: { uploadedByStaff: { select: { id: true, firstName: true, lastName: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+      orderBy: { requirement: { sortOrder: 'asc' } },
+    });
+  }
+
+  async assignRequirementsInTransaction(
+    tx: Prisma.TransactionClient,
+    applicantId: string,
+    requirementIds: string[],
+  ) {
+    if (requirementIds.length === 0) return;
+    await tx.applicantDocumentRequirement.createMany({
+      data: requirementIds.map((requirementId) => ({ applicantId, requirementId })),
+      skipDuplicates: true,
+    });
+  }
+
+  async syncApplicantRequirements(applicantId: string, organizationId: string) {
+    const active = await this.listActive(organizationId);
+    if (active.length === 0) return;
+
+    await this.prisma.applicantDocumentRequirement.createMany({
+      data: active.map((r) => ({ applicantId, requirementId: r.id })),
+      skipDuplicates: true,
+    });
+  }
+
+  async updateApplicantRequirementStatus(id: string, status: RequirementStatus) {
+    return this.prisma.applicantDocumentRequirement.update({
+      where: { id },
+      data: {
+        status,
+        ...(status === 'approved' ? { completedAt: new Date() } : {}),
+        ...(status === 'pending' ? { completedAt: null } : {}),
+      },
+      include: { requirement: true },
+    });
+  }
+}

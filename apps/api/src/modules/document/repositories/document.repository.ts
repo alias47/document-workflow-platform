@@ -16,6 +16,7 @@ export interface CreateDocumentData {
   checksum?: string;
   expiresAt?: Date;
   createdBy: string;
+  requirementId?: string;
 }
 
 export interface UpdateDocumentData {
@@ -93,6 +94,7 @@ export class DocumentRepository {
         createdBy: data.createdBy,
         ...(data.checksum !== undefined ? { checksum: data.checksum } : {}),
         ...(data.expiresAt !== undefined ? { expiresAt: data.expiresAt } : {}),
+        ...(data.requirementId !== undefined ? { requirementId: data.requirementId } : {}),
       },
     });
   }

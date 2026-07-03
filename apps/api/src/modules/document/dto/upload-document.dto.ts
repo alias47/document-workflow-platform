@@ -29,6 +29,11 @@ export class UploadDocumentDto {
   @IsDateString()
   expiresAt?: string;
 
+  @ApiPropertyOptional({ description: 'Applicant document requirement this upload fulfils' })
+  @IsOptional()
+  @IsUUID()
+  requirementId?: string;
+
   @ApiProperty({ type: 'string', format: 'binary', description: 'File to upload' })
   file?: unknown;
 }

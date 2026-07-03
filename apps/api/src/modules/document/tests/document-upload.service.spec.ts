@@ -12,6 +12,7 @@ import type { UploadDocumentDto } from '../dto/upload-document.dto';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { ApplicantService } from '@/modules/applicant/services/applicant.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { DocumentRequirementRepository } from '@/modules/document-requirement/repositories/document-requirement.repository';
 import { STORAGE_PROVIDER } from '@/modules/storage/interfaces/storage-provider.interface';
 
 const ORG_ID = 'org-uuid-1';
@@ -83,6 +84,10 @@ describe('DocumentUploadService', () => {
         {
           provide: ActivityService,
           useValue: { record: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: DocumentRequirementRepository,
+          useValue: { updateApplicantRequirementStatus: jest.fn().mockResolvedValue(undefined) },
         },
         { provide: STORAGE_PROVIDER, useValue: storage },
       ],
