@@ -76,9 +76,33 @@ model Organization {
   contactEmail String
   contactPhone String?
   website      String?
+  address      String?
+  city         String?
   country      String?
+  postalCode   String?
   timezone     String    @default("UTC")
+  description  String?
+  logoKey      String?
   industryType String?
+  shortName    String?
+  primaryColor String?
+  secondaryColor String?
+  faviconKey   String?
+  // Applicant portal toggles
+  portalEnabled            Boolean @default(true)
+  portalAllowProfileEdit   Boolean @default(true)
+  portalAllowPasswordChange Boolean @default(true)
+  portalAllowDocUpload     Boolean @default(true)
+  portalShowConsultant     Boolean @default(true)
+  portalShowContactInfo    Boolean @default(false)
+  // Document upload settings
+  uploadMaxSizeMb          Int     @default(10)
+  uploadAllowedImageTypes  String[] @default(["image/jpeg", "image/png", "image/webp"])
+  uploadAllowedDocTypes    String[] @default(["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"])
+  uploadMaxFilesPerReq     Int     @default(5)
+  uploadAllowMultiple      Boolean @default(true)
+  uploadAllowReplace       Boolean @default(true)
+  uploadRequireApprovalForResubmit Boolean @default(false)
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

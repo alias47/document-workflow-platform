@@ -91,4 +91,9 @@ export const queryKeys = {
     documentRequirements: () =>
       [...queryKeys.applicantPortal.all, 'document-requirements'] as const,
   },
+
+  settings: {
+    all: ['settings'] as const,
+    detail: () => [...queryKeys.settings.all, 'detail'] as const,
+  },
 } as const;

@@ -28,6 +28,9 @@ export const ACTIVITY_TYPES = {
   DOCUMENT_REQUIREMENT_UPDATED: 'document.requirement_updated',
   DOCUMENT_REQUIREMENT_ARCHIVED: 'document.requirement_archived',
   DOCUMENT_REQUIREMENT_ASSIGNED: 'document.requirement_assigned',
+  SETTINGS_UPDATED: 'settings.updated',
+  SETTINGS_LOGO_UPDATED: 'settings.logo_updated',
+  SETTINGS_LOGO_REMOVED: 'settings.logo_removed',
 } as const;
 
 export type ActivityType = (typeof ACTIVITY_TYPES)[keyof typeof ACTIVITY_TYPES];

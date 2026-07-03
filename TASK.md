@@ -1,419 +1,98 @@
-# Sprint 10.3 — Applicant Portal (MVP)
+# Sprint 11.1 — System Settings
+
+## Goal
+
+Implement a centralized System Settings module that allows the Super Admin to configure the consultancy. The application supports a single consultancy for the MVP. The existing Organization record represents the consultancy and must not be creatable or deletable through the UI.
 
 ---
 
-# 1. Objective
+# 11.1.1 Consultancy Profile
 
-Build the complete Applicant Portal for the MVP.
+Allow the Super Admin to view and update the consultancy profile.
 
-Applicants must be able to securely log into the system and manage only their own information.
+Fields
 
-The applicant portal must be completely isolated from the staff portal.
-
-Applicants must never have access to staff functionality.
-
----
-
-# 2. Scope
-
-This sprint includes:
-
-- Applicant authentication
-- Applicant dashboard
-- Applicant profile
-- Applicant document requirements
-- Applicant document upload
-- Applicant document status tracking
-- Applicant password change
-- Applicant logout
-
-This sprint does NOT include:
-
-- Notifications
+- Consultancy Name
+- Logo
 - Email
-- Chat
-- Notes
-- Activity Log
-- Workflow management
-- Staff management
-- Organization settings
-
----
-
-# 3. Backend
-
-## 3.1 Applicant Authentication
-
-Implement applicant authentication independent from staff authentication.
-
-Endpoints
-
-POST /applicant-auth/login
-
-POST /applicant-auth/logout
-
-GET /applicant-auth/me
-
-POST /applicant-auth/change-password
+- Phone Number
+- Website
+- Address
+- City
+- Country
+- Postal Code
+- Time Zone
+- Description
 
 Requirements
 
-- HttpOnly cookie authentication
-- Same JWT strategy used by staff
-- Separate ApplicantAuthModule
-- ApplicantJwtGuard
-- Applicant permissions are not RBAC based
-- Applicant only accesses their own data
+- Load the existing consultancy automatically.
+- Update profile information.
+- Upload logo.
+- Replace logo.
+- Remove logo.
+- Preview logo before upload.
+- Validate image type and size.
+- Save changes atomically.
 
 ---
 
-## 3.2 Applicant Dashboard Endpoint
+# 11.1.2 Applicant Portal Settings
+
+Allow the Super Admin to configure the applicant portal.
+
+Settings
+
+- Enable Applicant Portal
+- Allow Applicant Profile Editing
+- Allow Applicant Password Change
+- Allow Applicant Document Upload
+- Show Assigned Consultant
+- Show Consultancy Contact Information
+
+Changes should take effect immediately.
+
+---
+
+# 11.1.3 Document Upload Settings
+
+Configure organization-wide upload behaviour.
+
+Settings
+
+- Maximum Upload Size (MB)
+- Allowed Image Types
+- Allowed Document Types
+- Maximum Files Per Requirement
+- Allow Multiple Uploads
+- Allow Replace Upload
+- Require Approval Before Resubmission
+
+These settings apply to every applicant.
+
+---
+
+# 11.1.4 Branding
+
+Allow customization of basic branding.
+
+Fields
+
+- Primary Color
+- Secondary Color
+- Consultancy Short Name
+- Logo
+- Favicon (optional)
+
+Branding will be used throughout the staff dashboard and applicant portal.
+
+---
+
+# 11.1.5 Backend
 
 Create
 
-GET /applicant/dashboard
-
-Return
-
-- applicant profile summary
-- assigned consultant
-- current workflow stage
-- required document count
-- uploaded document count
-- approved document count
-- pending document count
-- rejected document count
-
----
-
-## 3.3 Applicant Profile
-
-GET /applicant/profile
-
-PATCH /applicant/profile
-
-Editable fields
-
-- phone
-- address
-- emergency contact
-- profile image
-
-Non editable
-
-- name
-- email
-- organization
-- consultant
-- workflow
-
----
-
-## 3.4 Applicant Documents
-
-Applicant can retrieve only their own requirements.
-
-GET
-
-/applicant/document-requirements
-
-Return
-
-- requirement
-- status
-- uploaded document
-- rejection reason
-- completedAt
-
----
-
-## 3.5 Applicant Upload
-
-POST
-
-/applicant/documents/upload
-
-Rules
-
-Applicant may upload only
-
-- their own requirement
-
-Applicant cannot upload
-
-- for another applicant
-- archived requirement
-- approved requirement
-
-Upload automatically updates
-
-Pending
-
-↓
-
-Uploaded
-
----
-
-## 3.6 Password Change
-
-POST
-
-/applicant-auth/change-password
-
-Validation
-
-Current password required
-
-New password confirmation required
-
-Minimum password policy follows existing auth module
-
----
-
-## 3.7 Logout
-
-Clear cookies.
-
----
-
-# 4. Frontend
-
-Create
-
-features/applicant-portal/
-
-Structure
-
-services/
-
-hooks/
-
-components/
-
-types/
-
-pages/
-
----
-
-# 5. Applicant Login
-
-Create
-
-/applicant/login
-
-Features
-
-Email
-
-Password
-
-Remember me
-
-Forgot password placeholder
-
-Validation
-
-Loading
-
-Error state
-
-Redirect when authenticated
-
----
-
-# 6. Applicant Dashboard
-
-Create
-
-/applicant
-
-Dashboard cards
-
-Required Documents
-
-Uploaded
-
-Approved
-
-Rejected
-
-Pending
-
-Current Workflow Stage
-
-Assigned Consultant
-
-Recent required documents
-
----
-
-# 7. Applicant Profile
-
-Create
-
-/applicant/profile
-
-Editable
-
-Phone
-
-Address
-
-Emergency Contact
-
-Profile image
-
-Read only
-
-Name
-
-Email
-
-Organization
-
-Assigned Consultant
-
-Workflow Stage
-
----
-
-# 8. Applicant Documents
-
-Create
-
-/applicant/documents
-
-Show
-
-Requirement
-
-Required badge
-
-Status badge
-
-Upload button
-
-Uploaded filename
-
-Upload date
-
-Approval status
-
-Rejection reason
-
-Completed date
-
-Sorting
-
-Pending first
-
-Uploaded
-
-Rejected
-
-Approved
-
----
-
-# 9. Upload Dialog
-
-Upload directly against a requirement.
-
-No free-form uploads.
-
-Validation
-
-Allowed file types
-
-Maximum size
-
-Drag & drop
-
-Browse
-
-Progress indicator
-
-Success
-
-Failure
-
----
-
-# 10. Shared Components
-
-Create
-
-ApplicantDashboardCards
-
-ApplicantDocumentCard
-
-ApplicantDocumentList
-
-ApplicantProfileCard
-
-ApplicantUploadDialog
-
-ApplicantSidebar
-
-ApplicantHeader
-
-ApplicantEmptyState
-
-ApplicantSkeleton
-
-ApplicantError
-
----
-
-# 11. Business Rules
-
-Applicant only accesses own data.
-
-Applicant never supplies applicantId.
-
-Backend derives applicant from JWT.
-
-Applicant cannot approve documents.
-
-Applicant cannot reject documents.
-
-Applicant cannot modify requirements.
-
-Applicant cannot edit workflow.
-
-Applicant cannot view notes.
-
-Applicant cannot view activity.
-
-Applicant cannot upload to completed requirements.
-
-Applicant cannot upload archived requirements.
-
-Organization isolation enforced.
-
----
-
-# 12. Security
-
-Separate ApplicantJwtGuard.
-
-Separate applicant authentication cookies.
-
-Server validates ownership.
-
-No IDOR vulnerabilities.
-
-No organization leakage.
-
-All uploads ownership validated.
-
----
-
-# 13. Tests
-
-Backend
+SystemSettingsModule
 
 Repository
 
@@ -421,23 +100,114 @@ Service
 
 Controller
 
-Authentication
+DTOs
 
-Ownership validation
+Response DTOs
 
-Upload validation
+Validation
 
-Frontend
+Reuse the existing Organization model whenever possible.
 
-Skip if no frontend testing framework exists.
-
-Document the limitation.
+Only extend the schema if absolutely necessary.
 
 ---
 
-# 14. Validation
+# 11.1.6 API
 
-Must pass
+GET /settings
+
+PATCH /settings
+
+PATCH /settings/logo
+
+DELETE /settings/logo
+
+Only Super Admin can access these endpoints.
+
+---
+
+# 11.1.7 Frontend
+
+Create
+
+features/settings
+
+services/settings.service.ts
+
+hooks/use-settings.ts
+
+Components
+
+- ConsultancyProfileCard
+- BrandingCard
+- ApplicantPortalSettingsCard
+- DocumentUploadSettingsCard
+- LogoUploader
+- SettingsSkeleton
+- SettingsError
+- SettingsPageClient
+
+Create route
+
+/settings
+
+Remove all remaining mock settings.
+
+---
+
+# 11.1.8 Business Rules
+
+Only Super Admin can modify settings.
+
+Existing consultancy cannot be deleted.
+
+Existing consultancy cannot be replaced.
+
+Only one consultancy exists.
+
+Logo stored through StorageProvider.
+
+Replacing a logo deletes the previous file only after the new upload succeeds.
+
+Removing a logo deletes the physical file.
+
+Settings update must be atomic.
+
+---
+
+# 11.1.9 Security
+
+Enforce RBAC.
+
+Validate uploads.
+
+Validate image types.
+
+Maximum logo size: 5 MB.
+
+Prevent directory traversal.
+
+Audit every settings modification.
+
+---
+
+# 11.1.10 Tests
+
+Repository
+
+Service
+
+Controller
+
+Authorization
+
+Validation
+
+Storage integration
+
+---
+
+# 11.1.11 Quality Gates
 
 pnpm lint
 
@@ -445,40 +215,34 @@ pnpm type-check
 
 pnpm build
 
-pnpm test
-
-No warnings.
-
-No failing tests.
+Backend tests
 
 ---
 
-# 15. Documentation Inconsistencies
+# 11.1.12 Sprint Completion Report
 
-Document every inconsistency discovered.
+Provide:
 
-Do not silently change existing behavior.
+1. Sprint Completion Report
 
----
+2. Files Created
 
-# 16. TASK Completion
+3. Files Modified
 
-At completion provide
+4. Database Changes
 
-Sprint Completion Report
+5. API Endpoints
 
-Files Created
+6. Business Rules Implemented
 
-Files Modified
+7. Frontend Components
 
-Endpoints
+8. Tests Added
 
-Business Rules
+9. Validation Results
 
-Validation
+10. Documentation Inconsistencies
 
-Documentation Inconsistencies
+11. TASK.md Completion Confirmation
 
-TASK.md Completion Confirmation
-
-Do not commit.
+Do not commit any code.

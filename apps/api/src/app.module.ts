@@ -31,6 +31,7 @@ import { NotesModule } from './modules/notes/notes.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { SearchModule } from './modules/search/search.module';
 import { StaffModule } from './modules/staff/staff.module';
+import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
 import { WorkflowModule } from './modules/workflow/workflow.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -86,6 +87,7 @@ const ENV_FILES = [
     NotesModule,
     DashboardModule,
     ApplicantPortalModule,
+    SystemSettingsModule,
   ],
   controllers: [AppController],
   providers: [
