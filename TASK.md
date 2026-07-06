@@ -1,132 +1,375 @@
-# Sprint 11.2 — Email & Notification System
+# Sprint 11.3 — Applicant Invitation & Portal Activation
 
-## Goal
+**Sprint Goal**
 
-Implement a centralized notification system for both staff and applicants.
-
-The MVP will support email notifications only. The architecture must allow additional notification channels (SMS, Push, WhatsApp, etc.) in future without changing business modules.
-
-Business modules must never send emails directly. Every module communicates only with NotificationService.
+Complete the applicant onboarding lifecycle by allowing staff to invite applicants to the portal, applicants to activate their accounts securely, and the system to manage the full invitation lifecycle.
 
 ---
 
-# 11.2.1 Notification Architecture
+# 11.3.1 Objectives
+
+Implement a complete invitation system that:
+
+- Creates portal accounts automatically when an applicant is invited.
+- Sends secure invitation emails.
+- Allows applicants to activate their account.
+- Prevents duplicate or invalid activations.
+- Integrates with the Notification System.
+- Fully audits every action.
+- Keeps the entire process organization isolated.
+
+This completes the Applicant Portal MVP.
+
+---
+
+# 11.3.2 Database
+
+Extend the existing PortalAccount architecture.
+
+## PortalInvitation
+
+Create a new model.
+
+Fields:
+
+- id
+- organizationId
+- applicantId
+- portalAccountId
+- tokenHash
+- expiresAt
+- acceptedAt
+- revokedAt
+- createdBy
+- createdAt
+
+Indexes
+
+- organizationId
+- applicantId
+- expiresAt
+
+Relations
+
+- Organization
+- Applicant
+- PortalAccount
+- Staff (createdBy)
+
+---
+
+# 11.3.3 Invitation Status
+
+Status is derived.
+
+Pending
+
+- acceptedAt == null
+- revokedAt == null
+- expiresAt > now()
+
+Accepted
+
+- acceptedAt != null
+
+Expired
+
+- acceptedAt == null
+- revokedAt == null
+- expiresAt < now()
+
+Revoked
+
+- revokedAt != null
+
+Never store status.
+
+---
+
+# 11.3.4 Backend Module
 
 Create
 
-NotificationModule
+modules/applicant-invitation/
 
-NotificationService
+including
 
-NotificationRepository
-
-NotificationController
-
-EmailProvider interface
-
-LocalEmailProvider implementation
-
-Future providers (SMTP, SES, SendGrid, Mailgun) must only require replacing the provider binding.
+- repository
+- service
+- controller
+- dto
+- tests
 
 ---
 
-# 11.2.2 Notification Templates
+# 11.3.5 Backend API
 
-Create reusable notification templates.
+## Staff
+
+GET /applicants/:id/invitation
+
+Returns
+
+- invitation status
+- expiresAt
+- acceptedAt
+- invitedBy
+- createdAt
+
+---
+
+POST /applicants/:id/invitation
+
+Creates
+
+- PortalAccount (if none exists)
+- PortalInvitation
+- secure token
+- hashed token
+- notification email
+
+Returns success only.
+
+---
+
+POST /applicants/:id/invitation/resend
+
+Business rules
+
+- old invitation revoked
+- new invitation created
+- new email sent
+
+---
+
+POST /applicants/:id/invitation/revoke
+
+Immediately invalidates invitation.
+
+---
+
+## Applicant
+
+GET /applicant/activate
+
+Query
+
+token
+
+Returns
+
+- valid
+- applicant name
+- organization name
+
+Never returns token information.
+
+---
+
+POST /applicant/activate
+
+Body
+
+- token
+- password
+
+Validates
+
+- invitation exists
+- not expired
+- not revoked
+- unused
+- password policy
+
+Creates password
+
+Marks acceptedAt
+
+Deletes every remaining active invitation
+
+Deletes refresh tokens
+
+Returns success.
+
+---
+
+# 11.3.6 Notification Integration
+
+Reuse NotificationService.
+
+Never send email directly.
 
 Templates
 
-- Staff Welcome
-- Applicant Portal Invitation
-- Applicant Password Reset
-- Staff Password Reset
-- Document Uploaded
-- Document Approved
-- Document Rejected
-- New Document Requirement Assigned
-- Applicant Assigned To Staff
-- Applicant Workflow Stage Changed
+Applicant Invitation
 
-Templates must support variable interpolation.
+Variables
 
-Example
+- applicantName
+- organizationName
+- activationLink
 
-{{applicantName}}
+Invitation Resent
 
-{{consultancyName}}
-
-{{documentName}}
-
-{{staffName}}
-
-{{portalUrl}}
+Same template.
 
 ---
 
-# 11.2.3 Email Queue
+# 11.3.7 Applicant Portal
 
-Implement asynchronous notification processing.
+Applicant cannot login until
 
-Requirements
-
-Notification records are created immediately.
-
-Email sending happens asynchronously.
-
-Failed sends are retried.
-
-Store
-
-- queued
-- processing
-- sent
-- failed
-
-Record
-
-- createdAt
-- processedAt
-- retryCount
-- errorMessage
-
-Business requests must never wait for email delivery.
+acceptedAt exists
+AND
+password exists.
 
 ---
 
-# 11.2.4 Notification Triggers
+# 11.3.8 Staff Frontend
 
-Integrate NotificationService into existing modules.
+Applicant Profile
 
-Applicant
+Add
 
-- Portal account created
-- Password reset
+Portal Account card.
 
-Documents
+Display
 
-- Approved
-- Rejected
-- New requirement assigned
+- Invitation Status
+- Invited By
+- Invitation Date
+- Expiration
+- Activated Date
 
-Workflow
+Buttons
 
-- Stage changed
+Send Invitation
 
-Staff
+Resend Invitation
 
-- Staff account created
+Revoke Invitation
 
-Settings
+Copy Invitation Link
 
-- Enable / disable outgoing email
+Buttons shown only when valid.
+
+Dialogs
+
+Send
+
+Resend
+
+Revoke
+
+Loading
+
+Error
+
+Success
 
 ---
 
-# 11.2.5 Backend
+# 11.3.9 Applicant Frontend
 
 Create
 
-NotificationModule
+/applicant/activate
+
+States
+
+Loading
+
+Invalid token
+
+Expired token
+
+Revoked invitation
+
+Already activated
+
+Password form
+
+Activation successful
+
+Password policy identical to staff.
+
+Automatic redirect to login after activation.
+
+---
+
+# 11.3.10 Business Rules
+
+One active invitation per applicant.
+
+Invitation lifetime
+
+7 days.
+
+Resend
+
+creates a completely new token.
+
+Old token immediately invalid.
+
+Tokens stored hashed.
+
+Secure random tokens only.
+
+One-time use.
+
+Applicant email cannot be changed during activation.
+
+Applicant already activated cannot receive activation invitation.
+
+PortalAccount created once only.
+
+Every operation organization scoped.
+
+---
+
+# 11.3.11 Audit
+
+Audit every action.
+
+Examples
+
+invitation.created
+
+invitation.resent
+
+invitation.revoked
+
+invitation.accepted
+
+---
+
+# 11.3.12 Activity
+
+Record applicant activities
+
+Portal Invitation Sent
+
+Portal Invitation Accepted
+
+---
+
+# 11.3.13 Security
+
+Never expose hashed tokens.
+
+Never expose applicant existence from activation endpoint.
+
+Prevent replay attacks.
+
+Validate expiration.
+
+Constant-time hash comparison.
+
+Invalidate refresh sessions after activation.
+
+---
+
+# 11.3.14 Tests
 
 Repository
 
@@ -134,110 +377,33 @@ Service
 
 Controller
 
-DTOs
+Invitation lifecycle
 
-Response DTOs
+Activation
 
-Queue service
+Expiration
 
-Provider interface
+Revocation
 
----
+Duplicate invite prevention
 
-# 11.2.6 API
+Duplicate activation prevention
 
-GET /notifications
+Notification integration
 
-GET /notifications/:id
+Audit logging
 
-POST /notifications/:id/retry
+Activity logging
 
-Only Super Admin may access notification history.
+Organization isolation
 
----
-
-# 11.2.7 Frontend
-
-Create
-
-features/notifications
-
-services/notification.service.ts
-
-hooks/use-notifications.ts
-
-Components
-
-- NotificationTable
-- NotificationStatusBadge
-- NotificationFilters
-- NotificationDetailsDialog
-- RetryNotificationDialog
-- NotificationSkeleton
-- NotificationError
-- NotificationPageClient
-
-Create
-
-/settings/notifications
+Security
 
 ---
 
-# 11.2.8 Business Rules
+# 11.3.15 Validation
 
-Business modules never send email directly.
-
-Only NotificationService communicates with EmailProvider.
-
-Email failures never fail business transactions.
-
-Notification history is immutable.
-
-Retry increments retryCount.
-
-Maximum retry count = 5.
-
-Organization isolation enforced.
-
-Respect System Settings "Email Enabled".
-
----
-
-# 11.2.9 Security
-
-RBAC enforced.
-
-No sensitive information stored in notification payloads.
-
-Email addresses validated.
-
-Prevent duplicate sends caused by retries.
-
-Audit retry operations.
-
----
-
-# 11.2.10 Tests
-
-Repository
-
-Service
-
-Controller
-
-Queue
-
-Provider
-
-Authorization
-
-Retry logic
-
-Failure handling
-
----
-
-# 11.2.11 Quality Gates
+Must pass
 
 pnpm lint
 
@@ -245,34 +411,26 @@ pnpm type-check
 
 pnpm build
 
-Backend tests
+pnpm test
 
 ---
 
-# 11.2.12 Sprint Completion Report
+# 11.3.16 Completion Report
 
-Provide:
+When the sprint is complete, include:
 
 1. Sprint Completion Report
-
 2. Files Created
-
 3. Files Modified
-
 4. Database Changes
-
 5. API Endpoints
-
-6. Business Rules Implemented
-
-7. Frontend Components
-
-8. Tests Added
-
-9. Validation Results
-
-10. Documentation Inconsistencies
-
-11. TASK.md Completion Confirmation
+6. Frontend Components
+7. Business Rules Implemented
+8. Notification Templates Added
+9. Audit & Activity Events Added
+10. Tests Added
+11. Validation Results
+12. Documentation Inconsistencies
+13. TASK.md Completion Confirmation
 
 Do not commit any code.

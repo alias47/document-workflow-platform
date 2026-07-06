@@ -136,6 +136,7 @@ model Organization {
   activities            ApplicantActivity[]
   documentRequirements  DocumentRequirement[]
   notifications         Notification[]
+  portalInvitations     PortalInvitation[]
 
   @@map("organizations")
 }
@@ -225,6 +226,7 @@ model Staff {
   workflowChanges     WorkflowHistory[]     @relation("WorkflowChangedBy")
   authoredNotes       ApplicantNote[]       @relation("NoteAuthor")
   activities          ApplicantActivity[]   @relation("ActivityActor")
+  createdInvitations  PortalInvitation[]    @relation("InvitationCreatedBy")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -322,6 +324,7 @@ model PortalAccount {
 
   applicant      Applicant?           @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   refreshTokens  PortalRefreshToken[]
+  invitations    PortalInvitation[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -366,6 +369,7 @@ model Applicant {
   notes                ApplicantNote[]
   activities           ApplicantActivity[]
   documentRequirements ApplicantDocumentRequirement[]
+  invitations          PortalInvitation[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -656,6 +660,36 @@ model ApplicantDocumentRequirement {
   @@index([requirementId])
   @@index([status])
   @@map("applicant_document_requirements")
+}
+
+// ---------------------------------------------------------------------------
+// PORTAL INVITATION (Sprint 11.3)
+// One active invitation per applicant. Status is derived from acceptedAt /
+// revokedAt / expiresAt — never stored. Token is stored hashed only.
+// Immutable payload fields (tokenHash, expiresAt) are written once.
+// ---------------------------------------------------------------------------
+
+model PortalInvitation {
+  id               String    @id @default(uuid()) @db.Uuid
+  organizationId   String    @db.Uuid
+  applicantId      String    @db.Uuid
+  portalAccountId  String    @db.Uuid
+  tokenHash        String    @unique
+  expiresAt        DateTime
+  acceptedAt       DateTime?
+  revokedAt        DateTime?
+  createdBy        String    @db.Uuid
+  createdAt        DateTime  @default(now())
+
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  applicant     Applicant     @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  portalAccount PortalAccount @relation(fields: [portalAccountId], references: [id], onDelete: Restrict)
+  createdByStaff Staff        @relation("InvitationCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([applicantId])
+  @@index([expiresAt])
+  @@map("portal_invitations")
 }
 
 // ---------------------------------------------------------------------------

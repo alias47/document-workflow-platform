@@ -11,16 +11,18 @@ import { useApplicant, useArchiveApplicant } from '../hooks/use-applicants';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { PortalAccountCard } from '@/features/applicant-invitation/components/PortalAccountCard';
 import { ApplicantRequirements } from '@/features/document-requirements/components/ApplicantRequirements';
 import { cn } from '@/lib/cn';
 
-type Tab = 'info' | 'documents' | 'notes' | 'activity';
+type Tab = 'info' | 'documents' | 'notes' | 'activity' | 'portal';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'info', label: 'Info' },
   { id: 'documents', label: 'Documents' },
   { id: 'notes', label: 'Notes' },
   { id: 'activity', label: 'Activity Log' },
+  { id: 'portal', label: 'Portal' },
 ];
 
 function getInitials(firstName: string, lastName: string): string {
@@ -377,6 +379,14 @@ export function ApplicantProfileContent({ id }: Props) {
             <ApplicantActivity applicantId={applicantId} />
           </div>
         </div>
+      )}
+
+      {activeTab === 'portal' && (
+        <PortalAccountCard
+          applicantId={applicantId}
+          applicantName={fullName}
+          applicantEmail={applicant.email}
+        />
       )}
 
       <ArchiveApplicantDialog

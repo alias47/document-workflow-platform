@@ -13,6 +13,7 @@
 export const NOTIFICATION_TEMPLATES = {
   STAFF_WELCOME: 'staff_welcome',
   APPLICANT_PORTAL_INVITATION: 'applicant_portal_invitation',
+  APPLICANT_INVITATION_RESENT: 'applicant_invitation_resent',
   APPLICANT_PASSWORD_RESET: 'applicant_password_reset',
   STAFF_PASSWORD_RESET: 'staff_password_reset',
   DOCUMENT_UPLOADED: 'document_uploaded',
@@ -46,8 +47,12 @@ const TEMPLATE_DEFINITIONS: Record<NotificationTemplateKey, TemplateDefinition> 
     body: '<p>Hello {{staffName}},</p><p>An account has been created for you at {{consultancyName}}. Sign in to get started.</p><p><a href="{{portalUrl}}">Go to dashboard</a></p>',
   },
   [NOTIFICATION_TEMPLATES.APPLICANT_PORTAL_INVITATION]: {
-    subject: 'You have been invited to the {{consultancyName}} portal',
-    body: '<p>Hello {{applicantName}},</p><p>{{consultancyName}} has created a portal account for you. Use the link below to set your password and get started.</p><p><a href="{{portalUrl}}">Access your portal</a></p>',
+    subject: 'You have been invited to the {{organizationName}} portal',
+    body: '<p>Hello {{applicantName}},</p><p>{{organizationName}} has created a portal account for you. Use the link below to set your password and get started.</p><p><a href="{{activationLink}}">Activate your account</a></p><p>This link expires in 7 days.</p>',
+  },
+  [NOTIFICATION_TEMPLATES.APPLICANT_INVITATION_RESENT]: {
+    subject: 'Your {{organizationName}} portal invitation has been resent',
+    body: '<p>Hello {{applicantName}},</p><p>A new invitation has been sent for your portal account at {{organizationName}}. Use the link below to set your password and get started.</p><p><a href="{{activationLink}}">Activate your account</a></p><p>This link expires in 7 days. Any previous invitation links are no longer valid.</p>',
   },
   [NOTIFICATION_TEMPLATES.APPLICANT_PASSWORD_RESET]: {
     subject: 'Reset your {{consultancyName}} portal password',

@@ -31,6 +31,8 @@ export const ACTIVITY_TYPES = {
   SETTINGS_UPDATED: 'settings.updated',
   SETTINGS_LOGO_UPDATED: 'settings.logo_updated',
   SETTINGS_LOGO_REMOVED: 'settings.logo_removed',
+  PORTAL_INVITATION_SENT: 'portal.invitation_sent',
+  PORTAL_INVITATION_ACCEPTED: 'portal.invitation_accepted',
 } as const;
 
 export type ActivityType = (typeof ACTIVITY_TYPES)[keyof typeof ACTIVITY_TYPES];

@@ -100,4 +100,10 @@ export const queryKeys = {
     all: ['settings'] as const,
     detail: () => [...queryKeys.settings.all, 'detail'] as const,
   },
+
+  invitation: {
+    all: ['invitation'] as const,
+    byApplicant: (applicantId: string) =>
+      [...queryKeys.invitation.all, 'applicant', applicantId] as const,
+  },
 } as const;

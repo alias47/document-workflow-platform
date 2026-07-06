@@ -57,8 +57,12 @@ export class ApplicantAuthService {
       throw new UnauthorizedException('Account is not active');
     }
 
-    if (!account.passwordHash) {
-      throw new UnauthorizedException('Password not set. Please use your invitation link.');
+    // Business rule (11.3.7): login only allowed after portal account is activated
+    // (acceptedAt set on the invitation) AND a password has been set.
+    if (!account.activatedAt || !account.passwordHash) {
+      throw new UnauthorizedException(
+        'Account not yet activated. Please use your invitation link.',
+      );
     }
 
     const valid = await this.passwordService.verify(account.passwordHash, dto.password);

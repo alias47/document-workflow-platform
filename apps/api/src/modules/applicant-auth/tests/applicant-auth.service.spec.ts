@@ -27,7 +27,7 @@ const mockPortalAccount: PortalAccountWithApplicant = {
   status: 'active',
   invitationToken: null,
   invitationExpiresAt: null,
-  activatedAt: null,
+  activatedAt: new Date('2026-01-01'),
   failedAttempts: 0,
   lockedUntil: null,
   mustChangePass: false,
@@ -156,12 +156,13 @@ describe('ApplicantAuthService', () => {
       await expect(service.login(loginDto, ORG_ID)).rejects.toThrow(UnauthorizedException);
     });
 
-    it('throws UnauthorizedException when password is null', async () => {
+    it('throws UnauthorizedException when account is not activated', async () => {
       authRepo.findPortalAccountByEmail.mockResolvedValue({
         ...mockPortalAccount,
+        activatedAt: null,
         passwordHash: null,
       });
-      await expect(service.login(loginDto, ORG_ID)).rejects.toThrow(/Password not set/i);
+      await expect(service.login(loginDto, ORG_ID)).rejects.toThrow(/not yet activated/i);
     });
 
     it('increments failedAttempts and throws on wrong password', async () => {
