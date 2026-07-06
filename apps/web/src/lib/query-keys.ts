@@ -106,4 +106,15 @@ export const queryKeys = {
     byApplicant: (applicantId: string) =>
       [...queryKeys.invitation.all, 'applicant', applicantId] as const,
   },
+
+  reports: {
+    all: ['reports'] as const,
+    applicants: (filters: Record<string, unknown>) =>
+      [...queryKeys.reports.all, 'applicants', filters] as const,
+    documents: (filters: Record<string, unknown>) =>
+      [...queryKeys.reports.all, 'documents', filters] as const,
+    workflow: () => [...queryKeys.reports.all, 'workflow'] as const,
+    staffWorkload: (filters: Record<string, unknown>) =>
+      [...queryKeys.reports.all, 'staff-workload', filters] as const,
+  },
 } as const;

@@ -28,9 +28,11 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DocumentModule } from './modules/document/document.module';
 import { DocumentRequirementModule } from './modules/document-requirement/document-requirement.module';
+import { ExportModule } from './modules/export/export.module';
 import { NotesModule } from './modules/notes/notes.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { OrganizationModule } from './modules/organization/organization.module';
+import { ReportModule } from './modules/report/report.module';
 import { SearchModule } from './modules/search/search.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
@@ -92,6 +94,8 @@ const ENV_FILES = [
     ApplicantInvitationModule,
     SystemSettingsModule,
     NotificationModule,
+    ExportModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [
