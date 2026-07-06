@@ -34,6 +34,8 @@ export class SettingsResponseDto {
   @ApiProperty() uploadAllowMultiple: boolean = true;
   @ApiProperty() uploadAllowReplace: boolean = true;
   @ApiProperty() uploadRequireApprovalForResubmit: boolean = false;
+  // Notifications
+  @ApiProperty() emailEnabled: boolean = true;
   @ApiProperty() isActive: boolean = true;
   @ApiProperty() createdAt: Date = new Date();
   @ApiProperty() updatedAt: Date = new Date();

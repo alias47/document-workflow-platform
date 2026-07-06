@@ -8,6 +8,8 @@ export interface AppConfig {
   apiPrefix: string;
   apiVersion: string;
   defaultOrganizationId: string;
+  /** Public frontend base URL used to build links inside notifications. */
+  appUrl: string;
 }
 
 export const appConfig = registerAs(APP_CONFIG_KEY, (): AppConfig => ({
@@ -16,4 +18,5 @@ export const appConfig = registerAs(APP_CONFIG_KEY, (): AppConfig => ({
   apiPrefix: process.env['API_PREFIX'] ?? 'api',
   apiVersion: process.env['API_VERSION'] ?? 'v1',
   defaultOrganizationId: process.env['DEFAULT_ORG_ID'] as string,
+  appUrl: process.env['APP_URL'] ?? process.env['CORS_ORIGIN'] ?? 'http://localhost:3000',
 }));

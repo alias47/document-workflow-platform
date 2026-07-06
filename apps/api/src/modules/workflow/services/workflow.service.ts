@@ -15,6 +15,8 @@ import type { UpdateWorkflowStageDto } from '../dto/update-workflow-stage.dto';
 import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
+import { NOTIFICATION_TEMPLATES } from '@/modules/notification/templates/notification-templates';
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
@@ -24,6 +26,7 @@ export class WorkflowService {
     private readonly auditService: AuditService,
     private readonly activityService: ActivityService,
     private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   // --- Stages -------------------------------------------------------------
@@ -186,7 +189,37 @@ export class WorkflowService {
       },
     });
 
+    // Trigger (11.2.4): notify the applicant their application moved stages.
+    void this.notifyStageChange(applicantId, organizationId, targetStage.name);
+
     return updated;
+  }
+
+  /**
+   * Best-effort applicant notification for a workflow stage change. Skips
+   * silently if the applicant has no email. Never throws into the caller.
+   */
+  private async notifyStageChange(
+    applicantId: string,
+    organizationId: string,
+    stageName: string,
+  ): Promise<void> {
+    const applicant = await this.prisma.applicant.findFirst({
+      where: { id: applicantId, organizationId },
+      select: { firstName: true, lastName: true, email: true },
+    });
+    if (!applicant?.email) return;
+
+    void this.notificationService.notify({
+      organizationId,
+      template: NOTIFICATION_TEMPLATES.APPLICANT_WORKFLOW_STAGE_CHANGED,
+      recipient: applicant.email,
+      variables: {
+        applicantName: `${applicant.firstName} ${applicant.lastName}`,
+        workflowStage: stageName,
+      },
+      metadata: { applicantId },
+    });
   }
 
   /**

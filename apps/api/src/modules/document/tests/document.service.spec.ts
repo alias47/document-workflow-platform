@@ -11,6 +11,7 @@ import type { UpdateDocumentDto } from '../dto/update-document.dto';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { ApplicantService } from '@/modules/applicant/services/applicant.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
 
 const ORG_ID = 'org-uuid-1';
 const STAFF_ID = 'staff-uuid-1';
@@ -66,7 +67,14 @@ describe('DocumentService', () => {
         },
         {
           provide: ApplicantService,
-          useValue: { getById: jest.fn() },
+          useValue: {
+            getById: jest.fn().mockResolvedValue({
+              id: APPLICANT_ID,
+              firstName: 'Test',
+              lastName: 'Applicant',
+              email: 'applicant@test.com',
+            }),
+          },
         },
         {
           provide: AuditService,
@@ -75,6 +83,10 @@ describe('DocumentService', () => {
         {
           provide: ActivityService,
           useValue: { record: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: NotificationService,
+          useValue: { notify: jest.fn().mockResolvedValue(undefined) },
         },
       ],
     }).compile();

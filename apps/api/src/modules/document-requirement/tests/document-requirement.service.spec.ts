@@ -10,6 +10,7 @@ import type { Prisma } from '@prisma/client';
 
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
 
 const ORG_ID = 'org-uuid-1';
 const STAFF_ID = 'staff-uuid-1';
@@ -48,6 +49,7 @@ describe('DocumentRequirementService', () => {
           useValue: {
             findById: jest.fn(),
             findByName: jest.fn(),
+            findApplicantContact: jest.fn(),
             list: jest.fn(),
             listActive: jest.fn(),
             create: jest.fn(),
@@ -67,6 +69,10 @@ describe('DocumentRequirementService', () => {
         {
           provide: ActivityService,
           useValue: { record: jest.fn() },
+        },
+        {
+          provide: NotificationService,
+          useValue: { notify: jest.fn() },
         },
       ],
     }).compile();

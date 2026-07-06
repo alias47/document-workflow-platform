@@ -1,98 +1,132 @@
-# Sprint 11.1 — System Settings
+# Sprint 11.2 — Email & Notification System
 
 ## Goal
 
-Implement a centralized System Settings module that allows the Super Admin to configure the consultancy. The application supports a single consultancy for the MVP. The existing Organization record represents the consultancy and must not be creatable or deletable through the UI.
+Implement a centralized notification system for both staff and applicants.
+
+The MVP will support email notifications only. The architecture must allow additional notification channels (SMS, Push, WhatsApp, etc.) in future without changing business modules.
+
+Business modules must never send emails directly. Every module communicates only with NotificationService.
 
 ---
 
-# 11.1.1 Consultancy Profile
-
-Allow the Super Admin to view and update the consultancy profile.
-
-Fields
-
-- Consultancy Name
-- Logo
-- Email
-- Phone Number
-- Website
-- Address
-- City
-- Country
-- Postal Code
-- Time Zone
-- Description
-
-Requirements
-
-- Load the existing consultancy automatically.
-- Update profile information.
-- Upload logo.
-- Replace logo.
-- Remove logo.
-- Preview logo before upload.
-- Validate image type and size.
-- Save changes atomically.
-
----
-
-# 11.1.2 Applicant Portal Settings
-
-Allow the Super Admin to configure the applicant portal.
-
-Settings
-
-- Enable Applicant Portal
-- Allow Applicant Profile Editing
-- Allow Applicant Password Change
-- Allow Applicant Document Upload
-- Show Assigned Consultant
-- Show Consultancy Contact Information
-
-Changes should take effect immediately.
-
----
-
-# 11.1.3 Document Upload Settings
-
-Configure organization-wide upload behaviour.
-
-Settings
-
-- Maximum Upload Size (MB)
-- Allowed Image Types
-- Allowed Document Types
-- Maximum Files Per Requirement
-- Allow Multiple Uploads
-- Allow Replace Upload
-- Require Approval Before Resubmission
-
-These settings apply to every applicant.
-
----
-
-# 11.1.4 Branding
-
-Allow customization of basic branding.
-
-Fields
-
-- Primary Color
-- Secondary Color
-- Consultancy Short Name
-- Logo
-- Favicon (optional)
-
-Branding will be used throughout the staff dashboard and applicant portal.
-
----
-
-# 11.1.5 Backend
+# 11.2.1 Notification Architecture
 
 Create
 
-SystemSettingsModule
+NotificationModule
+
+NotificationService
+
+NotificationRepository
+
+NotificationController
+
+EmailProvider interface
+
+LocalEmailProvider implementation
+
+Future providers (SMTP, SES, SendGrid, Mailgun) must only require replacing the provider binding.
+
+---
+
+# 11.2.2 Notification Templates
+
+Create reusable notification templates.
+
+Templates
+
+- Staff Welcome
+- Applicant Portal Invitation
+- Applicant Password Reset
+- Staff Password Reset
+- Document Uploaded
+- Document Approved
+- Document Rejected
+- New Document Requirement Assigned
+- Applicant Assigned To Staff
+- Applicant Workflow Stage Changed
+
+Templates must support variable interpolation.
+
+Example
+
+{{applicantName}}
+
+{{consultancyName}}
+
+{{documentName}}
+
+{{staffName}}
+
+{{portalUrl}}
+
+---
+
+# 11.2.3 Email Queue
+
+Implement asynchronous notification processing.
+
+Requirements
+
+Notification records are created immediately.
+
+Email sending happens asynchronously.
+
+Failed sends are retried.
+
+Store
+
+- queued
+- processing
+- sent
+- failed
+
+Record
+
+- createdAt
+- processedAt
+- retryCount
+- errorMessage
+
+Business requests must never wait for email delivery.
+
+---
+
+# 11.2.4 Notification Triggers
+
+Integrate NotificationService into existing modules.
+
+Applicant
+
+- Portal account created
+- Password reset
+
+Documents
+
+- Approved
+- Rejected
+- New requirement assigned
+
+Workflow
+
+- Stage changed
+
+Staff
+
+- Staff account created
+
+Settings
+
+- Enable / disable outgoing email
+
+---
+
+# 11.2.5 Backend
+
+Create
+
+NotificationModule
 
 Repository
 
@@ -104,94 +138,86 @@ DTOs
 
 Response DTOs
 
-Validation
+Queue service
 
-Reuse the existing Organization model whenever possible.
-
-Only extend the schema if absolutely necessary.
+Provider interface
 
 ---
 
-# 11.1.6 API
+# 11.2.6 API
 
-GET /settings
+GET /notifications
 
-PATCH /settings
+GET /notifications/:id
 
-PATCH /settings/logo
+POST /notifications/:id/retry
 
-DELETE /settings/logo
-
-Only Super Admin can access these endpoints.
+Only Super Admin may access notification history.
 
 ---
 
-# 11.1.7 Frontend
+# 11.2.7 Frontend
 
 Create
 
-features/settings
+features/notifications
 
-services/settings.service.ts
+services/notification.service.ts
 
-hooks/use-settings.ts
+hooks/use-notifications.ts
 
 Components
 
-- ConsultancyProfileCard
-- BrandingCard
-- ApplicantPortalSettingsCard
-- DocumentUploadSettingsCard
-- LogoUploader
-- SettingsSkeleton
-- SettingsError
-- SettingsPageClient
+- NotificationTable
+- NotificationStatusBadge
+- NotificationFilters
+- NotificationDetailsDialog
+- RetryNotificationDialog
+- NotificationSkeleton
+- NotificationError
+- NotificationPageClient
 
-Create route
+Create
 
-/settings
-
-Remove all remaining mock settings.
+/settings/notifications
 
 ---
 
-# 11.1.8 Business Rules
+# 11.2.8 Business Rules
 
-Only Super Admin can modify settings.
+Business modules never send email directly.
 
-Existing consultancy cannot be deleted.
+Only NotificationService communicates with EmailProvider.
 
-Existing consultancy cannot be replaced.
+Email failures never fail business transactions.
 
-Only one consultancy exists.
+Notification history is immutable.
 
-Logo stored through StorageProvider.
+Retry increments retryCount.
 
-Replacing a logo deletes the previous file only after the new upload succeeds.
+Maximum retry count = 5.
 
-Removing a logo deletes the physical file.
+Organization isolation enforced.
 
-Settings update must be atomic.
-
----
-
-# 11.1.9 Security
-
-Enforce RBAC.
-
-Validate uploads.
-
-Validate image types.
-
-Maximum logo size: 5 MB.
-
-Prevent directory traversal.
-
-Audit every settings modification.
+Respect System Settings "Email Enabled".
 
 ---
 
-# 11.1.10 Tests
+# 11.2.9 Security
+
+RBAC enforced.
+
+No sensitive information stored in notification payloads.
+
+Email addresses validated.
+
+Prevent duplicate sends caused by retries.
+
+Audit retry operations.
+
+---
+
+# 11.2.10 Tests
 
 Repository
 
@@ -199,15 +225,19 @@ Service
 
 Controller
 
+Queue
+
+Provider
+
 Authorization
 
-Validation
+Retry logic
 
-Storage integration
+Failure handling
 
 ---
 
-# 11.1.11 Quality Gates
+# 11.2.11 Quality Gates
 
 pnpm lint
 
@@ -219,7 +249,7 @@ Backend tests
 
 ---
 
-# 11.1.12 Sprint Completion Report
+# 11.2.12 Sprint Completion Report
 
 Provide:
 

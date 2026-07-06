@@ -10,6 +10,8 @@ import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 import { DocumentRequirementService } from '@/modules/document-requirement/services/document-requirement.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
+import { NOTIFICATION_TEMPLATES } from '@/modules/notification/templates/notification-templates';
 import { WorkflowService } from '@/modules/workflow/services/workflow.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -22,6 +24,7 @@ export class ApplicantService {
     private readonly activityService: ActivityService,
     private readonly prisma: PrismaService,
     private readonly requirementService: DocumentRequirementService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async list(organizationId: string, query: ApplicantQueryDto) {
@@ -125,6 +128,19 @@ export class ApplicantService {
       type: ACTIVITY_TYPES.APPLICANT_CREATED,
       title: 'Applicant created',
     });
+
+    // Trigger (11.2.4): when the applicant is created with an email, invite them
+    // to their portal. Routed through NotificationService — best-effort, never
+    // blocks or fails applicant creation.
+    if (dto.email) {
+      void this.notificationService.notify({
+        organizationId,
+        template: NOTIFICATION_TEMPLATES.APPLICANT_PORTAL_INVITATION,
+        recipient: dto.email,
+        variables: { applicantName: `${dto.firstName} ${dto.lastName}` },
+        metadata: { applicantId: applicant.id },
+      });
+    }
 
     return { id: applicant.id, applicantNumber: applicant.applicantNumber };
   }

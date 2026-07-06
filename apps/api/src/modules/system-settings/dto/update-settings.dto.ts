@@ -171,4 +171,10 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsBoolean()
   uploadRequireApprovalForResubmit?: boolean;
+
+  // Notifications
+  @ApiPropertyOptional({ description: 'Master switch for all outgoing email' })
+  @IsOptional()
+  @IsBoolean()
+  emailEnabled?: boolean;
 }

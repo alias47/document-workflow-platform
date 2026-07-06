@@ -16,6 +16,8 @@ import type { UpdateStaffDto } from '../dto/update-staff.dto';
 
 import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
+import { NOTIFICATION_TEMPLATES } from '@/modules/notification/templates/notification-templates';
 import { PasswordService } from '@/providers/password/password.service';
 
 const DEFAULT_TEMP_PASSWORD = 'ChangeMe@123456!';
@@ -44,6 +46,7 @@ export class StaffService {
     private readonly staffRepo: StaffRepository,
     private readonly passwordService: PasswordService,
     private readonly auditService: AuditService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async getMe(staffId: string) {
@@ -114,6 +117,15 @@ export class StaffService {
       resourceType: 'staff',
       resourceId: staff.id,
       metadata: { email: staff.email, roleId: staff.roleId },
+    });
+
+    // Trigger (11.2.4): welcome the new staff member. Best-effort — never blocks.
+    void this.notificationService.notify({
+      organizationId,
+      template: NOTIFICATION_TEMPLATES.STAFF_WELCOME,
+      recipient: staff.email,
+      variables: { staffName: `${staff.firstName} ${staff.lastName}` },
+      metadata: { staffId: staff.id },
     });
 
     return mapToResponse(staff);
@@ -258,6 +270,20 @@ export class StaffService {
       resourceId: staffId,
       metadata: { applicantCount: dto.applicantIds.length },
     });
+
+    // Trigger (11.2.4): let the staff member know applicants were assigned.
+    if (dto.applicantIds.length > 0) {
+      void this.notificationService.notify({
+        organizationId,
+        template: NOTIFICATION_TEMPLATES.APPLICANT_ASSIGNED_TO_STAFF,
+        recipient: staff.email,
+        variables: {
+          staffName: `${staff.firstName} ${staff.lastName}`,
+          applicantName: `${dto.applicantIds.length} applicant(s)`,
+        },
+        metadata: { staffId, applicantCount: dto.applicantIds.length },
+      });
+    }
   }
 
   /** Throws if removing/deactivating this staff member would leave no active Super Admin. */

@@ -16,6 +16,8 @@ import type { DocumentCategory, Prisma } from '@prisma/client';
 import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
+import { NOTIFICATION_TEMPLATES } from '@/modules/notification/templates/notification-templates';
 
 const MAX_PAGE_SIZE = 100;
 
@@ -25,6 +27,7 @@ export class DocumentRequirementService {
     private readonly requirementRepo: DocumentRequirementRepository,
     private readonly auditService: AuditService,
     private readonly activityService: ActivityService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async list(organizationId: string, query: RequirementQueryDto) {
@@ -159,6 +162,22 @@ export class DocumentRequirementService {
       resourceType: 'applicant',
       resourceId: applicantId,
     });
+
+    // Trigger (11.2.4): notify the applicant that new document requirements were
+    // assigned. Best-effort; skips silently if the applicant has no email.
+    const applicant = await this.requirementRepo.findApplicantContact(applicantId, organizationId);
+    if (applicant?.email) {
+      void this.notificationService.notify({
+        organizationId,
+        template: NOTIFICATION_TEMPLATES.NEW_DOCUMENT_REQUIREMENT_ASSIGNED,
+        recipient: applicant.email,
+        variables: {
+          applicantName: `${applicant.firstName} ${applicant.lastName}`,
+          documentName: 'required documents',
+        },
+        metadata: { applicantId },
+      });
+    }
   }
 
   async updateApplicantRequirementStatus(

@@ -8,7 +8,7 @@ import { AuthService } from '../services/auth.service';
 import type { LoginDto } from '../dto/login.dto';
 
 import { AuditService } from '@/modules/audit/services/audit.service';
-import { EMAIL_PROVIDER } from '@/providers/email/email-provider.interface';
+import { NotificationService } from '@/modules/notification/services/notification.service';
 import { PasswordService } from '@/providers/password/password.service';
 import { TokenService } from '@/providers/token/token.service';
 
@@ -63,7 +63,7 @@ describe('AuthService', () => {
   let authRepo: jest.Mocked<AuthRepository>;
   let passwordService: jest.Mocked<PasswordService>;
   let tokenService: jest.Mocked<TokenService>;
-  let emailProvider: { send: jest.Mock };
+  let notificationService: { notify: jest.Mock };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -116,8 +116,8 @@ describe('AuthService', () => {
           useValue: { log: jest.fn() },
         },
         {
-          provide: EMAIL_PROVIDER,
-          useValue: { send: jest.fn() },
+          provide: NotificationService,
+          useValue: { notify: jest.fn() },
         },
       ],
     }).compile();
@@ -126,7 +126,7 @@ describe('AuthService', () => {
     authRepo = module.get(AuthRepository) as jest.Mocked<AuthRepository>;
     passwordService = module.get(PasswordService) as jest.Mocked<PasswordService>;
     tokenService = module.get(TokenService) as jest.Mocked<TokenService>;
-    emailProvider = module.get(EMAIL_PROVIDER);
+    notificationService = module.get(NotificationService);
   });
 
   describe('login', () => {
@@ -317,14 +317,14 @@ describe('AuthService', () => {
   });
 
   describe('forgotPassword', () => {
-    it('sends reset email when staff found', async () => {
+    it('sends reset notification when staff found', async () => {
       authRepo.findStaffByEmail.mockResolvedValue(mockStaff);
       authRepo.storePasswordResetToken.mockResolvedValue(mockStaff as never);
 
       await service.forgotPassword('admin@test.com', ORG_ID);
 
-      expect(emailProvider.send).toHaveBeenCalledWith(
-        expect.objectContaining({ to: 'admin@test.com' }),
+      expect(notificationService.notify).toHaveBeenCalledWith(
+        expect.objectContaining({ recipient: 'admin@test.com', template: 'staff_password_reset' }),
       );
     });
 
@@ -332,7 +332,7 @@ describe('AuthService', () => {
       authRepo.findStaffByEmail.mockResolvedValue(null);
 
       await expect(service.forgotPassword('unknown@test.com', ORG_ID)).resolves.toBeUndefined();
-      expect(emailProvider.send).not.toHaveBeenCalled();
+      expect(notificationService.notify).not.toHaveBeenCalled();
     });
   });
 

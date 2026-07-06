@@ -11,6 +11,7 @@ import { ApplicantModule } from '@/modules/applicant/applicant.module';
 import { AuditModule } from '@/modules/audit/audit.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { DocumentRequirementModule } from '@/modules/document-requirement/document-requirement.module';
+import { NotificationModule } from '@/modules/notification/notification.module';
 import { StorageModule } from '@/modules/storage/storage.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { StorageModule } from '@/modules/storage/storage.module';
     StorageModule,
     ActivityModule,
     DocumentRequirementModule,
+    NotificationModule,
   ],
   controllers: [DocumentController],
   providers: [DocumentService, DocumentUploadService, FileValidationService, DocumentRepository],

@@ -11,6 +11,8 @@ import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { ApplicantService } from '@/modules/applicant/services/applicant.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
+import { NOTIFICATION_TEMPLATES } from '@/modules/notification/templates/notification-templates';
 
 @Injectable()
 export class DocumentService {
@@ -19,6 +21,7 @@ export class DocumentService {
     private readonly applicantService: ApplicantService,
     private readonly auditService: AuditService,
     private readonly activityService: ActivityService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async list(organizationId: string, query: DocumentQueryDto) {
@@ -130,9 +133,49 @@ export class DocumentService {
         description: existing.originalFilename,
         metadata: { documentId: id },
       });
+
+      // Trigger (11.2.4): notify the applicant of the approval/rejection decision.
+      void this.notifyDecision(
+        id,
+        existing.applicantId,
+        organizationId,
+        existing.originalFilename,
+        verified,
+      );
     }
 
     return updated;
+  }
+
+  /**
+   * Best-effort applicant notification for a document decision. Fetches the
+   * applicant's email within the caller's org; skips silently if the applicant
+   * has no email on file. Never throws into the update transaction.
+   */
+  private async notifyDecision(
+    documentId: string,
+    applicantId: string,
+    organizationId: string,
+    documentName: string,
+    approved: boolean,
+  ): Promise<void> {
+    const applicant = await this.applicantService
+      .getById(applicantId, organizationId)
+      .catch(() => null);
+    if (!applicant?.email) return;
+
+    void this.notificationService.notify({
+      organizationId,
+      template: approved
+        ? NOTIFICATION_TEMPLATES.DOCUMENT_APPROVED
+        : NOTIFICATION_TEMPLATES.DOCUMENT_REJECTED,
+      recipient: applicant.email,
+      variables: {
+        applicantName: `${applicant.firstName} ${applicant.lastName}`,
+        documentName,
+      },
+      metadata: { documentId, applicantId },
+    });
   }
 
   async archive(id: string, organizationId: string, staffId: string) {

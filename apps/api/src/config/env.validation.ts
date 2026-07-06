@@ -21,6 +21,9 @@ export const envValidationSchema = Joi.object({
   CORS_ORIGIN: Joi.string().default('http://localhost:3000'),
   CORS_CREDENTIALS: Joi.boolean().default(false),
 
+  // Public frontend URL for notification links (falls back to CORS_ORIGIN)
+  APP_URL: Joi.string().uri().optional(),
+
   // Multi-tenancy (MVP = single org)
   DEFAULT_ORG_ID: Joi.string().uuid().required(),
 

@@ -32,6 +32,7 @@ export interface SystemSettings {
   uploadAllowMultiple: boolean;
   uploadAllowReplace: boolean;
   uploadRequireApprovalForResubmit: boolean;
+  emailEnabled: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -65,4 +66,5 @@ export interface UpdateSettingsData {
   uploadAllowMultiple?: boolean;
   uploadAllowReplace?: boolean;
   uploadRequireApprovalForResubmit?: boolean;
+  emailEnabled?: boolean;
 }

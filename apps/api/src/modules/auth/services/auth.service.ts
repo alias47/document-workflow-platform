@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 
 import {
   ConflictException,
+  forwardRef,
   Inject,
   Injectable,
   Logger,
@@ -16,9 +17,11 @@ import type { ChangePasswordDto } from '../dto/change-password.dto';
 import type { LoginDto } from '../dto/login.dto';
 import type { JwtPayload } from '../interfaces/jwt-payload.interface';
 
+import { APP_CONFIG_KEY, type AppConfig } from '@/config/app.config';
 import { JWT_CONFIG_KEY, type JwtConfig } from '@/config/jwt.config';
 import { AuditService } from '@/modules/audit/services/audit.service';
-import { EMAIL_PROVIDER, type EmailProvider } from '@/providers/email/email-provider.interface';
+import { NotificationService } from '@/modules/notification/services/notification.service';
+import { NOTIFICATION_TEMPLATES } from '@/modules/notification/templates/notification-templates';
 import { PasswordService } from '@/providers/password/password.service';
 import { TokenService, type TokenPair } from '@/providers/token/token.service';
 
@@ -45,7 +48,8 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly config: ConfigService,
     private readonly auditService: AuditService,
-    @Inject(EMAIL_PROVIDER) private readonly emailProvider: EmailProvider,
+    @Inject(forwardRef(() => NotificationService))
+    private readonly notificationService: NotificationService,
   ) {}
 
   async login(
@@ -244,10 +248,19 @@ export class AuthService {
 
     await this.authRepo.storePasswordResetToken(staff.id, hash, expiresAt);
 
-    await this.emailProvider.send({
-      to: staff.email,
-      subject: 'Reset your password',
-      html: `<p>Use this token to reset your password: <strong>${token}</strong></p><p>Expires in ${RESET_TOKEN_EXPIRY_MINUTES} minutes.</p>`,
+    // Trigger (11.2.4): staff password reset. Routed through NotificationService —
+    // the auth module never touches the email transport directly (11.2.8).
+    const appConfig = this.config.get<AppConfig>(APP_CONFIG_KEY);
+    const resetUrl = `${appConfig?.appUrl ?? ''}/reset-password?token=${token}`;
+    void this.notificationService.notify({
+      organizationId,
+      template: NOTIFICATION_TEMPLATES.STAFF_PASSWORD_RESET,
+      recipient: staff.email,
+      variables: {
+        staffName: `${staff.firstName} ${staff.lastName}`,
+        portalUrl: resetUrl,
+      },
+      metadata: { staffId: staff.id },
     });
 
     await this.auditService.log({
@@ -256,7 +269,7 @@ export class AuthService {
       action: 'auth.password.reset_requested',
     });
 
-    this.logger.log(`Password reset email sent to ${staff.email}`);
+    this.logger.log(`Password reset requested for ${staff.email}`);
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {

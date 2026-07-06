@@ -9,6 +9,7 @@ import type { UpdateApplicantWorkflowDto } from '../dto/update-applicant-workflo
 
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
 const ORG_ID = 'org-uuid-1';
@@ -51,10 +52,11 @@ describe('WorkflowService', () => {
   let repo: jest.Mocked<WorkflowRepository>;
   let auditService: jest.Mocked<AuditService>;
   let activityService: jest.Mocked<ActivityService>;
-  let prisma: { $transaction: jest.Mock };
+  let prisma: { $transaction: jest.Mock; applicant: { findFirst: jest.Mock } };
 
   beforeEach(async () => {
     prisma = {
+      applicant: { findFirst: jest.fn().mockResolvedValue(null) },
       $transaction: jest.fn((cb: (tx: unknown) => Promise<unknown>) => {
         const tx = {
           workflowStage: {
@@ -96,6 +98,10 @@ describe('WorkflowService', () => {
           useValue: { record: jest.fn().mockResolvedValue(undefined) },
         },
         { provide: PrismaService, useValue: prisma },
+        {
+          provide: NotificationService,
+          useValue: { notify: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 

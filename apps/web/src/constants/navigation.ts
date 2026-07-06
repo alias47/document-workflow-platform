@@ -25,7 +25,7 @@ export const ADMIN_NAV: NavSection[] = [
     items: [
       { iconName: 'UserCog', label: 'Staff', href: '/staff' },
       { iconName: 'Activity', label: 'Timeline', href: '/timeline' },
-      { iconName: 'Bell', label: 'Notifications', href: '/notifications', badge: '3' },
+      { iconName: 'Bell', label: 'Notifications', href: '/settings/notifications' },
       { iconName: 'Settings', label: 'Settings', href: '/settings' },
       {
         iconName: 'ClipboardList',

@@ -28,6 +28,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DocumentModule } from './modules/document/document.module';
 import { DocumentRequirementModule } from './modules/document-requirement/document-requirement.module';
 import { NotesModule } from './modules/notes/notes.module';
+import { NotificationModule } from './modules/notification/notification.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { SearchModule } from './modules/search/search.module';
 import { StaffModule } from './modules/staff/staff.module';
@@ -88,6 +89,7 @@ const ENV_FILES = [
     DashboardModule,
     ApplicantPortalModule,
     SystemSettingsModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

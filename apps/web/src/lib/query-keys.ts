@@ -38,6 +38,10 @@ export const queryKeys = {
   notifications: {
     all: ['notifications'] as const,
     lists: () => [...queryKeys.notifications.all, 'list'] as const,
+    list: (params: Record<string, unknown>) =>
+      [...queryKeys.notifications.lists(), params] as const,
+    details: () => [...queryKeys.notifications.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.notifications.details(), id] as const,
   },
 
   search: {

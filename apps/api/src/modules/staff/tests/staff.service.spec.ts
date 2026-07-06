@@ -14,6 +14,7 @@ import type { CreateStaffDto } from '../dto/create-staff.dto';
 import type { UpdateStaffStatusDto } from '../dto/update-staff-status.dto';
 
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
 import { PasswordService } from '@/providers/password/password.service';
 
 const ORG_ID = 'org-uuid-001';
@@ -83,6 +84,10 @@ describe('StaffService', () => {
         {
           provide: AuditService,
           useValue: { log: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: NotificationService,
+          useValue: { notify: jest.fn().mockResolvedValue(undefined) },
         },
       ],
     }).compile();

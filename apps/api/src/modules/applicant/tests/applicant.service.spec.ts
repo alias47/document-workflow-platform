@@ -11,6 +11,7 @@ import type { UpdateApplicantDto } from '../dto/update-applicant.dto';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
 import { DocumentRequirementService } from '@/modules/document-requirement/services/document-requirement.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
 import { WorkflowService } from '@/modules/workflow/services/workflow.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
@@ -107,6 +108,10 @@ describe('ApplicantService', () => {
           useValue: {
             assignRequirementsInTransaction: jest.fn().mockResolvedValue(undefined),
           },
+        },
+        {
+          provide: NotificationService,
+          useValue: { notify: jest.fn().mockResolvedValue(undefined) },
         },
       ],
     }).compile();

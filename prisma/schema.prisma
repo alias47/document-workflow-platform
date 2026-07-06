@@ -64,6 +64,22 @@ enum RequirementStatus {
   rejected
 }
 
+// Notification queue lifecycle (Sprint 11.2). A record is created immediately
+// (queued), picked up by the async processor (processing), then resolved to
+// sent or failed. Failed records may be retried until the max retry count.
+enum NotificationStatus {
+  queued
+  processing
+  sent
+  failed
+}
+
+// Delivery channel. MVP ships email only; the enum leaves room for future
+// channels (sms, push, whatsapp) without a schema migration to add the concept.
+enum NotificationChannel {
+  email
+}
+
 // ---------------------------------------------------------------------------
 // ORGANIZATION
 // ---------------------------------------------------------------------------
@@ -103,6 +119,8 @@ model Organization {
   uploadAllowMultiple      Boolean @default(true)
   uploadAllowReplace       Boolean @default(true)
   uploadRequireApprovalForResubmit Boolean @default(false)
+  // Notifications: master switch for all outgoing email (Sprint 11.2)
+  emailEnabled Boolean   @default(true)
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -117,6 +135,7 @@ model Organization {
   notes                 ApplicantNote[]
   activities            ApplicantActivity[]
   documentRequirements  DocumentRequirement[]
+  notifications         Notification[]
 
   @@map("organizations")
 }
@@ -660,4 +679,42 @@ model PortalRefreshToken {
   @@index([portalAccountId])
   @@index([tokenHash])
   @@map("portal_refresh_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// NOTIFICATION (Sprint 11.2)
+// Immutable delivery record for every outgoing message. Created synchronously
+// (queued) by NotificationService; delivered asynchronously by the queue
+// processor. History is never mutated except by status/retry transitions —
+// the payload (subject/body) is written once and never edited. Organization-
+// isolated like every business entity. No soft delete: notification history is
+// retained for audit and is not user-deletable in the MVP.
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id             String              @id @default(uuid()) @db.Uuid
+  organizationId String              @db.Uuid
+  channel        NotificationChannel @default(email)
+  status         NotificationStatus  @default(queued)
+  template       String
+  recipient      String
+  subject        String
+  body           String
+  // Non-sensitive interpolation context, retained for auditing what was sent.
+  metadata       Json?
+  retryCount     Int                 @default(0)
+  maxRetries     Int                 @default(5)
+  errorMessage   String?
+  processedAt    DateTime?
+  sentAt         DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+  @@map("notifications")
 }

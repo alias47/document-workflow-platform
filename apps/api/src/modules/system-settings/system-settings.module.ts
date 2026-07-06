@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 
 import { SystemSettingsController } from './controllers/system-settings.controller';
 import { SystemSettingsRepository } from './repositories/system-settings.repository';
@@ -9,7 +9,7 @@ import { AuthModule } from '@/modules/auth/auth.module';
 import { StorageModule } from '@/modules/storage/storage.module';
 
 @Module({
-  imports: [AuthModule, AuditModule, StorageModule],
+  imports: [forwardRef(() => AuthModule), AuditModule, StorageModule],
   controllers: [SystemSettingsController],
   providers: [SystemSettingsService, SystemSettingsRepository],
   exports: [SystemSettingsService],

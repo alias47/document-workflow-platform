@@ -4,6 +4,7 @@ import { ApplicantPortalSettingsCard } from './ApplicantPortalSettingsCard';
 import { BrandingCard } from './BrandingCard';
 import { ConsultancyProfileCard } from './ConsultancyProfileCard';
 import { DocumentUploadSettingsCard } from './DocumentUploadSettingsCard';
+import { EmailNotificationSettingsCard } from './EmailNotificationSettingsCard';
 import { SettingsError } from './SettingsError';
 import { SettingsSkeleton } from './SettingsSkeleton';
 import { useSettings } from '../hooks/use-settings';
@@ -21,6 +22,7 @@ export function SettingsPageClient() {
       <BrandingCard settings={settings} />
       <ApplicantPortalSettingsCard settings={settings} />
       <DocumentUploadSettingsCard settings={settings} />
+      <EmailNotificationSettingsCard settings={settings} />
     </div>
   );
 }

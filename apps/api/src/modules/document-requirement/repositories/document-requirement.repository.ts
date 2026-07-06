@@ -38,6 +38,14 @@ export interface RequirementListOptions {
 export class DocumentRequirementRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Minimal applicant contact lookup for notification triggers. */
+  async findApplicantContact(applicantId: string, organizationId: string) {
+    return this.prisma.applicant.findFirst({
+      where: { id: applicantId, organizationId },
+      select: { firstName: true, lastName: true, email: true },
+    });
+  }
+
   async findById(id: string, organizationId: string) {
     return this.prisma.documentRequirement.findFirst({
       where: { id, organizationId, deletedAt: null },
