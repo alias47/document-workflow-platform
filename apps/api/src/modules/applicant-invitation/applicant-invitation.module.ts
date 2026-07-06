@@ -9,9 +9,11 @@ import { AuditModule } from '@/modules/audit/audit.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { NotificationModule } from '@/modules/notification/notification.module';
 import { SystemSettingsModule } from '@/modules/system-settings/system-settings.module';
-import { PasswordService } from '@/providers/password/password.service';
-import { TokenService } from '@/providers/token/token.service';
 
+// PasswordService and TokenService are provided and exported by AuthModule
+// (which registers JwtModule). They are consumed here via the AuthModule import
+// rather than re-declared locally — a local TokenService provider cannot resolve
+// JwtService because this module does not register JwtModule.
 @Module({
   imports: [
     forwardRef(() => AuthModule),
@@ -21,12 +23,7 @@ import { TokenService } from '@/providers/token/token.service';
     SystemSettingsModule,
   ],
   controllers: [ApplicantInvitationController],
-  providers: [
-    ApplicantInvitationService,
-    ApplicantInvitationRepository,
-    PasswordService,
-    TokenService,
-  ],
+  providers: [ApplicantInvitationService, ApplicantInvitationRepository],
   exports: [ApplicantInvitationService],
 })
 export class ApplicantInvitationModule {}

@@ -1,193 +1,390 @@
-# EduFlow — Document Workflow Platform
+# Applicant Portal & Email Testing — Complete Documentation
 
-A production-grade SaaS platform for managing educational document workflows.
+## 📚 Documentation Files
 
-## Prerequisites
+I've created **5 comprehensive guides** for you:
 
-- [Node.js](https://nodejs.org/) >= 20
-- [pnpm](https://pnpm.io/) >= 9
-- [Docker](https://www.docker.com/) >= 24
+### **1. QUICK_START.md** ⭐ START HERE
 
-## Getting started
+- 10-step testing flow (5 minutes)
+- Simple copy-paste instructions
+- Common errors & fixes
+- Password examples
+- Best for: Getting started quickly
 
-### 1. Install dependencies
+### **2. MAILPIT_SETUP_AND_TESTING.md**
 
-```bash
-pnpm install
-```
+- Detailed Mailpit features
+- Complete testing scenarios
+- Troubleshooting guide
+- Docker commands
+- Email configuration for production
+- Best for: Understanding how emails work
 
-### 2. Configure environment
+### **3. COMPLETE_APPLICANT_WORKFLOW.md**
 
-```bash
-cp .env.example .env
-```
+- Full architectural explanation
+- All 10 integration steps with code
+- API endpoints reference
+- Database schema & state transitions
+- Security features explained
+- Best for: Understanding the system deeply
 
-Then open `.env` and set the required values:
+### **4. APPLICANT_PORTAL_CREDENTIALS.md**
 
-| Variable                 | Required | Description                                                |
-| ------------------------ | -------- | ---------------------------------------------------------- |
-| `DATABASE_URL`           | Yes      | PostgreSQL connection string                               |
-| `JWT_SECRET`             | Yes      | Min 32 chars. Generate with: `openssl rand -base64 64`     |
-| `PORT`                   | No       | API port (default: `3001`)                                 |
-| `NODE_ENV`               | No       | `development` / `test` / `production`                      |
-| `CORS_ORIGIN`            | No       | Allowed frontend origin (default: `http://localhost:3000`) |
-| `JWT_ACCESS_EXPIRES_IN`  | No       | Access token TTL (default: `15m`)                          |
-| `JWT_REFRESH_EXPIRES_IN` | No       | Refresh token TTL (default: `7d`)                          |
+- Pre-seeded test credentials
+- How consultant-driven onboarding works
+- Portal access points
+- Manual token generation
+- Best for: Quick credential reference
 
-**The application will refuse to start if `DATABASE_URL` or `JWT_SECRET` are missing or invalid.**
+### **5. SETUP_SUMMARY.md**
 
-#### Local overrides
+- What was installed & configured
+- Environment changes
+- Docker services status
+- Production email configuration
+- Best for: Understanding what was set up
 
-Create `.env.local` to override specific values without modifying `.env`:
+---
 
-```bash
-# .env.local — loaded after .env, not committed to git
-JWT_SECRET=my-personal-dev-secret-longer-than-32-characters
-```
+## ✅ What I Set Up
 
-`.env.local` takes precedence over `.env` and is ignored by git.
+### **Mailpit Installation**
 
-### 3. Start the database
+- ✅ Added to `docker/docker-compose.yml`
+- ✅ Configured SMTP: `localhost:1025`
+- ✅ Web UI: `http://localhost:8025`
+- ✅ Running & healthy
 
-```bash
-docker compose -f docker/docker-compose.yml up -d
-```
+### **SMTP Configuration**
 
-Wait for the health check to pass (usually ~10 seconds):
+- ✅ Updated `.env` with SMTP settings
+- ✅ Host: `localhost`
+- ✅ Port: `1025`
+- ✅ No auth required (development)
+- ✅ From: `noreply@system.local`
 
-```bash
-docker compose -f docker/docker-compose.yml ps
-```
+### **Database & App**
 
-The `STATUS` column should show `healthy` before starting the apps.
+- ✅ PostgreSQL running (was already running)
+- ✅ Database seeded with test data
+- ✅ Admin account: `admin@example.com` / `NewPass@1234!`
+- ✅ 3 pre-seeded applicants ready for testing
+- ✅ App ready to run
 
-### 4. Run database migrations
+---
 
-```bash
-pnpm db:migrate
-```
+## 🚀 Get Started in 5 Minutes
 
-This applies all pending migrations and re-generates the Prisma Client.
-
-### 5. Start the development servers
+### **Step 1: Start the app**
 
 ```bash
 pnpm dev
 ```
 
-This starts both apps via Turborepo:
+### **Step 2: Open these URLs**
 
-| App           | URL                   |
-| ------------- | --------------------- |
-| Web (Next.js) | http://localhost:3000 |
-| API (NestJS)  | http://localhost:3001 |
+- Staff Dashboard: `http://localhost:3000`
+- Mailpit: `http://localhost:8025`
 
-## Database
+### **Step 3: Follow QUICK_START.md**
 
-### Start
+The 10-step guide walks you through:
+
+- Login as staff
+- Send invitation
+- Check email
+- Activate account
+- Login as applicant
+
+**That's it!** 🎉
+
+---
+
+## 📖 Complete Workflow Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  APPLICANT ONBOARDING FLOW (10 Steps)                       │
+└─────────────────────────────────────────────────────────────┘
+
+1. STAFF LOGIN
+   → admin@example.com / NewPass@1234!
+
+2. CREATE APPLICANT
+   → Automatically initializes:
+     • Portal account (pending)
+     • Workflow stage (default)
+     • Document requirements
+     • Activity log
+
+3. SEND INVITATION
+   → System generates:
+     • Secure one-time token
+     • Email with activation link
+     • 7-day expiry
+     • Audit log entry
+
+4. APPLICANT RECEIVES EMAIL
+   → Email captured by Mailpit
+     • Link: http://localhost:3000/applicant/activate?token=...
+     • Can be viewed at http://localhost:8025
+
+5. APPLICANT CLICKS LINK
+   → Frontend validates:
+     • Token is valid
+     • Not revoked
+     • Not expired
+     • Not already used
+
+6. APPLICANT SETS PASSWORD
+   → Requirements:
+     • Uppercase letter
+     • Lowercase letter
+     • Number
+     • Special character
+     • At least 8 characters
+
+7. APPLICANT SUBMITS ACTIVATION
+   → Backend:
+     • Hashes password (Argon2)
+     • Marks account as active
+     • Invalidates token
+     • Revokes other invitations
+
+8. SUCCESS PAGE
+   → Shows confirmation
+     • Auto-redirects to login
+
+9. APPLICANT LOGS IN
+   → Uses email + password
+     • JWT tokens issued
+     • HttpOnly cookies set
+     • Access to portal
+
+10. PORTAL ACCESS
+    → Applicant can:
+     • View profile
+     • See documents
+     • Check workflow status
+     • Upload files
+     • View activity
+```
+
+---
+
+## 🔐 Security Features
+
+✅ **One-time use tokens** — Token invalidated after first use  
+✅ **Secure hashing** — Tokens hashed SHA256, password hashed Argon2  
+✅ **Token expiry** — 7-day limit forces timely activation  
+✅ **HTTP-only cookies** — Tokens never exposed to JavaScript  
+✅ **Staff control** — Can revoke/resend invitations  
+✅ **Audit trail** — All actions logged  
+✅ **Strong passwords** — Enforced complexity requirements
+
+---
+
+## 📊 Database Tables
+
+Involved in the workflow:
+
+| Table                  | Purpose           | Records                |
+| ---------------------- | ----------------- | ---------------------- |
+| `applicant`            | Applicant records | 1 per applicant        |
+| `portal_account`       | Login credentials | 1 per applicant        |
+| `applicant_invitation` | Token tracking    | Multiple per applicant |
+| `applicant_assignment` | Staff assignment  | 1+ per applicant       |
+| `applicant_workflow`   | Current stage     | 1 per applicant        |
+| `workflow_history`     | Stage history     | Multiple               |
+| `applicant_activity`   | Activity log      | Multiple               |
+| `document`             | Document records  | Multiple               |
+
+---
+
+## 🧪 Test Data
+
+**Pre-seeded applicants:**
+
+| Name          | Email                    | Applicant #   | Status  |
+| ------------- | ------------------------ | ------------- | ------- |
+| Aarav Sharma  | aarav.sharma@example.com | APP-2026-0001 | Pending |
+| Mei Ling Chen | mei.chen@example.com     | APP-2026-0002 | Pending |
+| Daniel Okeke  | daniel.okeke@example.com | APP-2026-0003 | Pending |
+
+All have:
+
+- ✅ Portal account created
+- ✅ Assigned to admin staff
+- ✅ Default workflow stage assigned
+- ✅ Ready to receive invitations
+
+---
+
+## 🔧 Environment Setup
+
+**Files modified:**
+
+1. `docker/docker-compose.yml` — Added Mailpit service
+2. `.env` — Added SMTP configuration
+
+**Containers running:**
+
+- ✅ PostgreSQL (database)
+- ✅ Mailpit (email capture)
+- ✅ Frontend (Next.js, port 3000)
+- ✅ API (NestJS, port 3001)
+
+**Test it:**
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+docker ps --filter "name=document_workflow"
+# Should show mailpit and postgres healthy
 ```
 
-### Stop (preserve data)
+---
+
+## 📧 How Emails Work (Development)
+
+In development, **Mailpit intercepts all emails** before they leave the system:
+
+```
+Application
+    ↓
+Sends email via SMTP (localhost:1025)
+    ↓
+Mailpit
+    ↓
+Stores in memory (viewable at localhost:8025)
+    ↓
+You can see it!
+```
+
+**In production**, change SMTP settings to real provider:
+
+- AWS SES
+- SendGrid
+- Gmail
+- Any SMTP server
+
+---
+
+## 🐛 Troubleshooting
+
+### **Mailpit not showing emails?**
 
 ```bash
-docker compose -f docker/docker-compose.yml down
+# Check if running
+docker ps | grep mailpit
+
+# Restart
+docker restart document_workflow_mailpit
+
+# Check logs
+docker logs document_workflow_mailpit
 ```
 
-### Stop and delete all data
+### **Activation link doesn't work?**
+
+- Make sure you copied the **entire URL** (including token)
+- Token is very long (64+ characters)
+- Try again in 10 seconds
+- Check browser console for errors (F12)
+
+### **Can't login as applicant?**
+
+- Make sure account was activated
+- Email and password must be exact (case-sensitive)
+- Try resending invitation from staff dashboard
+
+### **App not starting?**
 
 ```bash
-docker compose -f docker/docker-compose.yml down -v
+# Kill pnpm dev (Ctrl+C)
+# Wait 5 seconds
+# Run again
+pnpm dev
 ```
 
-### Connection details
+---
 
-| Setting  | Value                                                             |
-| -------- | ----------------------------------------------------------------- |
-| Host     | `localhost`                                                       |
-| Port     | `5432`                                                            |
-| Database | `document_workflow`                                               |
-| User     | `postgres`                                                        |
-| Password | `postgres`                                                        |
-| URL      | `postgresql://postgres:postgres@localhost:5432/document_workflow` |
+## 📋 Files in Project
 
-## Prisma
+**Backend (API):**
 
-All Prisma commands run from the repo root. The schema lives at `prisma/schema.prisma`.
+- `apps/api/src/modules/applicant/` — Applicant creation
+- `apps/api/src/modules/applicant-invitation/` — Invitation management
+- `apps/api/src/modules/applicant-auth/` — Portal authentication
+- `apps/api/src/modules/notification/` — Email sending
 
-### Generate the Prisma Client
+**Frontend:**
 
-```bash
-pnpm db:generate
-```
+- `apps/web/src/features/applicants/` — Staff applicant management
+- `apps/web/src/features/applicant-invitation/` — Invitation UI
+- `apps/web/src/features/applicant-portal/` — Applicant dashboard
+- `apps/web/src/app/(applicant-portal)/` — Portal routes
 
-Run this after pulling changes that include schema modifications.
+**Configuration:**
 
-### Create and apply a migration
+- `docker/docker-compose.yml` — Docker services
+- `.env` — Environment variables
+- `prisma/schema.prisma` — Database schema
+- `prisma/seed.ts` — Test data
 
-```bash
-pnpm db:migrate
-```
+---
 
-Prisma will prompt you to name the migration. It creates a SQL file in `prisma/migrations/` and applies it to the database.
+## 🎓 Learning Path
 
-### Apply migrations in CI / production
+1. **Start:** Read `QUICK_START.md` (5 min)
+2. **Test:** Follow the 10-step flow manually
+3. **Explore:** Check emails in Mailpit
+4. **Understand:** Read `COMPLETE_APPLICANT_WORKFLOW.md` (deep dive)
+5. **Reference:** Use `MAILPIT_SETUP_AND_TESTING.md` for specific scenarios
+6. **Build:** Create your own features using the same patterns
 
-```bash
-pnpm db:migrate:deploy
-```
+---
 
-Uses `migrate deploy` — applies pending migrations without creating new ones.
+## ✨ What You Can Do Now
 
-### Seed the database
+✅ Create applicants via staff dashboard  
+✅ Send portal invitations  
+✅ Receive emails (in Mailpit)  
+✅ Activate applicant accounts  
+✅ Login as applicants  
+✅ Access applicant portal  
+✅ Test document uploads  
+✅ Track workflow progress  
+✅ View activity logs  
+✅ Test all edge cases
 
-```bash
-pnpm db:seed
-```
+---
 
-### Open Prisma Studio
+## 🚀 Next Steps
 
-```bash
-pnpm db:studio
-```
+1. **Read QUICK_START.md** — Get familiar with the flow
+2. **Test the workflow** — Follow all 10 steps
+3. **Create test applicants** — Build your own for testing
+4. **Explore the portal** — See what applicants can do
+5. **Check the code** — Understand the implementation
+6. **Customize** — Adapt to your needs
 
-Opens a local browser UI at http://localhost:5555 to inspect and edit database records.
+---
 
-## Project structure
+## 📞 Support
 
-```
-.
-├── apps/
-│   ├── web/          # Next.js 15 App Router
-│   └── api/          # NestJS REST API
-├── packages/
-│   ├── config/       # Shared constants and configuration
-│   ├── eslint-config/ # Shared ESLint rules
-│   ├── tsconfig/     # Shared TypeScript configs
-│   ├── types/        # Shared TypeScript interfaces
-│   ├── ui/           # Shared React component library
-│   └── utils/        # Shared utility functions
-├── prisma/
-│   ├── schema.prisma    # Database schema
-│   ├── seed.ts          # Seed script
-│   └── migrations/      # Migration history
-└── docker/
-    └── docker-compose.yml
-```
+If something doesn't work:
 
-## Useful commands
+1. Check the troubleshooting section above
+2. Review the relevant documentation file
+3. Check Docker container status: `docker ps`
+4. Check logs: `docker logs document_workflow_mailpit`
+5. Restart containers: `docker-compose -f docker/docker-compose.yml restart`
 
-| Command                  | Description                                      |
-| ------------------------ | ------------------------------------------------ |
-| `pnpm dev`               | Start all apps in development mode               |
-| `pnpm build`             | Build all apps and packages                      |
-| `pnpm type-check`        | Run TypeScript type checking across all packages |
-| `pnpm lint`              | Lint all packages                                |
-| `pnpm format`            | Format all files with Prettier                   |
-| `pnpm db:generate`       | Generate the Prisma Client                       |
-| `pnpm db:migrate`        | Create and apply a new migration                 |
-| `pnpm db:migrate:deploy` | Apply pending migrations (CI/production)         |
-| `pnpm db:seed`           | Seed the database                                |
-| `pnpm db:studio`         | Open Prisma Studio                               |
+---
+
+## 🎉 You're All Set!
+
+Everything is installed, configured, and ready to test.
+
+**Next:** Open `QUICK_START.md` and follow the 10 steps to test the complete workflow!

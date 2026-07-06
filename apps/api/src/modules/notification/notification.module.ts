@@ -1,8 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { NotificationController } from './controllers/notification.controller';
 import { EMAIL_PROVIDER } from './interfaces/email-provider.interface';
 import { LocalEmailProvider } from './providers/local-email.provider';
+import { SmtpEmailProvider } from './providers/smtp-email.provider';
 import { NotificationRepository } from './repositories/notification.repository';
 import { NotificationQueueService } from './services/notification-queue.service';
 import { NotificationService } from './services/notification.service';
@@ -12,9 +14,10 @@ import { AuthModule } from '@/modules/auth/auth.module';
 import { SystemSettingsModule } from '@/modules/system-settings/system-settings.module';
 
 /**
- * Central notification module (Sprint 11.2). Owns the EmailProvider binding so
- * future transports (SMTP/SES/SendGrid) swap here only. Exports NotificationService
- * so business modules can send notifications without any email/template knowledge.
+ * Central notification module. Owns the EmailProvider binding so future
+ * transports (SMTP/SES/SendGrid) swap here only. When SMTP_HOST is set in env
+ * the real SMTP provider is used; otherwise falls back to the local logger stub
+ * for environments that don't need real email delivery.
  */
 @Module({
   imports: [forwardRef(() => AuthModule), AuditModule, SystemSettingsModule],
@@ -24,7 +27,18 @@ import { SystemSettingsModule } from '@/modules/system-settings/system-settings.
     NotificationQueueService,
     NotificationRepository,
     LocalEmailProvider,
-    { provide: EMAIL_PROVIDER, useExisting: LocalEmailProvider },
+    SmtpEmailProvider,
+    {
+      provide: EMAIL_PROVIDER,
+      useFactory: (config: ConfigService, smtp: SmtpEmailProvider, local: LocalEmailProvider) => {
+        const host = config.get<string>('SMTP_HOST');
+        if (host && host !== '') {
+          return smtp;
+        }
+        return local;
+      },
+      inject: [ConfigService, SmtpEmailProvider, LocalEmailProvider],
+    },
   ],
   exports: [NotificationService],
 })

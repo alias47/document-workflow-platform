@@ -1,0 +1,349 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   APPLICANT ONBOARDING - VISUAL GUIDE                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+STEP 1: STAFF LOGIN
+═══════════════════════════════════════════════════════════════════════════════
+
+     Browser                                    Application
+    ┌─────────────┐
+    │ http://3000 │  ──────────────────────→   Staff Dashboard
+    └─────────────┘                             
+                    ← ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+   Email: admin@example.com
+   Pass:  NewPass@1234!
+   
+   Status: ✅ LOGGED IN
+
+
+STEP 2: CREATE APPLICANT (Transactional)
+═══════════════════════════════════════════════════════════════════════════════
+
+    Dashboard
+         │
+         ├─ Applicants
+         │     └─ New Applicant
+         │
+         ├─ Fill Form
+         │     ├─ First Name: Aarav
+         │     ├─ Last Name: Sharma  
+         │     ├─ Email: aarav.sharma@example.com
+         │     ├─ Assign Staff: [Select]
+         │     └─ [Create Button]
+         │
+         └─ Backend Creates (ALL AT ONCE):
+                ├─ Applicant record
+                ├─ Portal account (pending)
+                ├─ Staff assignment
+                ├─ Workflow stage (default)
+                ├─ Document requirements
+                └─ Activity log
+
+   Status: ✅ APPLICANT CREATED
+
+
+STEP 3: SEND INVITATION
+═══════════════════════════════════════════════════════════════════════════════
+
+    Dashboard                               Backend
+         │
+         ├─ Applicants
+         │     └─ Aarav Sharma
+         │           └─ [Send Invitation]
+         │
+         └──────────────────────────────→   1. Generate Token
+                                            2. Hash Token
+                                            3. Store in DB
+                                            4. Send Email
+                                            5. Log Audit
+                                            6. Log Activity
+
+   Status: ✅ INVITATION SENT
+
+
+STEP 4: EMAIL IN MAILPIT
+═══════════════════════════════════════════════════════════════════════════════
+
+    API                          SMTP                        Mailpit
+     │                           │                              │
+     ├─ Send Email ──────────→  Port 1025 ───────────────→  localhost:8025
+     │   (via SMTP)             (Mailpit)                    (Web UI)
+     │
+     └─ Email Details:
+        Subject: Your Portal Account Invitation
+        From: noreply@system.local
+        To: aarav.sharma@example.com
+        Link: http://localhost:3000/applicant/activate?token=<LONG_TOKEN>
+
+   Status: ✅ EMAIL CAPTURED (View at http://localhost:8025)
+
+
+STEP 5: APPLICANT CLICKS LINK
+═══════════════════════════════════════════════════════════════════════════════
+
+    Email                    Browser                       Backend
+     │                         │                              │
+     ├─ Contains Link ────→   Address Bar                    1. Extract Token
+     │   (http://...)           │                            2. Hash Token
+     │                          ├─ /applicant/activate  ──→  3. Lookup in DB
+     │                          │   ?token=<TOKEN>            4. Validate State
+     │                          │                             5. Check Expiry
+     │                          └─ Page Loads ←────────────── 6. Return Status
+
+   Status: ✅ TOKEN VALIDATED
+
+
+STEP 6: ACTIVATION FORM
+═══════════════════════════════════════════════════════════════════════════════
+
+    Browser shows form:
+    ┌─────────────────────────────────────────────────┐
+    │  ACTIVATE YOUR ACCOUNT                          │
+    ├─────────────────────────────────────────────────┤
+    │  Welcome, Aarav Sharma                          │
+    │  Default Organization                          │
+    │                                                 │
+    │  Set Your Password                              │
+    │  ┌───────────────────────────────────────────┐ │
+    │  │ Password: [••••••••••••••••]              │ │
+    │  └───────────────────────────────────────────┘ │
+    │                                                 │
+    │  Requirements:                                  │
+    │  ✓ Uppercase (A-Z)                             │
+    │  ✓ Lowercase (a-z)                             │
+    │  ✓ Number (0-9)                                │
+    │  ✓ Special (!@#$%^&*)                          │
+    │  ✓ 8+ characters                               │
+    │                                                 │
+    │  ┌───────────────────────────────────────────┐ │
+    │  │ Confirm: [••••••••••••••••]               │ │
+    │  └───────────────────────────────────────────┘ │
+    │                                                 │
+    │  [Activate Account]  [Cancel]                  │
+    └─────────────────────────────────────────────────┘
+
+   Example Password: SecurePass@123 ✅
+
+   Status: ⏳ WAITING FOR PASSWORD
+
+
+STEP 7: ACTIVATION SUBMISSION
+═══════════════════════════════════════════════════════════════════════════════
+
+    Form                       Backend
+     │                            │
+     ├─ Password ──────────────→  1. Hash password (Argon2)
+     │  SecurePass@123             2. Update portal_account
+     │                             3. Mark invitation accepted
+     │                             4. Revoke old invitations
+     │                             5. Log audit + activity
+     └─ [Activate] ──────────→   6. Return Success
+
+   Status: ✅ ACCOUNT ACTIVATED
+
+
+STEP 8: SUCCESS & REDIRECT
+═══════════════════════════════════════════════════════════════════════════════
+
+    Browser shows:
+    ┌──────────────────────────┐
+    │  ✓ SUCCESS!              │
+    │  Account activated!      │
+    │  Redirecting...          │
+    │  (3 seconds)             │
+    └──────────────────────────┘
+         │
+         └──→ Auto-redirect to /applicant/login
+
+   Status: ✅ REDIRECTING
+
+
+STEP 9: APPLICANT LOGIN
+═══════════════════════════════════════════════════════════════════════════════
+
+    Login Page (Public)                    Backend
+    ┌──────────────────────────┐              │
+    │ APPLICANT LOGIN          │              │
+    ├──────────────────────────┤              │
+    │ Email: [aarav...@...]    │──────────→  1. Find portal account
+    │ Pass:  [••••••••••]      │              2. Verify password
+    │ [Login]                  │              3. Generate JWT tokens
+    └──────────────────────────┘              4. Set HttpOnly cookies
+                                              5. Return Success
+                                   ←──────────
+   Cookies set:
+   ├─ applicant_access_token  (15 min)
+   └─ applicant_refresh_token (7 days)
+
+   Status: ✅ LOGGED IN
+
+
+STEP 10: APPLICANT PORTAL
+═══════════════════════════════════════════════════════════════════════════════
+
+    Dashboard
+    ┌────────────────────────────────────────────────┐
+    │  APPLICANT PORTAL                              │
+    ├────────────────────────────────────────────────┤
+    │                                                │
+    │  Profile Card                                 │
+    │  ├─ Name: Aarav Sharma                         │
+    │  ├─ Applicant #: APP-2026-0001                 │
+    │  └─ Status: Active                             │
+    │                                                │
+    │  Documents                                     │
+    │  ├─ Passport (Pending Upload)                  │
+    │  ├─ Visa (Completed)                           │
+    │  └─ [Upload New Document]                      │
+    │                                                │
+    │  Workflow Status                               │
+    │  └─ Current Stage: New Inquiry                 │
+    │                                                │
+    │  Activity Timeline                             │
+    │  ├─ Applicant created                          │
+    │  ├─ Portal invitation sent                     │
+    │  └─ Portal account activated                   │
+    │                                                │
+    │  [Profile] [Documents] [Change Password]       │
+    └────────────────────────────────────────────────┘
+
+   Status: ✅ PORTAL ACTIVE
+
+
+════════════════════════════════════════════════════════════════════════════════
+                              DATA FLOW SUMMARY
+════════════════════════════════════════════════════════════════════════════════
+
+                              Staff Dashboard
+                                    │
+                                    ├─ Login
+                                    ├─ Create Applicant
+                                    └─ Send Invitation
+                                          │
+                                          ├─ Token Generated (secure random)
+                                          ├─ Email Sent (SMTP → Mailpit)
+                                          ├─ DB Updated (invitation record)
+                                          └─ Audit Logged
+                                          
+                                    Email
+                                    └─ Received in Mailpit
+                                          │
+                                          └─ Applicant Clicks Link
+                                                │
+                                                ├─ Token Validated
+                                                ├─ Activation Form Shown
+                                                └─ Password Entered
+                                                      │
+                                                      ├─ Password Hashed (Argon2)
+                                                      ├─ Portal Account Updated
+                                                      ├─ Invitation Marked Accepted
+                                                      └─ Audit Logged
+                                                      
+                                    Applicant Login
+                                    └─ Email + Password
+                                          │
+                                          ├─ Credentials Verified
+                                          ├─ JWT Tokens Generated
+                                          ├─ HttpOnly Cookies Set
+                                          └─ Portal Access Granted
+                                          
+                                    Applicant Portal
+                                    ├─ View Profile
+                                    ├─ View Documents
+                                    ├─ Check Workflow Status
+                                    ├─ Upload Files
+                                    └─ View Activity
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            SECURITY CHECKPOINTS
+════════════════════════════════════════════════════════════════════════════════
+
+✅ Token Generation
+   └─ crypto.randomBytes(32) - cryptographically secure
+
+✅ Token Storage
+   └─ Only hash stored in DB, not raw token
+
+✅ Token Validation
+   ├─ Hash verification
+   ├─ Expiry check (7 days)
+   ├─ Revocation check
+   └─ One-time use enforcement
+
+✅ Password Security
+   ├─ Complexity requirements enforced
+   ├─ Hashed with Argon2 (resistant to GPU attacks)
+   └─ Never stored as plaintext
+
+✅ Session Security
+   ├─ JWT tokens with expiry
+   ├─ HttpOnly cookies (no JS access)
+   ├─ Secure flag (HTTPS only in production)
+   └─ SameSite protection
+
+✅ Audit Trail
+   ├─ All actions logged
+   ├─ Immutable activity records
+   └─ Staff accountability
+
+
+════════════════════════════════════════════════════════════════════════════════
+                                  TESTING URLS
+════════════════════════════════════════════════════════════════════════════════
+
+Staff Dashboard
+  URL: http://localhost:3000
+  Login: admin@example.com / NewPass@1234!
+
+Applicant Login
+  URL: http://localhost:3000/applicant/login
+
+Activation Page (from email)
+  URL: http://localhost:3000/applicant/activate?token=<TOKEN>
+  Note: Token comes from email in Mailpit
+
+Mailpit Email Viewer
+  URL: http://localhost:8025
+  Purpose: See all captured emails
+
+API
+  URL: http://localhost:3001/api/v1
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            CREDENTIALS REFERENCE
+════════════════════════════════════════════════════════════════════════════════
+
+STAFF:
+  Email: admin@example.com
+  Password: NewPass@1234!
+  Role: Admin (all permissions)
+
+PRE-SEEDED APPLICANTS (no password yet):
+  1. aarav.sharma@example.com    (Aarav Sharma)
+  2. mei.chen@example.com        (Mei Ling Chen)
+  3. daniel.okeke@example.com    (Daniel Okeke)
+
+PASSWORD REQUIREMENTS:
+  ✓ Minimum 8 characters
+  ✓ At least one uppercase letter (A-Z)
+  ✓ At least one lowercase letter (a-z)
+  ✓ At least one number (0-9)
+  ✓ At least one special character (!@#$%^&*()_+-=[]{};':"\\|,.<>/?])
+
+VALID EXAMPLES:
+  ✅ SecurePass@123
+  ✅ MyP@ssw0rd!
+  ✅ ApplicantTest@2024
+  ✅ PortalAccess#999
+
+INVALID EXAMPLES:
+  ❌ password           (no uppercase, number, special char)
+  ❌ Pass@12           (only 7 chars)
+  ❌ PASSWORD123!      (no lowercase)
+  ❌ 12345678          (no letters or special char)
+
+
+════════════════════════════════════════════════════════════════════════════════

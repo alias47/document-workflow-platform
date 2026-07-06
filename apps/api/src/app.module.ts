@@ -17,6 +17,7 @@ import {
   jwtConfig,
   storageConfig,
 } from './config';
+import { emailConfig } from './config/email.config';
 import { ActivityModule } from './modules/activity/activity.module';
 import { ApplicantModule } from './modules/applicant/applicant.module';
 import { ApplicantAuthModule } from './modules/applicant-auth/applicant-auth.module';
@@ -49,7 +50,7 @@ const ENV_FILES = [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ENV_FILES,
-      load: [appConfig, databaseConfig, jwtConfig, corsConfig, storageConfig],
+      load: [appConfig, databaseConfig, jwtConfig, corsConfig, storageConfig, emailConfig],
       validationSchema: envValidationSchema,
       validationOptions: {
         abortEarly: false,
