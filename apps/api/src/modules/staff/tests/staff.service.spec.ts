@@ -75,6 +75,8 @@ describe('StaffService', () => {
             listRoles: jest.fn(),
             listAssignedApplicants: jest.fn(),
             replaceAssignments: jest.fn(),
+            countByOrganization: jest.fn(),
+            getWorkload: jest.fn(),
           } satisfies Partial<Record<keyof StaffRepository, jest.Mock>>,
         },
         {
@@ -277,6 +279,95 @@ describe('StaffService', () => {
       await expect(service.assignApplicants(STAFF_ID, ORG_ID, dto, ACTOR_ID)).rejects.toThrow(
         BadRequestException,
       );
+    });
+  });
+
+  describe('countStaff', () => {
+    it('delegates to the repository with the organization id', async () => {
+      staffRepo.countByOrganization.mockResolvedValue(9);
+
+      const result = await service.countStaff(ORG_ID);
+
+      expect(result).toBe(9);
+      expect(staffRepo.countByOrganization).toHaveBeenCalledWith(ORG_ID);
+    });
+  });
+
+  describe('getWorkload', () => {
+    it('computes workload % as a share of the busiest member', async () => {
+      staffRepo.getWorkload.mockResolvedValue([
+        {
+          staffId: 's1',
+          firstName: 'Ada',
+          lastName: 'Lovelace',
+          role: 'Admin',
+          assignedApplicants: 8,
+        },
+        {
+          staffId: 's2',
+          firstName: 'Bob',
+          lastName: 'Jones',
+          role: 'Consultant',
+          assignedApplicants: 4,
+        },
+        {
+          staffId: 's3',
+          firstName: 'Cy',
+          lastName: 'Young',
+          role: 'Consultant',
+          assignedApplicants: 0,
+        },
+      ]);
+
+      const result = await service.getWorkload(ORG_ID);
+
+      expect(result).toEqual([
+        {
+          staffId: 's1',
+          name: 'Ada Lovelace',
+          role: 'Admin',
+          assignedApplicants: 8,
+          workloadPercent: 100,
+        },
+        {
+          staffId: 's2',
+          name: 'Bob Jones',
+          role: 'Consultant',
+          assignedApplicants: 4,
+          workloadPercent: 50,
+        },
+        {
+          staffId: 's3',
+          name: 'Cy Young',
+          role: 'Consultant',
+          assignedApplicants: 0,
+          workloadPercent: 0,
+        },
+      ]);
+    });
+
+    it('reports 0% workload for everyone when no applicants are assigned', async () => {
+      staffRepo.getWorkload.mockResolvedValue([
+        {
+          staffId: 's1',
+          firstName: 'Ada',
+          lastName: 'Lovelace',
+          role: 'Admin',
+          assignedApplicants: 0,
+        },
+      ]);
+
+      const result = await service.getWorkload(ORG_ID);
+
+      expect(result[0]?.workloadPercent).toBe(0);
+    });
+
+    it('returns an empty list when there is no staff', async () => {
+      staffRepo.getWorkload.mockResolvedValue([]);
+
+      const result = await service.getWorkload(ORG_ID);
+
+      expect(result).toEqual([]);
     });
   });
 });

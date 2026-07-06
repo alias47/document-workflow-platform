@@ -35,6 +35,15 @@ export class ActivityService {
     }
   }
 
+  /**
+   * Latest activities across the organization for the dashboard feed. Newest
+   * first, no pagination, capped at `limit` (default 20). Each row includes the
+   * actor and the target applicant.
+   */
+  async listRecent(organizationId: string, limit: number = DEFAULT_PAGE_SIZE) {
+    return this.activityRepo.listRecentByOrganization(organizationId, limit);
+  }
+
   async listByApplicant(applicantId: string, organizationId: string, query: ActivityQueryDto) {
     // Organization isolation: only surface activity for an applicant that lives
     // in the caller's org. Soft-deleted applicants still retain their history,

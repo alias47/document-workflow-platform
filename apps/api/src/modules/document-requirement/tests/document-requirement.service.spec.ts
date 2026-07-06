@@ -60,6 +60,7 @@ describe('DocumentRequirementService', () => {
             syncApplicantRequirements: jest.fn(),
             updateApplicantRequirementStatus: jest.fn(),
             assignRequirementsInTransaction: jest.fn(),
+            getCompletionAggregate: jest.fn(),
           },
         },
         {
@@ -248,6 +249,78 @@ describe('DocumentRequirementService', () => {
         STAFF_ID,
       );
       expect(repo.updateApplicantRequirementStatus).toHaveBeenCalledWith('adr-1', 'approved');
+    });
+  });
+
+  describe('getCompletionSummary', () => {
+    it('derives fully-complete, incomplete, and average from the per-applicant rollup', async () => {
+      repo.getCompletionAggregate.mockResolvedValue({
+        // Applicant A: 2/2 approved → fully complete, 100%
+        // Applicant B: 1/2 approved → incomplete, 50%
+        // Applicant C: 0/1 approved → incomplete, 0%
+        perApplicant: [
+          { applicantId: 'A', status: 'approved', count: 2 },
+          { applicantId: 'B', status: 'approved', count: 1 },
+          { applicantId: 'B', status: 'pending', count: 1 },
+          { applicantId: 'C', status: 'rejected', count: 1 },
+        ],
+        statusTotals: [
+          { status: 'approved', count: 3 },
+          { status: 'pending', count: 1 },
+          { status: 'rejected', count: 1 },
+        ],
+      });
+
+      const result = await service.getCompletionSummary(ORG_ID);
+
+      expect(result.fullyComplete).toBe(1);
+      expect(result.incomplete).toBe(2);
+      // (100 + 50 + 0) / 3 = 50
+      expect(result.averageCompletion).toBe(50);
+      expect(result.applicantsWithRequirements).toBe(3);
+    });
+
+    it('counts awaiting-upload (pending) and missing (non-approved) documents', async () => {
+      repo.getCompletionAggregate.mockResolvedValue({
+        perApplicant: [
+          { applicantId: 'A', status: 'pending', count: 2 },
+          { applicantId: 'A', status: 'uploaded', count: 1 },
+          { applicantId: 'B', status: 'rejected', count: 1 },
+        ],
+        statusTotals: [
+          { status: 'pending', count: 2 },
+          { status: 'uploaded', count: 1 },
+          { status: 'rejected', count: 1 },
+        ],
+      });
+
+      const result = await service.getCompletionSummary(ORG_ID);
+
+      expect(result.awaitingUpload).toBe(2); // pending only
+      expect(result.missingDocuments).toBe(4); // pending + uploaded + rejected
+    });
+
+    it('returns zeroed metrics for an organization with no requirements', async () => {
+      repo.getCompletionAggregate.mockResolvedValue({ perApplicant: [], statusTotals: [] });
+
+      const result = await service.getCompletionSummary(ORG_ID);
+
+      expect(result).toEqual({
+        fullyComplete: 0,
+        incomplete: 0,
+        averageCompletion: 0,
+        awaitingUpload: 0,
+        missingDocuments: 0,
+        applicantsWithRequirements: 0,
+      });
+    });
+
+    it('scopes the aggregate query to the organization', async () => {
+      repo.getCompletionAggregate.mockResolvedValue({ perApplicant: [], statusTotals: [] });
+
+      await service.getCompletionSummary(ORG_ID);
+
+      expect(repo.getCompletionAggregate).toHaveBeenCalledWith(ORG_ID);
     });
   });
 });

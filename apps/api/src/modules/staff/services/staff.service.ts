@@ -63,6 +63,30 @@ export class StaffService {
     return mapToResponse(staff);
   }
 
+  /** Total non-deleted staff in the organization (dashboard summary). */
+  async countStaff(organizationId: string): Promise<number> {
+    return this.staffRepo.countByOrganization(organizationId);
+  }
+
+  /**
+   * Per-staff workload for the dashboard workload widget. Workload % is each
+   * staff member's assigned-applicant share of the busiest member's load, so the
+   * most-loaded person reads 100%. Read-only aggregate; manager/admin-gated at
+   * the controller.
+   */
+  async getWorkload(organizationId: string) {
+    const rows = await this.staffRepo.getWorkload(organizationId);
+    const maxAssigned = rows.reduce((max, r) => Math.max(max, r.assignedApplicants), 0);
+
+    return rows.map((r) => ({
+      staffId: r.staffId,
+      name: `${r.firstName} ${r.lastName}`,
+      role: r.role,
+      assignedApplicants: r.assignedApplicants,
+      workloadPercent: maxAssigned > 0 ? Math.round((r.assignedApplicants / maxAssigned) * 100) : 0,
+    }));
+  }
+
   async list(organizationId: string, query: StaffQueryDto) {
     const page = query.page ?? 1;
     const pageSize = Math.min(query.pageSize ?? 25, 100);

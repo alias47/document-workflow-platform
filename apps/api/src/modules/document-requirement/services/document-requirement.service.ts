@@ -58,6 +58,72 @@ export class DocumentRequirementService {
     return req;
   }
 
+  /**
+   * Organization-wide document completion summary for the dashboard widget.
+   * Derived from the per-applicant requirement rollup:
+   *  - fullyComplete: applicants whose every requirement is approved
+   *  - incomplete: applicants with at least one non-approved requirement
+   *  - averageCompletion: mean approved-ratio across applicants that have
+   *    requirements (0–100, rounded)
+   *  - awaitingUpload: requirements still in `pending`
+   *  - missingDocuments: requirements not yet approved (pending/uploaded/rejected)
+   * All business logic lives here; DashboardService only consumes the result.
+   */
+  async getCompletionSummary(organizationId: string): Promise<{
+    fullyComplete: number;
+    incomplete: number;
+    averageCompletion: number;
+    awaitingUpload: number;
+    missingDocuments: number;
+    applicantsWithRequirements: number;
+  }> {
+    const { perApplicant, statusTotals } =
+      await this.requirementRepo.getCompletionAggregate(organizationId);
+
+    // Fold the per-(applicant,status) rows into per-applicant totals/approved.
+    const byApplicant = new Map<string, { total: number; approved: number }>();
+    for (const row of perApplicant) {
+      const entry = byApplicant.get(row.applicantId) ?? { total: 0, approved: 0 };
+      entry.total += row.count;
+      if (row.status === 'approved') entry.approved += row.count;
+      byApplicant.set(row.applicantId, entry);
+    }
+
+    let fullyComplete = 0;
+    let incomplete = 0;
+    let completionSum = 0;
+    for (const { total, approved } of byApplicant.values()) {
+      if (total > 0 && approved === total) {
+        fullyComplete += 1;
+      } else {
+        incomplete += 1;
+      }
+      completionSum += total > 0 ? approved / total : 0;
+    }
+
+    const applicantsWithRequirements = byApplicant.size;
+    const averageCompletion =
+      applicantsWithRequirements > 0
+        ? Math.round((completionSum / applicantsWithRequirements) * 100)
+        : 0;
+
+    const statusCount = (status: string): number =>
+      statusTotals.find((s) => s.status === status)?.count ?? 0;
+
+    const awaitingUpload = statusCount('pending');
+    const missingDocuments =
+      statusCount('pending') + statusCount('uploaded') + statusCount('rejected');
+
+    return {
+      fullyComplete,
+      incomplete,
+      averageCompletion,
+      awaitingUpload,
+      missingDocuments,
+      applicantsWithRequirements,
+    };
+  }
+
   async create(dto: CreateRequirementDto, organizationId: string, staffId: string) {
     const existing = await this.requirementRepo.findByName(organizationId, dto.name);
     if (existing) {

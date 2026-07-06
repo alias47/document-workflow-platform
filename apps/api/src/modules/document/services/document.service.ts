@@ -54,6 +54,14 @@ export class DocumentService {
     return document;
   }
 
+  /**
+   * Non-deleted document counts grouped by verification status (dashboard
+   * summary). Read-only aggregate.
+   */
+  async countByStatus(organizationId: string) {
+    return this.documentRepo.countByStatus(organizationId);
+  }
+
   async create(dto: CreateDocumentDto, organizationId: string, staffId: string) {
     // Organization isolation: the applicant must exist within the caller's org.
     // ApplicantService.getById throws NotFoundException on org mismatch.

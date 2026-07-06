@@ -657,6 +657,45 @@ body {
   }
 }
 
+/* ── Dashboard two-column grid (Sprint 11.5) ──────────────────
+   Desktop: 2 equal columns · Tablet & mobile: single column. */
+.dashboard-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .dashboard-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Skeleton shimmer (Sprint 11.5) ───────────────────────── */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* ── Divider ──────────────────────────────────────────────── */
 .divider {
   height: 1px;

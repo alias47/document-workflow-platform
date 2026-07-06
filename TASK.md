@@ -1,436 +1,557 @@
-# Sprint 11.3 — Applicant Invitation & Portal Activation
+# Sprint 11.5 — Dashboard & Analytics
 
-**Sprint Goal**
+Project: Document Workflow Platform
 
-Complete the applicant onboarding lifecycle by allowing staff to invite applicants to the portal, applicants to activate their accounts securely, and the system to manage the full invitation lifecycle.
+Sprint: 11.5
 
----
-
-# 11.3.1 Objectives
-
-Implement a complete invitation system that:
-
-- Creates portal accounts automatically when an applicant is invited.
-- Sends secure invitation emails.
-- Allows applicants to activate their account.
-- Prevents duplicate or invalid activations.
-- Integrates with the Notification System.
-- Fully audits every action.
-- Keeps the entire process organization isolated.
-
-This completes the Applicant Portal MVP.
+Status: Ready for Implementation
 
 ---
 
-# 11.3.2 Database
+# 1. Sprint Goal
 
-Extend the existing PortalAccount architecture.
+Implement a centralized operational dashboard that provides real-time insights into the organization's workload, applicant pipeline, document completion, workflow progress, recent activities, and personal tasks.
 
-## PortalInvitation
+The dashboard serves as the landing page after login and should aggregate information from existing modules without introducing duplicated business logic.
 
-Create a new model.
-
-Fields:
-
-- id
-- organizationId
-- applicantId
-- portalAccountId
-- tokenHash
-- expiresAt
-- acceptedAt
-- revokedAt
-- createdBy
-- createdAt
-
-Indexes
-
-- organizationId
-- applicantId
-- expiresAt
-
-Relations
-
-- Organization
-- Applicant
-- PortalAccount
-- Staff (createdBy)
+This sprint is read-only and introduces no workflow mutations.
 
 ---
 
-# 11.3.3 Invitation Status
+# 2. Objectives
 
-Status is derived.
+Implement:
 
-Pending
-
-- acceptedAt == null
-- revokedAt == null
-- expiresAt > now()
-
-Accepted
-
-- acceptedAt != null
-
-Expired
-
-- acceptedAt == null
-- revokedAt == null
-- expiresAt < now()
-
-Revoked
-
-- revokedAt != null
-
-Never store status.
+• Dashboard module
+• Dashboard summary API
+• Recent activity widget
+• My Tasks widget
+• Applicant status overview
+• Document completion overview
+• Workflow distribution overview
+• Staff workload overview
+• Dashboard frontend
+• Dashboard widgets
+• Charts
+• Loading states
+• Error states
+• Empty states
 
 ---
 
-# 11.3.4 Backend Module
+# 3. Architecture
 
-Create
+Create a new DashboardModule.
 
-modules/applicant-invitation/
+DashboardModule is an aggregation layer.
 
-including
+DashboardService must not directly access Prisma repositories for business data.
 
-- repository
-- service
-- controller
-- dto
-- tests
+Instead it should consume existing services.
+
+ApplicantService
+
+TaskService
+
+WorkflowService
+
+ActivityService
+
+DocumentService
+
+UserService
+
+This prevents duplicated business logic.
 
 ---
 
-# 11.3.5 Backend API
+# 4. Database Changes
 
-## Staff
+None.
 
-GET /applicants/:id/invitation
+Dashboard reads existing data only.
+
+No schema changes.
+
+No migrations.
+
+---
+
+# 5. Backend Structure
+
+dashboard/
+
+    controllers/
+
+        dashboard.controller.ts
+
+    services/
+
+        dashboard.service.ts
+
+    dto/
+
+        dashboard-summary.dto.ts
+
+    dashboard.module.ts
+
+No repositories should be created unless absolutely necessary for lightweight aggregate queries that cannot reasonably belong to existing modules.
+
+---
+
+# 6. API Endpoints
+
+GET /dashboard/summary
 
 Returns
 
-- invitation status
-- expiresAt
-- acceptedAt
-- invitedBy
-- createdAt
+• KPI cards
+• Applicant summary
+• Document summary
+• Workflow summary
+
+Permission
+
+dashboard.view
 
 ---
 
-POST /applicants/:id/invitation
-
-Creates
-
-- PortalAccount (if none exists)
-- PortalInvitation
-- secure token
-- hashed token
-- notification email
-
-Returns success only.
-
----
-
-POST /applicants/:id/invitation/resend
-
-Business rules
-
-- old invitation revoked
-- new invitation created
-- new email sent
-
----
-
-POST /applicants/:id/invitation/revoke
-
-Immediately invalidates invitation.
-
----
-
-## Applicant
-
-GET /applicant/activate
-
-Query
-
-token
+GET /dashboard/activity
 
 Returns
 
-- valid
-- applicant name
-- organization name
+Recent activity feed
 
-Never returns token information.
+Permission
 
----
-
-POST /applicant/activate
-
-Body
-
-- token
-- password
-
-Validates
-
-- invitation exists
-- not expired
-- not revoked
-- unused
-- password policy
-
-Creates password
-
-Marks acceptedAt
-
-Deletes every remaining active invitation
-
-Deletes refresh tokens
-
-Returns success.
+dashboard.view
 
 ---
 
-# 11.3.6 Notification Integration
+GET /dashboard/my-tasks
 
-Reuse NotificationService.
+Returns
 
-Never send email directly.
+Assigned tasks
 
-Templates
+Permission
 
-Applicant Invitation
-
-Variables
-
-- applicantName
-- organizationName
-- activationLink
-
-Invitation Resent
-
-Same template.
+dashboard.view
 
 ---
 
-# 11.3.7 Applicant Portal
+GET /dashboard/workload
 
-Applicant cannot login until
+Returns
 
-acceptedAt exists
-AND
-password exists.
+Staff workload
 
----
+Permission
 
-# 11.3.8 Staff Frontend
+dashboard.workload.view
 
-Applicant Profile
-
-Add
-
-Portal Account card.
-
-Display
-
-- Invitation Status
-- Invited By
-- Invitation Date
-- Expiration
-- Activated Date
-
-Buttons
-
-Send Invitation
-
-Resend Invitation
-
-Revoke Invitation
-
-Copy Invitation Link
-
-Buttons shown only when valid.
-
-Dialogs
-
-Send
-
-Resend
-
-Revoke
-
-Loading
-
-Error
-
-Success
+Manager/Admin only.
 
 ---
 
-# 11.3.9 Applicant Frontend
+# 7. Dashboard Summary
+
+Return
+
+totalApplicants
+
+activeApplicants
+
+completedApplicants
+
+pendingDocuments
+
+completedDocuments
+
+activeWorkflows
+
+completedWorkflows
+
+overdueTasks
+
+dueTodayTasks
+
+dueThisWeekTasks
+
+totalStaff
+
+---
+
+# 8. Applicant Status Widget
+
+Return counts grouped by workflow stage.
+
+Example
+
+Inquiry
+
+Registered
+
+Documents Pending
+
+Ready For Submission
+
+Submitted
+
+Approved
+
+Completed
+
+Stage names must come from the workflow system.
+
+Do not hardcode stage names.
+
+---
+
+# 9. Document Completion Widget
+
+Return
+
+Fully Complete
+
+Incomplete
+
+Average Completion %
+
+Awaiting Upload
+
+Missing Documents
+
+---
+
+# 10. Workflow Widget
+
+Return
+
+Applicants grouped by current workflow stage.
+
+Frontend displays:
+
+Bar Chart
+
+Pie Chart
+
+Future widgets can reuse this endpoint.
+
+---
+
+# 11. Recent Activity Widget
+
+Reuse Activity module.
+
+Return latest 20 activities.
+
+Newest first.
+
+Include
+
+Activity Type
+
+Title
+
+Description
+
+Timestamp
+
+Actor
+
+Target
+
+No pagination.
+
+---
+
+# 12. My Tasks Widget
+
+Reuse Task module.
+
+Return
+
+Assigned Tasks
+
+Due Date
+
+Priority
+
+Status
+
+Sort
+
+Overdue
+
+Due Today
+
+Due Soon
+
+Maximum 20.
+
+---
+
+# 13. Staff Workload Widget
+
+Visible only to
+
+Managers
+
+Administrators
+
+Return
+
+Staff Name
+
+Assigned Applicants
+
+Open Tasks
+
+Completed Tasks
+
+Overdue Tasks
+
+Current Workload %
+
+---
+
+# 14. RBAC
+
+dashboard.view
+
+dashboard.workload.view
+
+Organization isolation required.
+
+Regular staff cannot access workload endpoint.
+
+---
+
+# 15. Audit
+
+Dashboard views are read-only.
+
+No audit events.
+
+No activity events.
+
+---
+
+# 16. Notifications
+
+None.
+
+Dashboard consumes existing information only.
+
+---
+
+# 17. Frontend
 
 Create
 
-/applicant/activate
+features/dashboard/
 
-States
+components/
 
-Loading
+hooks/
 
-Invalid token
+types/
 
-Expired token
+services/
 
-Revoked invitation
+Widgets
 
-Already activated
+DashboardHeader
 
-Password form
+KPICards
 
-Activation successful
+ApplicantStatusChart
 
-Password policy identical to staff.
+WorkflowChart
 
-Automatic redirect to login after activation.
+DocumentCompletionCard
 
----
+ActivityFeed
 
-# 11.3.10 Business Rules
+MyTasksWidget
 
-One active invitation per applicant.
+StaffWorkloadTable
 
-Invitation lifetime
+DashboardSkeleton
 
-7 days.
+DashboardError
 
-Resend
-
-creates a completely new token.
-
-Old token immediately invalid.
-
-Tokens stored hashed.
-
-Secure random tokens only.
-
-One-time use.
-
-Applicant email cannot be changed during activation.
-
-Applicant already activated cannot receive activation invitation.
-
-PortalAccount created once only.
-
-Every operation organization scoped.
+DashboardEmpty
 
 ---
 
-# 11.3.11 Audit
+# 18. Dashboard Page
 
-Audit every action.
+Dashboard becomes
 
-Examples
+app/(dashboard)/page.tsx
 
-invitation.created
-
-invitation.resent
-
-invitation.revoked
-
-invitation.accepted
+Layout
 
 ---
 
-# 11.3.12 Activity
-
-Record applicant activities
-
-Portal Invitation Sent
-
-Portal Invitation Accepted
+Header
 
 ---
 
-# 11.3.13 Security
-
-Never expose hashed tokens.
-
-Never expose applicant existence from activation endpoint.
-
-Prevent replay attacks.
-
-Validate expiration.
-
-Constant-time hash comparison.
-
-Invalidate refresh sessions after activation.
+KPI Cards
 
 ---
 
-# 11.3.14 Tests
+Applicant Status
 
-Repository
-
-Service
-
-Controller
-
-Invitation lifecycle
-
-Activation
-
-Expiration
-
-Revocation
-
-Duplicate invite prevention
-
-Duplicate activation prevention
-
-Notification integration
-
-Audit logging
-
-Activity logging
-
-Organization isolation
-
-Security
+Workflow Distribution
 
 ---
 
-# 11.3.15 Validation
+Document Completion
 
-Must pass
-
-pnpm lint
-
-pnpm type-check
-
-pnpm build
-
-pnpm test
+My Tasks
 
 ---
 
-# 11.3.16 Completion Report
+Recent Activity
 
-When the sprint is complete, include:
+---
 
-1. Sprint Completion Report
-2. Files Created
-3. Files Modified
-4. Database Changes
-5. API Endpoints
-6. Frontend Components
-7. Business Rules Implemented
-8. Notification Templates Added
-9. Audit & Activity Events Added
-10. Tests Added
-11. Validation Results
-12. Documentation Inconsistencies
-13. TASK.md Completion Confirmation
+Staff Workload (RBAC)
 
-Do not commit any code.
+---
+
+Responsive
+
+Desktop
+
+2–4 column layout
+
+Tablet
+
+2 columns
+
+Mobile
+
+Single column
+
+---
+
+# 19. Charts
+
+Use the existing chart library already adopted by the frontend.
+
+Charts required
+
+Applicant Status
+
+Workflow Distribution
+
+No custom visualization library.
+
+---
+
+# 20. Error Handling
+
+Return standardized API responses.
+
+Gracefully handle
+
+No applicants
+
+No tasks
+
+No activities
+
+No workflows
+
+Frontend must show empty states.
+
+---
+
+# 21. Security
+
+Authenticated users only.
+
+Organization-scoped queries.
+
+RBAC enforced.
+
+No cross-organization aggregation.
+
+No sensitive information exposed.
+
+---
+
+# 22. Performance
+
+Dashboard should complete within acceptable response times under normal organization sizes.
+
+Aggregate queries should avoid N+1 issues.
+
+Use parallel service calls where appropriate.
+
+Do not introduce caching during MVP.
+
+---
+
+# 23. Testing
+
+Backend
+
+Controller tests
+
+Service tests
+
+RBAC tests
+
+Summary calculation tests
+
+Workload tests
+
+Frontend
+
+Component rendering
+
+Loading state
+
+Empty state
+
+Error state
+
+Hook tests
+
+---
+
+# 24. Acceptance Criteria
+
+✓ Dashboard is landing page
+
+✓ KPI cards visible
+
+✓ Activity feed visible
+
+✓ My Tasks visible
+
+✓ Applicant summary visible
+
+✓ Workflow chart visible
+
+✓ Document completion visible
+
+✓ Staff workload visible for managers only
+
+✓ Organization isolation enforced
+
+✓ Responsive layout
+
+✓ Tests passing
+
+✓ No duplicated business logic
+
+✓ No Prisma business queries inside DashboardService
+
+✓ Production-ready

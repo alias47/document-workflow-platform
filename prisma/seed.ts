@@ -36,6 +36,10 @@ const PERMISSIONS = [
   { action: 'search.view', description: 'Use the global search feature' },
   // Dashboard
   { action: 'dashboard.view', description: 'View the aggregated dashboard' },
+  {
+    action: 'dashboard.workload.view',
+    description: 'View the staff workload widget (managers/administrators only)',
+  },
   // Audit
   { action: 'audit.view', description: 'View audit logs' },
   // Settings

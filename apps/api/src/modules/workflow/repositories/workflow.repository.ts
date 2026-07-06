@@ -57,6 +57,46 @@ export class WorkflowRepository {
     });
   }
 
+  /**
+   * Distribution of active (non-deleted) applicants across every workflow stage.
+   * Returns one row per stage — including stages with zero applicants — ordered
+   * by the stage's configured order. Stage names are never hardcoded; they come
+   * straight from the workflow configuration. Single query, no N+1: the per-stage
+   * count is a filtered `_count` relation aggregate.
+   */
+  async getStageDistribution(organizationId: string) {
+    const stages = await this.prisma.workflowStage.findMany({
+      where: { organizationId, deletedAt: null },
+      orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        color: true,
+        order: true,
+        isFinal: true,
+        _count: {
+          select: {
+            currentWorkflows: {
+              where: {
+                deletedAt: null,
+                applicant: { deletedAt: null, organizationId },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return stages.map((s) => ({
+      stageId: s.id,
+      stageName: s.name,
+      color: s.color,
+      order: s.order,
+      isFinal: s.isFinal,
+      applicantCount: s._count.currentWorkflows,
+    }));
+  }
+
   async findDefaultStage(organizationId: string) {
     return this.prisma.workflowStage.findFirst({
       where: { organizationId, isDefault: true, deletedAt: null },

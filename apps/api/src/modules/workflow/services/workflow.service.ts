@@ -35,6 +35,15 @@ export class WorkflowService {
     return this.workflowRepo.listStages(organizationId);
   }
 
+  /**
+   * Applicants grouped by their current workflow stage, for the dashboard's
+   * applicant-status and workflow-distribution widgets. Read-only aggregate;
+   * stage names come from the workflow configuration (never hardcoded).
+   */
+  async getStageDistribution(organizationId: string) {
+    return this.workflowRepo.getStageDistribution(organizationId);
+  }
+
   async createStage(dto: CreateWorkflowStageDto, organizationId: string, staffId: string) {
     const stage = await this.prisma.$transaction(async (tx) => {
       if (dto.isDefault) {

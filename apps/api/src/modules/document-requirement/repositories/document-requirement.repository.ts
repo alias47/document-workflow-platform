@@ -136,6 +136,54 @@ export class DocumentRequirementRepository {
     return this.prisma.applicantDocumentRequirement.count({ where: { requirementId } });
   }
 
+  /**
+   * Per-applicant document requirement rollup for the dashboard completion
+   * widget. Groups every non-deleted applicant's requirements by (applicant,
+   * status) in one query, plus an organization-wide status count in a second —
+   * so the service can derive fully-complete / incomplete / averages without
+   * loading individual requirement rows (no N+1).
+   */
+  async getCompletionAggregate(organizationId: string): Promise<{
+    perApplicant: { applicantId: string; status: string; count: number }[];
+    statusTotals: { status: string; count: number }[];
+  }> {
+    const applicantScope: Prisma.ApplicantDocumentRequirementWhereInput = {
+      applicant: { organizationId, deletedAt: null },
+      requirement: { organizationId, deletedAt: null },
+    };
+
+    const [perApplicantGroups, statusGroups] = await this.prisma.$transaction([
+      this.prisma.applicantDocumentRequirement.groupBy({
+        by: ['applicantId', 'status'],
+        where: applicantScope,
+        _count: { status: true },
+        orderBy: { applicantId: 'asc' },
+      }),
+      this.prisma.applicantDocumentRequirement.groupBy({
+        by: ['status'],
+        where: applicantScope,
+        _count: { status: true },
+        orderBy: { status: 'asc' },
+      }),
+    ]);
+
+    // The array-form $transaction widens groupBy's `_count` to a union; the
+    // runtime shape is exactly `{ _count: { status: number } }`, so narrow it.
+    const perApplicant = (
+      perApplicantGroups as unknown as {
+        applicantId: string;
+        status: string;
+        _count: { status: number };
+      }[]
+    ).map((g) => ({ applicantId: g.applicantId, status: g.status, count: g._count.status }));
+
+    const statusTotals = (
+      statusGroups as unknown as { status: string; _count: { status: number } }[]
+    ).map((g) => ({ status: g.status, count: g._count.status }));
+
+    return { perApplicant, statusTotals };
+  }
+
   // ── Applicant requirements ────────────────────────────────────────────────
 
   async findApplicantRequirement(id: string) {

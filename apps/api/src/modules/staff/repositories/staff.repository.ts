@@ -129,6 +129,44 @@ export class StaffRepository {
     });
   }
 
+  /** Total non-deleted staff in the organization. */
+  countByOrganization(organizationId: string): Promise<number> {
+    return this.prisma.staff.count({ where: { organizationId, deletedAt: null } });
+  }
+
+  /**
+   * Per-staff assigned-applicant counts for the dashboard workload widget. Only
+   * non-deleted staff and non-deleted assigned applicants are counted. One query
+   * with a filtered relation `_count` — no N+1.
+   */
+  async getWorkload(organizationId: string) {
+    const staff = await this.prisma.staff.findMany({
+      where: { organizationId, deletedAt: null },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        role: { select: { id: true, name: true } },
+        _count: {
+          select: {
+            assignments: {
+              where: { applicant: { deletedAt: null, organizationId } },
+            },
+          },
+        },
+      },
+      orderBy: { firstName: 'asc' },
+    });
+
+    return staff.map((s) => ({
+      staffId: s.id,
+      firstName: s.firstName,
+      lastName: s.lastName,
+      role: s.role.name,
+      assignedApplicants: s._count.assignments,
+    }));
+  }
+
   /** Count active staff with Super Admin role within the organization. */
   countActiveSuperAdmins(organizationId: string, superAdminRoleId: string): Promise<number> {
     return this.prisma.staff.count({

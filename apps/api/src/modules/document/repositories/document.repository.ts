@@ -79,6 +79,19 @@ export class DocumentRepository {
     return { data, total };
   }
 
+  /**
+   * Non-deleted document counts grouped by verification status (dashboard
+   * summary). Single groupBy query — no N+1.
+   */
+  async countByStatus(organizationId: string): Promise<{ status: string; count: number }[]> {
+    const groups = await this.prisma.document.groupBy({
+      by: ['status'],
+      where: { organizationId, deletedAt: null },
+      _count: { status: true },
+    });
+    return groups.map((g) => ({ status: g.status, count: g._count.status }));
+  }
+
   async create(data: CreateDocumentData) {
     return this.prisma.document.create({
       data: {

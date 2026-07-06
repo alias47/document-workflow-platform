@@ -48,6 +48,23 @@ export class ActivityRepository {
     });
   }
 
+  /**
+   * Most-recent activities across the whole organization (dashboard feed).
+   * Newest first, capped by `limit`, no pagination. Actor and the target
+   * applicant are pulled via joins to avoid per-row lookups (no N+1).
+   */
+  async listRecentByOrganization(organizationId: string, limit: number) {
+    return this.prisma.applicantActivity.findMany({
+      where: { organizationId },
+      include: {
+        ...ACTOR_SELECT,
+        applicant: { select: { id: true, firstName: true, lastName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+  }
+
   async listByApplicant(params: ListActivityParams) {
     const { applicantId, organizationId, page, pageSize } = params;
     const where = { applicantId, organizationId };

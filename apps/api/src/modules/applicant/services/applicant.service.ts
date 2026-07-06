@@ -57,6 +57,14 @@ export class ApplicantService {
     return applicant;
   }
 
+  /**
+   * Non-deleted applicant counts grouped by lifecycle status, for the dashboard
+   * summary. Read-only aggregate.
+   */
+  async countByStatus(organizationId: string) {
+    return this.applicantRepo.countByStatus(organizationId);
+  }
+
   async create(dto: CreateApplicantDto, organizationId: string, staffId: string) {
     if (dto.email) {
       const existing = await this.applicantRepo.findByEmail(organizationId, dto.email);

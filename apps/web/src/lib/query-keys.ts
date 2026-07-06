@@ -64,6 +64,9 @@ export const queryKeys = {
   dashboard: {
     all: ['dashboard'] as const,
     summary: () => [...queryKeys.dashboard.all, 'summary'] as const,
+    analytics: () => [...queryKeys.dashboard.all, 'analytics-summary'] as const,
+    activity: () => [...queryKeys.dashboard.all, 'activity'] as const,
+    workload: () => [...queryKeys.dashboard.all, 'workload'] as const,
   },
 
   documentRequirements: {
