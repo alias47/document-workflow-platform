@@ -74,6 +74,8 @@ describe('AuthService', () => {
           useValue: {
             findStaffByEmail: jest.fn(),
             findStaffById: jest.fn(),
+            findStaffForValidation: jest.fn(),
+            findOrganizationStatus: jest.fn(),
             updateLastLogin: jest.fn(),
             incrementFailedAttempts: jest.fn(),
             createRefreshToken: jest.fn(),
@@ -127,6 +129,15 @@ describe('AuthService', () => {
     passwordService = module.get(PasswordService) as jest.Mocked<PasswordService>;
     tokenService = module.get(TokenService) as jest.Mocked<TokenService>;
     notificationService = module.get(NotificationService);
+
+    // Default: organization is active (Sprint 12.1 org checks). Individual tests
+    // override this to exercise disabled/deleted-org rejection.
+    authRepo.findOrganizationStatus.mockResolvedValue({
+      id: ORG_ID,
+      isActive: true,
+      deletedAt: null,
+    });
+    authRepo.findStaffForValidation.mockResolvedValue(mockStaff as never);
   });
 
   describe('login', () => {
@@ -242,6 +253,76 @@ describe('AuthService', () => {
       authRepo.findRefreshToken.mockResolvedValue(null);
 
       await expect(service.refresh('raw-token')).rejects.toThrow(UnauthorizedException);
+    });
+
+    // Sprint 12.1 §7 — refresh token replay detection.
+    it('detects replay of a rotated-out token and revokes the whole family', async () => {
+      authRepo.findRefreshToken.mockResolvedValue({
+        ...mockRefreshToken,
+        revokedAt: new Date(),
+      } as never);
+      authRepo.findStaffById.mockResolvedValue(mockStaff);
+
+      await expect(service.refresh('raw-token')).rejects.toThrow(UnauthorizedException);
+      expect(authRepo.revokeAllStaffTokens).toHaveBeenCalledWith(STAFF_ID);
+    });
+
+    // Sprint 12.1 §5 — organization must be active at refresh time.
+    it('rejects refresh when the organization is disabled', async () => {
+      authRepo.findRefreshToken.mockResolvedValue(mockRefreshToken as never);
+      authRepo.findStaffById.mockResolvedValue(mockStaff);
+      authRepo.findOrganizationStatus.mockResolvedValue({
+        id: ORG_ID,
+        isActive: false,
+        deletedAt: null,
+      });
+
+      await expect(service.refresh('raw-token')).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  // Sprint 12.1 §5 — organization enforcement at login.
+  describe('organization enforcement (login)', () => {
+    const dto: LoginDto = { email: 'admin@test.com', password: 'Password123!' };
+
+    it('rejects login when the organization is disabled', async () => {
+      authRepo.findStaffByEmail.mockResolvedValue(mockStaff);
+      authRepo.findOrganizationStatus.mockResolvedValue({
+        id: ORG_ID,
+        isActive: false,
+        deletedAt: null,
+      });
+
+      await expect(service.login(dto, ORG_ID)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('rejects login when the organization is soft-deleted', async () => {
+      authRepo.findStaffByEmail.mockResolvedValue(mockStaff);
+      authRepo.findOrganizationStatus.mockResolvedValue({
+        id: ORG_ID,
+        isActive: true,
+        deletedAt: new Date(),
+      });
+
+      await expect(service.login(dto, ORG_ID)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('rejects login when the organization no longer exists', async () => {
+      authRepo.findStaffByEmail.mockResolvedValue(mockStaff);
+      authRepo.findOrganizationStatus.mockResolvedValue(null);
+
+      await expect(service.login(dto, ORG_ID)).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  // Sprint 12.1 §6 — revokeAllSessions is exposed for staff-lifecycle callers.
+  describe('revokeAllSessions', () => {
+    it('revokes all refresh tokens for the staff member', async () => {
+      authRepo.revokeAllStaffTokens.mockResolvedValue({ count: 2 } as never);
+
+      await service.revokeAllSessions(STAFF_ID);
+
+      expect(authRepo.revokeAllStaffTokens).toHaveBeenCalledWith(STAFF_ID);
     });
   });
 

@@ -1,20 +1,20 @@
-# Sprint 11.5 — Dashboard & Analytics
+# Sprint 12.2 — Authorization & RBAC Hardening
 
-Project: Document Workflow Platform
+**Project:** Document Workflow Platform
 
-Sprint: 11.5
+**Sprint:** 12.2
 
-Status: Ready for Implementation
+**Status:** Ready for Implementation
 
 ---
 
 # 1. Sprint Goal
 
-Implement a centralized operational dashboard that provides real-time insights into the organization's workload, applicant pipeline, document completion, workflow progress, recent activities, and personal tasks.
+Strengthen the authorization system by resolving all critical RBAC inconsistencies identified during the Authentication & Authorization Audit.
 
-The dashboard serves as the landing page after login and should aggregate information from existing modules without introducing duplicated business logic.
+This sprint focuses on ensuring every protected resource is correctly secured, every permission is valid, and backend and frontend authorization remain consistent.
 
-This sprint is read-only and introduces no workflow mutations.
+No new business features should be introduced.
 
 ---
 
@@ -22,536 +22,193 @@ This sprint is read-only and introduces no workflow mutations.
 
 Implement:
 
-• Dashboard module
-• Dashboard summary API
-• Recent activity widget
-• My Tasks widget
-• Applicant status overview
-• Document completion overview
-• Workflow distribution overview
-• Staff workload overview
-• Dashboard frontend
-• Dashboard widgets
-• Charts
-• Loading states
-• Error states
-• Empty states
+- Complete authorization audit
+- Endpoint permission verification
+- RBAC consistency improvements
+- Permission seed validation
+- Frontend route protection improvements
+- Navigation authorization consistency
+- Authorization regression tests
 
 ---
 
-# 3. Architecture
+# 3. Scope
 
-Create a new DashboardModule.
+This sprint applies to:
 
-DashboardModule is an aggregation layer.
+- RBAC
+- Permission Guards
+- Role Guards
+- Controller authorization
+- Route protection
+- Middleware
+- Navigation authorization
+- Permission seeds
 
-DashboardService must not directly access Prisma repositories for business data.
+This sprint does **not** include:
 
-Instead it should consume existing services.
-
-ApplicantService
-
-TaskService
-
-WorkflowService
-
-ActivityService
-
-DocumentService
-
-UserService
-
-This prevents duplicated business logic.
-
----
-
-# 4. Database Changes
-
-None.
-
-Dashboard reads existing data only.
-
-No schema changes.
-
-No migrations.
+- New roles
+- Super Admin implementation
+- Manager implementation
+- Sidebar redesign
+- Dashboard redesign
+- New UI
+- New business features
 
 ---
 
-# 5. Backend Structure
+# 4. Authorization Audit
 
-dashboard/
+Review every controller in the backend.
 
-    controllers/
+For every endpoint verify:
 
-        dashboard.controller.ts
+- Authentication Guard
+- Permission Guard
+- Role Guard (if applicable)
+- Public decorator usage
+- Organization isolation
+- Ownership validation (where required)
 
-    services/
+Every protected endpoint must explicitly define its authorization requirements.
 
-        dashboard.service.ts
-
-    dto/
-
-        dashboard-summary.dto.ts
-
-    dashboard.module.ts
-
-No repositories should be created unless absolutely necessary for lightweight aggregate queries that cannot reasonably belong to existing modules.
+No endpoint should rely on implicit access.
 
 ---
 
-# 6. API Endpoints
+# 5. Permission Audit
 
-GET /dashboard/summary
+Review every permission used throughout the project.
 
-Returns
+Verify:
 
-• KPI cards
-• Applicant summary
-• Document summary
-• Workflow summary
+- Permission exists in seed data
+- Permission is assigned to the correct roles
+- Permission naming follows project conventions
+- Permission is not duplicated
+- Permission is actually used
 
-Permission
+Examples include but are not limited to:
 
-dashboard.view
+- dashboard.view
+- dashboard.workload.view
+- report.view
+- report.export
+- applicant.view
+- applicant.create
+- applicant.update
+- applicant.delete
+- document.*
+- workflow.*
+- notification.*
+- settings.*
+- search.*
+- audit.*
 
----
-
-GET /dashboard/activity
-
-Returns
-
-Recent activity feed
-
-Permission
-
-dashboard.view
-
----
-
-GET /dashboard/my-tasks
-
-Returns
-
-Assigned tasks
-
-Permission
-
-dashboard.view
+Document any orphaned permissions or missing permissions.
 
 ---
 
-GET /dashboard/workload
+# 6. Role Consistency
 
-Returns
+Review every role reference in the backend.
 
-Staff workload
+Verify:
 
-Permission
+- Every referenced role actually exists
+- No unreachable role decorators remain
+- Role checks are consistent
+- Permission checks remain the primary authorization mechanism
 
-dashboard.workload.view
+If invalid role references are discovered, replace them with the appropriate permission-based authorization while preserving existing business behavior.
 
-Manager/Admin only.
-
----
-
-# 7. Dashboard Summary
-
-Return
-
-totalApplicants
-
-activeApplicants
-
-completedApplicants
-
-pendingDocuments
-
-completedDocuments
-
-activeWorkflows
-
-completedWorkflows
-
-overdueTasks
-
-dueTodayTasks
-
-dueThisWeekTasks
-
-totalStaff
+Do not introduce new roles during this sprint.
 
 ---
 
-# 8. Applicant Status Widget
+# 7. Invitation Authorization
 
-Return counts grouped by workflow stage.
+Review every invitation endpoint.
 
-Example
+Including:
 
-Inquiry
+Staff Invitations
 
-Registered
+- Send Invitation
+- Resend Invitation
+- Revoke Invitation
 
-Documents Pending
+Applicant Invitations
 
-Ready For Submission
+- Send Invitation
+- Resend Invitation
+- Revoke Invitation
 
-Submitted
+Verify only authorized users may perform these actions.
 
-Approved
-
-Completed
-
-Stage names must come from the workflow system.
-
-Do not hardcode stage names.
+Unauthorized authenticated users must receive HTTP 403.
 
 ---
 
-# 9. Document Completion Widget
+# 8. Settings Authorization
 
-Return
+Review every Settings endpoint.
 
-Fully Complete
+Verify:
 
-Incomplete
+- Read permissions
+- Update permissions
+- Notification settings
+- Document requirement settings
+- Organization settings
 
-Average Completion %
+Ensure settings cannot become unreachable because of invalid role decorators.
 
-Awaiting Upload
-
-Missing Documents
-
----
-
-# 10. Workflow Widget
-
-Return
-
-Applicants grouped by current workflow stage.
-
-Frontend displays:
-
-Bar Chart
-
-Pie Chart
-
-Future widgets can reuse this endpoint.
+Use permission-based authorization where appropriate.
 
 ---
 
-# 11. Recent Activity Widget
+# 9. Reports Authorization
 
-Reuse Activity module.
+Review every reporting endpoint.
 
-Return latest 20 activities.
+Verify:
 
-Newest first.
+- report.view
+- report.export
 
-Include
+Ensure:
 
-Activity Type
-
-Title
-
-Description
-
-Timestamp
-
-Actor
-
-Target
-
-No pagination.
+- Permissions exist
+- Permissions are seeded
+- Permissions are assigned
+- Authorized users can successfully access reports
+- Unauthorized users receive HTTP 403
 
 ---
 
-# 12. My Tasks Widget
+# 10. Dashboard Authorization
 
-Reuse Task module.
+Review dashboard permissions.
 
-Return
+Verify:
 
-Assigned Tasks
+- dashboard.view
+- dashboard.workload.view
 
-Due Date
-
-Priority
-
-Status
-
-Sort
-
-Overdue
-
-Due Today
-
-Due Soon
-
-Maximum 20.
+Ensure workload endpoints remain restricted while general dashboard access functions correctly.
 
 ---
 
-# 13. Staff Workload Widget
+# 11. Frontend Route Protection
 
-Visible only to
+Review frontend route protection.
 
-Managers
+Verify:
 
-Administrators
+Protected Staff Routes
 
-Return
-
-Staff Name
-
-Assigned Applicants
-
-Open Tasks
-
-Completed Tasks
-
-Overdue Tasks
-
-Current Workload %
-
----
-
-# 14. RBAC
-
-dashboard.view
-
-dashboard.workload.view
-
-Organization isolation required.
-
-Regular staff cannot access workload endpoint.
-
----
-
-# 15. Audit
-
-Dashboard views are read-only.
-
-No audit events.
-
-No activity events.
-
----
-
-# 16. Notifications
-
-None.
-
-Dashboard consumes existing information only.
-
----
-
-# 17. Frontend
-
-Create
-
-features/dashboard/
-
-components/
-
-hooks/
-
-types/
-
-services/
-
-Widgets
-
-DashboardHeader
-
-KPICards
-
-ApplicantStatusChart
-
-WorkflowChart
-
-DocumentCompletionCard
-
-ActivityFeed
-
-MyTasksWidget
-
-StaffWorkloadTable
-
-DashboardSkeleton
-
-DashboardError
-
-DashboardEmpty
-
----
-
-# 18. Dashboard Page
-
-Dashboard becomes
-
-app/(dashboard)/page.tsx
-
-Layout
-
----
-
-Header
-
----
-
-KPI Cards
-
----
-
-Applicant Status
-
-Workflow Distribution
-
----
-
-Document Completion
-
-My Tasks
-
----
-
-Recent Activity
-
----
-
-Staff Workload (RBAC)
-
----
-
-Responsive
-
-Desktop
-
-2–4 column layout
-
-Tablet
-
-2 columns
-
-Mobile
-
-Single column
-
----
-
-# 19. Charts
-
-Use the existing chart library already adopted by the frontend.
-
-Charts required
-
-Applicant Status
-
-Workflow Distribution
-
-No custom visualization library.
-
----
-
-# 20. Error Handling
-
-Return standardized API responses.
-
-Gracefully handle
-
-No applicants
-
-No tasks
-
-No activities
-
-No workflows
-
-Frontend must show empty states.
-
----
-
-# 21. Security
-
-Authenticated users only.
-
-Organization-scoped queries.
-
-RBAC enforced.
-
-No cross-organization aggregation.
-
-No sensitive information exposed.
-
----
-
-# 22. Performance
-
-Dashboard should complete within acceptable response times under normal organization sizes.
-
-Aggregate queries should avoid N+1 issues.
-
-Use parallel service calls where appropriate.
-
-Do not introduce caching during MVP.
-
----
-
-# 23. Testing
-
-Backend
-
-Controller tests
-
-Service tests
-
-RBAC tests
-
-Summary calculation tests
-
-Workload tests
-
-Frontend
-
-Component rendering
-
-Loading state
-
-Empty state
-
-Error state
-
-Hook tests
-
----
-
-# 24. Acceptance Criteria
-
-✓ Dashboard is landing page
-
-✓ KPI cards visible
-
-✓ Activity feed visible
-
-✓ My Tasks visible
-
-✓ Applicant summary visible
-
-✓ Workflow chart visible
-
-✓ Document completion visible
-
-✓ Staff workload visible for managers only
-
-✓ Organization isolation enforced
-
-✓ Responsive layout
-
-✓ Tests passing
-
-✓ No duplicated business logic
-
-✓ No Prisma business queries inside DashboardService
-
-✓ Production-ready
+- /dashboard
+- /applicants
+- /staff
+- /workflow

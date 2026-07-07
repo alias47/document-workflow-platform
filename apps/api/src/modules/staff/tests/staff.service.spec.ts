@@ -14,6 +14,7 @@ import type { CreateStaffDto } from '../dto/create-staff.dto';
 import type { UpdateStaffStatusDto } from '../dto/update-staff-status.dto';
 
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { AuthService } from '@/modules/auth/services/auth.service';
 import { NotificationService } from '@/modules/notification/services/notification.service';
 import { PasswordService } from '@/providers/password/password.service';
 
@@ -55,6 +56,7 @@ describe('StaffService', () => {
   let staffRepo: jest.Mocked<StaffRepository>;
   let passwordService: jest.Mocked<PasswordService>;
   let auditService: jest.Mocked<AuditService>;
+  let authService: { revokeAllSessions: jest.Mock };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -91,6 +93,10 @@ describe('StaffService', () => {
           provide: NotificationService,
           useValue: { notify: jest.fn().mockResolvedValue(undefined) },
         },
+        {
+          provide: AuthService,
+          useValue: { revokeAllSessions: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 
@@ -98,6 +104,7 @@ describe('StaffService', () => {
     staffRepo = module.get(StaffRepository) as jest.Mocked<StaffRepository>;
     passwordService = module.get(PasswordService) as jest.Mocked<PasswordService>;
     auditService = module.get(AuditService) as jest.Mocked<AuditService>;
+    authService = module.get(AuthService);
   });
 
   describe('getMe', () => {
@@ -199,6 +206,34 @@ describe('StaffService', () => {
         NotFoundException,
       );
     });
+
+    // Sprint 12.1 §6 — role change revokes sessions.
+    it('revokes all sessions when the role changes', async () => {
+      staffRepo.findById.mockResolvedValue(mockStaff);
+      staffRepo.update.mockResolvedValue({ ...mockStaff, roleId: 'new-role-id' });
+
+      await service.update(STAFF_ID, ORG_ID, { roleId: 'new-role-id' }, ACTOR_ID);
+
+      expect(authService.revokeAllSessions).toHaveBeenCalledWith(STAFF_ID);
+    });
+
+    it('revokes all sessions when the account is deactivated via update', async () => {
+      staffRepo.findById.mockResolvedValue(mockStaff);
+      staffRepo.update.mockResolvedValue({ ...mockStaff, status: 'inactive' });
+
+      await service.update(STAFF_ID, ORG_ID, { isActive: false }, ACTOR_ID);
+
+      expect(authService.revokeAllSessions).toHaveBeenCalledWith(STAFF_ID);
+    });
+
+    it('does NOT revoke sessions on a benign profile update', async () => {
+      staffRepo.findById.mockResolvedValue(mockStaff);
+      staffRepo.update.mockResolvedValue({ ...mockStaff, jobTitle: 'X' });
+
+      await service.update(STAFF_ID, ORG_ID, { jobTitle: 'X' }, ACTOR_ID);
+
+      expect(authService.revokeAllSessions).not.toHaveBeenCalled();
+    });
   });
 
   describe('updateStatus', () => {
@@ -228,6 +263,27 @@ describe('StaffService', () => {
       const result = await service.updateStatus(STAFF_ID, ORG_ID, dto, ACTOR_ID);
       expect(result.status).toBe('active');
     });
+
+    // Sprint 12.1 §6 — deactivation revokes sessions; reactivation does not.
+    it('revokes all sessions when deactivating', async () => {
+      staffRepo.findById.mockResolvedValue(mockStaff);
+      staffRepo.findSuperAdminRole.mockResolvedValue(null);
+      staffRepo.update.mockResolvedValue({ ...mockStaff, status: 'inactive' });
+
+      await service.updateStatus(STAFF_ID, ORG_ID, { status: 'inactive' }, ACTOR_ID);
+
+      expect(authService.revokeAllSessions).toHaveBeenCalledWith(STAFF_ID);
+    });
+
+    it('does NOT revoke sessions when reactivating', async () => {
+      staffRepo.findById.mockResolvedValue({ ...mockStaff, status: 'inactive' });
+      staffRepo.findSuperAdminRole.mockResolvedValue(null);
+      staffRepo.update.mockResolvedValue({ ...mockStaff, status: 'active' });
+
+      await service.updateStatus(STAFF_ID, ORG_ID, { status: 'active' }, ACTOR_ID);
+
+      expect(authService.revokeAllSessions).not.toHaveBeenCalled();
+    });
   });
 
   describe('delete', () => {
@@ -238,6 +294,17 @@ describe('StaffService', () => {
       await service.delete(STAFF_ID, ORG_ID, ACTOR_ID);
       expect(staffRepo.softDelete).toHaveBeenCalledWith(STAFF_ID);
       expect(auditService.log).toHaveBeenCalled();
+    });
+
+    // Sprint 12.1 §6 — deleting staff revokes sessions.
+    it('revokes all sessions when deleting', async () => {
+      staffRepo.findById.mockResolvedValue(mockStaff);
+      staffRepo.findSuperAdminRole.mockResolvedValue(null);
+      staffRepo.softDelete.mockResolvedValue({ ...mockStaff, deletedAt: new Date() });
+
+      await service.delete(STAFF_ID, ORG_ID, ACTOR_ID);
+
+      expect(authService.revokeAllSessions).toHaveBeenCalledWith(STAFF_ID);
     });
 
     it('throws ForbiddenException when deleting yourself', async () => {

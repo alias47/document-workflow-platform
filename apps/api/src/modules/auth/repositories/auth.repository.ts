@@ -8,9 +8,29 @@ export type StaffWithPermissions = Staff & {
   role: { name: string; permissions: { permission: { action: string } }[] };
 };
 
+export type StaffWithOrgStatus = Staff & {
+  role: { id: string; name: string };
+  organization: { id: string; isActive: boolean; deletedAt: Date | null };
+};
+
 @Injectable()
 export class AuthRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Load a staff member together with their organization's active/deleted state
+   * and current role, for per-request JWT re-validation. Returns null if the
+   * staff row is soft-deleted or absent.
+   */
+  findStaffForValidation(id: string): Promise<StaffWithOrgStatus | null> {
+    return this.prisma.staff.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        role: { select: { id: true, name: true } },
+        organization: { select: { id: true, isActive: true, deletedAt: true } },
+      },
+    });
+  }
 
   findStaffByEmail(organizationId: string, email: string): Promise<StaffWithPermissions | null> {
     return this.prisma.staff.findFirst({
@@ -20,6 +40,15 @@ export class AuthRepository {
           include: { permissions: { include: { permission: true } } },
         },
       },
+    });
+  }
+
+  findOrganizationStatus(
+    id: string,
+  ): Promise<{ id: string; isActive: boolean; deletedAt: Date | null } | null> {
+    return this.prisma.organization.findUnique({
+      where: { id },
+      select: { id: true, isActive: true, deletedAt: true },
     });
   }
 

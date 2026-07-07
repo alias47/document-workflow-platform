@@ -70,6 +70,8 @@ export class AuthService {
       throw new UnauthorizedException('Account is not active');
     }
 
+    await this.assertOrganizationActive(staff.organizationId);
+
     const valid = await this.passwordService.verify(staff.passwordHash, dto.password);
 
     if (!valid) {
@@ -140,12 +142,35 @@ export class AuthService {
     const hash = this.tokenService.hashToken(rawToken);
     const stored = await this.authRepo.findRefreshToken(hash);
 
-    if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
+    if (!stored) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    // Replay detection (Sprint 12.1 §7): a token that exists but is already
+    // revoked was rotated out. Presenting it again signals theft/replay — revoke
+    // the whole family so the legitimate active descendant is also invalidated
+    // and both parties are forced to re-authenticate.
+    if (stored.revokedAt) {
+      await this.authRepo.revokeAllStaffTokens(stored.staffId);
+      await this.auditService.log({
+        organizationId: (await this.authRepo.findStaffById(stored.staffId))?.organizationId ?? '',
+        actorId: stored.staffId,
+        action: 'auth.refresh.replay_detected',
+        metadata: { tokenId: stored.id },
+        ...(ipAddress !== undefined ? { ipAddress } : {}),
+        ...(userAgent !== undefined ? { userAgent } : {}),
+      });
+      throw new UnauthorizedException('Refresh token has already been used');
+    }
+
+    if (stored.expiresAt < new Date()) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
     const staff = await this.authRepo.findStaffById(stored.staffId);
     if (!staff || staff.status !== 'active') throw new UnauthorizedException('Staff not found');
+
+    await this.assertOrganizationActive(staff.organizationId);
 
     const permissions = staff.role.permissions.map((rp) => rp.permission.action);
     const payload: JwtPayload = {
@@ -290,6 +315,24 @@ export class AuthService {
         actorId: stored.staffId,
         action: 'auth.password.reset_completed',
       });
+    }
+  }
+
+  /**
+   * Revoke all of a staff member's refresh tokens. Called by staff-lifecycle
+   * operations (deactivate, delete, role change) so that a changed or removed
+   * account cannot continue an existing session past its access-token lifetime
+   * (Sprint 12.1 §6). Best-effort by design — never throws into the caller.
+   */
+  async revokeAllSessions(staffId: string): Promise<void> {
+    await this.authRepo.revokeAllStaffTokens(staffId);
+  }
+
+  /** Rejects login/refresh when the staff member's organization is disabled or deleted. */
+  private async assertOrganizationActive(organizationId: string): Promise<void> {
+    const org = await this.authRepo.findOrganizationStatus(organizationId);
+    if (!org || org.deletedAt || !org.isActive) {
+      throw new UnauthorizedException('Organization is not active');
     }
   }
 

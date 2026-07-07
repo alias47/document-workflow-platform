@@ -16,6 +16,7 @@ import type { UpdateStaffDto } from '../dto/update-staff.dto';
 
 import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { AuthService } from '@/modules/auth/services/auth.service';
 import { NotificationService } from '@/modules/notification/services/notification.service';
 import { NOTIFICATION_TEMPLATES } from '@/modules/notification/templates/notification-templates';
 import { PasswordService } from '@/providers/password/password.service';
@@ -47,6 +48,7 @@ export class StaffService {
     private readonly passwordService: PasswordService,
     private readonly auditService: AuditService,
     private readonly notificationService: NotificationService,
+    private readonly authService: AuthService,
   ) {}
 
   async getMe(staffId: string) {
@@ -179,10 +181,17 @@ export class StaffService {
     }
 
     const updated = await this.staffRepo.update(staffId, updateData);
-    const action =
-      dto.roleId && dto.roleId !== prevRoleId
-        ? ACTIVITY_TYPES.STAFF_ROLE_CHANGED
-        : ACTIVITY_TYPES.STAFF_UPDATED;
+    const roleChanged = Boolean(dto.roleId && dto.roleId !== prevRoleId);
+    const deactivated = dto.isActive === false;
+
+    // Session revocation (Sprint 12.1 §6): a role change or deactivation must not
+    // linger in an existing session for the access-token lifetime. Revoke all of
+    // this staff member's refresh tokens so they must re-authenticate.
+    if (roleChanged || deactivated) {
+      await this.authService.revokeAllSessions(staffId);
+    }
+
+    const action = roleChanged ? ACTIVITY_TYPES.STAFF_ROLE_CHANGED : ACTIVITY_TYPES.STAFF_UPDATED;
 
     void this.auditService.log({
       organizationId,
@@ -190,10 +199,7 @@ export class StaffService {
       action,
       resourceType: 'staff',
       resourceId: staffId,
-      metadata:
-        dto.roleId && dto.roleId !== prevRoleId
-          ? { fromRoleId: prevRoleId, toRoleId: dto.roleId }
-          : {},
+      metadata: roleChanged ? { fromRoleId: prevRoleId, toRoleId: dto.roleId as string } : {},
     });
 
     return mapToResponse(updated);
@@ -219,6 +225,12 @@ export class StaffService {
     }
 
     const updated = await this.staffRepo.update(staffId, { status: dto.status });
+
+    // Session revocation (Sprint 12.1 §6): deactivation/suspension must end any
+    // live session immediately, not merely block the next login.
+    if (dto.status !== 'active') {
+      await this.authService.revokeAllSessions(staffId);
+    }
 
     const action =
       dto.status === 'active' ? ACTIVITY_TYPES.STAFF_ACTIVATED : ACTIVITY_TYPES.STAFF_DEACTIVATED;
@@ -248,6 +260,10 @@ export class StaffService {
     await this.guardLastSuperAdmin(staffId, organizationId);
 
     await this.staffRepo.softDelete(staffId);
+
+    // Session revocation (Sprint 12.1 §6): a deleted staff member must not retain
+    // a usable session.
+    await this.authService.revokeAllSessions(staffId);
 
     void this.auditService.log({
       organizationId,

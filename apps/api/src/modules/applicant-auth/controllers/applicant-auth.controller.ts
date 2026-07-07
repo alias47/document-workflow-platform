@@ -30,8 +30,6 @@ import { JWT_CONFIG_KEY, type JwtConfig } from '@/config/jwt.config';
 export const APPLICANT_ACCESS_TOKEN_COOKIE = 'applicant_access_token';
 export const APPLICANT_REFRESH_TOKEN_COOKIE = 'applicant_refresh_token';
 
-const IS_PROD = process.env['NODE_ENV'] === 'production';
-
 function refreshExpiryMs(expiry: string): number {
   const unit = expiry.slice(-1);
   const value = parseInt(expiry.slice(0, -1), 10);
@@ -58,11 +56,13 @@ export class ApplicantAuthController {
 
   private setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
     const jwtCfg = this.config.get<JwtConfig>(JWT_CONFIG_KEY) as JwtConfig;
+    const appCfg = this.config.get<AppConfig>(APP_CONFIG_KEY) as AppConfig;
     const refreshMaxAge = refreshExpiryMs(jwtCfg.refreshExpiresIn);
+    const secure = appCfg.cookieSecure;
 
     res.cookie(APPLICANT_ACCESS_TOKEN_COOKIE, accessToken, {
       httpOnly: true,
-      secure: IS_PROD,
+      secure,
       sameSite: 'lax',
       path: '/',
       maxAge: refreshMaxAge,
@@ -70,7 +70,7 @@ export class ApplicantAuthController {
 
     res.cookie(APPLICANT_REFRESH_TOKEN_COOKIE, refreshToken, {
       httpOnly: true,
-      secure: IS_PROD,
+      secure,
       sameSite: 'lax',
       path: '/api/v1/applicant-auth/refresh',
       maxAge: refreshMaxAge,

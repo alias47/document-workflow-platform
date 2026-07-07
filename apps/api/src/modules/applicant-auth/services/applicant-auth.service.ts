@@ -57,6 +57,8 @@ export class ApplicantAuthService {
       throw new UnauthorizedException('Account is not active');
     }
 
+    await this.assertOrganizationPortalActive(account.organizationId);
+
     // Business rule (11.3.7): login only allowed after portal account is activated
     // (acceptedAt set on the invitation) AND a password has been set.
     if (!account.activatedAt || !account.passwordHash) {
@@ -138,7 +140,28 @@ export class ApplicantAuthService {
     const hash = this.tokenService.hashToken(rawToken);
     const stored = await this.authRepo.findRefreshToken(hash);
 
-    if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
+    if (!stored) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    // Replay detection (Sprint 12.1 §7): an already-revoked (rotated-out) token
+    // presented again signals theft — revoke the whole family and force re-login.
+    if (stored.revokedAt) {
+      await this.authRepo.revokeAllPortalAccountTokens(stored.portalAccountId);
+      const acct = await this.authRepo.findPortalAccountById(stored.portalAccountId);
+      void this.auditService.log({
+        organizationId: acct?.organizationId ?? '',
+        actorId: stored.portalAccountId,
+        actorType: 'applicant',
+        action: 'applicant_auth.refresh.replay_detected',
+        metadata: { tokenId: stored.id } as never,
+        ...(ipAddress !== undefined ? { ipAddress } : {}),
+        ...(userAgent !== undefined ? { userAgent } : {}),
+      });
+      throw new UnauthorizedException('Refresh token has already been used');
+    }
+
+    if (stored.expiresAt < new Date()) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
@@ -147,6 +170,8 @@ export class ApplicantAuthService {
       throw new UnauthorizedException('Account not found or inactive');
     }
     if (!account.applicant) throw new UnauthorizedException('Applicant record not found');
+
+    await this.assertOrganizationPortalActive(account.organizationId);
 
     const payload: ApplicantJwtPayload = {
       sub: account.id,
@@ -226,6 +251,20 @@ export class ApplicantAuthService {
       actorType: 'applicant',
       action: 'applicant_auth.password.changed',
     });
+  }
+
+  /**
+   * Rejects applicant login/refresh when the organization is disabled/deleted or
+   * the applicant portal has been switched off (Sprint 12.1 §5).
+   */
+  private async assertOrganizationPortalActive(organizationId: string): Promise<void> {
+    const org = await this.authRepo.findOrganizationStatus(organizationId);
+    if (!org || org.deletedAt || !org.isActive) {
+      throw new UnauthorizedException('Organization is not active');
+    }
+    if (!org.portalEnabled) {
+      throw new UnauthorizedException('Applicant portal is disabled');
+    }
   }
 
   private parseExpiry(expiry: string): Date {

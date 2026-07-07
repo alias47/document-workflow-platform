@@ -33,8 +33,6 @@ import { JWT_CONFIG_KEY, type JwtConfig } from '@/config/jwt.config';
 export const ACCESS_TOKEN_COOKIE = 'access_token';
 export const REFRESH_TOKEN_COOKIE = 'refresh_token';
 
-const IS_PROD = process.env['NODE_ENV'] === 'production';
-
 /** Milliseconds derived from the JWT refresh expiry string (e.g. "7d"). */
 function refreshExpiryMs(expiry: string): number {
   const unit = expiry.slice(-1);
@@ -62,7 +60,9 @@ export class AuthController {
 
   private setAuthCookies(res: Response, accessToken: string, refreshToken: string): void {
     const jwtCfg = this.config.get<JwtConfig>(JWT_CONFIG_KEY) as JwtConfig;
+    const appCfg = this.config.get<AppConfig>(APP_CONFIG_KEY) as AppConfig;
     const refreshMaxAge = refreshExpiryMs(jwtCfg.refreshExpiresIn);
+    const secure = appCfg.cookieSecure;
 
     // Access token cookie. The JWT inside is short-lived (15 min); the cookie
     // itself is given the refresh window as maxAge so it survives a browser
@@ -71,7 +71,7 @@ export class AuthController {
     // hard-bouncing to /login the moment the browser reopens.
     res.cookie(ACCESS_TOKEN_COOKIE, accessToken, {
       httpOnly: true,
-      secure: IS_PROD,
+      secure,
       sameSite: 'lax',
       path: '/',
       maxAge: refreshMaxAge,
@@ -80,7 +80,7 @@ export class AuthController {
     // Refresh token — persisted for the configured window (default 7 days).
     res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
       httpOnly: true,
-      secure: IS_PROD,
+      secure,
       sameSite: 'lax',
       path: '/api/v1/auth/refresh',
       maxAge: refreshMaxAge,

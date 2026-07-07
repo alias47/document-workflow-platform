@@ -24,6 +24,9 @@ export const envValidationSchema = Joi.object({
   // Public frontend URL for notification links (falls back to CORS_ORIGIN)
   APP_URL: Joi.string().uri().optional(),
 
+  // Force the Secure flag on auth cookies independently of NODE_ENV (optional).
+  COOKIE_SECURE: Joi.boolean().optional(),
+
   // Multi-tenancy (MVP = single org)
   DEFAULT_ORG_ID: Joi.string().uuid().required(),
 

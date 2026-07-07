@@ -71,6 +71,8 @@ describe('ApplicantAuthService', () => {
           useValue: {
             findPortalAccountByEmail: jest.fn(),
             findPortalAccountById: jest.fn(),
+            findPortalAccountForValidation: jest.fn(),
+            findOrganizationStatus: jest.fn(),
             updateLastLogin: jest.fn().mockResolvedValue(undefined),
             incrementFailedAttempts: jest.fn().mockResolvedValue(undefined),
             createRefreshToken: jest.fn().mockResolvedValue(mockRefreshToken),
@@ -112,6 +114,14 @@ describe('ApplicantAuthService', () => {
     authRepo = module.get(ApplicantAuthRepository) as jest.Mocked<ApplicantAuthRepository>;
     passwordService = module.get(PasswordService) as jest.Mocked<PasswordService>;
     tokenService = module.get(TokenService) as jest.Mocked<TokenService>;
+
+    // Default: organization active with portal enabled (Sprint 12.1 checks).
+    authRepo.findOrganizationStatus.mockResolvedValue({
+      id: ORG_ID,
+      isActive: true,
+      deletedAt: null,
+      portalEnabled: true,
+    });
   });
 
   describe('login', () => {
@@ -185,6 +195,86 @@ describe('ApplicantAuthService', () => {
         PORTAL_ACCOUNT_ID,
         expect.any(Date),
       );
+    });
+
+    // Sprint 12.1 §5 — organization + portal enforcement at login.
+    it('rejects login when the organization is disabled', async () => {
+      authRepo.findPortalAccountByEmail.mockResolvedValue(mockPortalAccount);
+      passwordService.verify.mockResolvedValue(true);
+      authRepo.findOrganizationStatus.mockResolvedValue({
+        id: ORG_ID,
+        isActive: false,
+        deletedAt: null,
+        portalEnabled: true,
+      });
+
+      await expect(service.login(loginDto, ORG_ID)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('rejects login when the applicant portal is disabled', async () => {
+      authRepo.findPortalAccountByEmail.mockResolvedValue(mockPortalAccount);
+      passwordService.verify.mockResolvedValue(true);
+      authRepo.findOrganizationStatus.mockResolvedValue({
+        id: ORG_ID,
+        isActive: true,
+        deletedAt: null,
+        portalEnabled: false,
+      });
+
+      await expect(service.login(loginDto, ORG_ID)).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('refresh', () => {
+    it('rotates the refresh token and returns a new pair', async () => {
+      authRepo.findRefreshToken.mockResolvedValue(mockRefreshToken);
+      authRepo.findPortalAccountById.mockResolvedValue(mockPortalAccount);
+      const newToken = { ...mockRefreshToken, id: 'rt-uuid-2' };
+      authRepo.createRefreshToken.mockResolvedValue(newToken);
+
+      const result = await service.refresh('raw-refresh');
+
+      expect(result.accessToken).toBe('access-token');
+      expect(authRepo.revokeRefreshToken).toHaveBeenCalledWith(mockRefreshToken.id, newToken.id);
+    });
+
+    it('throws when the token is not found', async () => {
+      authRepo.findRefreshToken.mockResolvedValue(null);
+      await expect(service.refresh('bad')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('throws when the token is expired', async () => {
+      authRepo.findRefreshToken.mockResolvedValue({
+        ...mockRefreshToken,
+        expiresAt: new Date(Date.now() - 1000),
+      });
+      await expect(service.refresh('raw-refresh')).rejects.toThrow(UnauthorizedException);
+    });
+
+    // Sprint 12.1 §7 — replay detection revokes the whole family.
+    it('detects replay of a rotated-out token and revokes the family', async () => {
+      authRepo.findRefreshToken.mockResolvedValue({
+        ...mockRefreshToken,
+        revokedAt: new Date(),
+      });
+      authRepo.findPortalAccountById.mockResolvedValue(mockPortalAccount);
+
+      await expect(service.refresh('raw-refresh')).rejects.toThrow(UnauthorizedException);
+      expect(authRepo.revokeAllPortalAccountTokens).toHaveBeenCalledWith(PORTAL_ACCOUNT_ID);
+    });
+
+    // Sprint 12.1 §5 — org/portal enforcement at refresh.
+    it('rejects refresh when the portal is disabled', async () => {
+      authRepo.findRefreshToken.mockResolvedValue(mockRefreshToken);
+      authRepo.findPortalAccountById.mockResolvedValue(mockPortalAccount);
+      authRepo.findOrganizationStatus.mockResolvedValue({
+        id: ORG_ID,
+        isActive: true,
+        deletedAt: null,
+        portalEnabled: false,
+      });
+
+      await expect(service.refresh('raw-refresh')).rejects.toThrow(UnauthorizedException);
     });
   });
 

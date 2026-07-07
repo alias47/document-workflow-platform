@@ -8,9 +8,31 @@ export type PortalAccountWithApplicant = PortalAccount & {
   applicant: { id: string; firstName: string; lastName: string; email: string | null } | null;
 };
 
+export interface OrganizationPortalStatus {
+  id: string;
+  isActive: boolean;
+  deletedAt: Date | null;
+  portalEnabled: boolean;
+}
+
 @Injectable()
 export class ApplicantAuthRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Load a portal account (with its applicant) for per-request JWT re-validation.
+   * Returns null if the account is soft-deleted or absent. Organization status is
+   * fetched separately via {@link findOrganizationStatus} — PortalAccount has no
+   * `organization` relation field, only `organizationId`.
+   */
+  findPortalAccountForValidation(id: string): Promise<PortalAccountWithApplicant | null> {
+    return this.prisma.portalAccount.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        applicant: { select: { id: true, firstName: true, lastName: true, email: true } },
+      },
+    });
+  }
 
   findPortalAccountByEmail(
     organizationId: string,
@@ -21,6 +43,13 @@ export class ApplicantAuthRepository {
       include: {
         applicant: { select: { id: true, firstName: true, lastName: true, email: true } },
       },
+    });
+  }
+
+  findOrganizationStatus(id: string): Promise<OrganizationPortalStatus | null> {
+    return this.prisma.organization.findUnique({
+      where: { id },
+      select: { id: true, isActive: true, deletedAt: true, portalEnabled: true },
     });
   }
 
