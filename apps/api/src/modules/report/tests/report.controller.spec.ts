@@ -1,9 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 
 import { ReportController } from '../controllers/report.controller';
 import { ReportService } from '../services/report.service';
+
+import { PERMISSIONS_KEY } from '@/common/decorators/permissions.decorator';
 
 const ORG_ID = 'org-uuid';
 const STAFF_ID = 'staff-uuid';
@@ -142,6 +145,34 @@ describe('ReportController', () => {
         res,
       );
       expect(res.send).toHaveBeenCalledWith(mockBuffer);
+    });
+  });
+
+  // Sprint 12.2: report.view / report.export are now seeded permissions. Confirm
+  // every view route requires report.view and every export requires report.export.
+  describe('authorization', () => {
+    const reflector = new Reflector();
+
+    it('gates view routes on report.view', () => {
+      for (const handler of [
+        controller.getApplicantReport,
+        controller.getDocumentReport,
+        controller.getWorkflowReport,
+        controller.getStaffWorkloadReport,
+      ]) {
+        expect(reflector.get<string[]>(PERMISSIONS_KEY, handler)).toEqual(['report.view']);
+      }
+    });
+
+    it('gates export routes on report.export', () => {
+      for (const handler of [
+        controller.exportApplicantReport,
+        controller.exportDocumentReport,
+        controller.exportWorkflowReport,
+        controller.exportStaffWorkloadReport,
+      ]) {
+        expect(reflector.get<string[]>(PERMISSIONS_KEY, handler)).toEqual(['report.export']);
+      }
     });
   });
 });

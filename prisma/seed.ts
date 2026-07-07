@@ -40,6 +40,12 @@ const PERMISSIONS = [
     action: 'dashboard.workload.view',
     description: 'View the staff workload widget (managers/administrators only)',
   },
+  // Reports
+  { action: 'report.view', description: 'View reporting dashboards' },
+  { action: 'report.export', description: 'Export reports (CSV/Excel/PDF)' },
+  // Notifications
+  { action: 'notification.view', description: 'View notification delivery history' },
+  { action: 'notification.manage', description: 'Retry failed notifications' },
   // Audit
   { action: 'audit.view', description: 'View audit logs' },
   // Settings

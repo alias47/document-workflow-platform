@@ -27,21 +27,20 @@ import { SystemSettingsService } from '../services/system-settings.service';
 import type { JwtPayload } from '@/modules/auth/interfaces/jwt-payload.interface';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { Roles } from '@/common/decorators/roles.decorator';
+import { Permissions } from '@/common/decorators/permissions.decorator';
 import { PermissionsGuard } from '@/common/guards/permissions.guard';
-import { RolesGuard } from '@/common/guards/roles.guard';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 
 @ApiTags('Settings')
 @Controller('settings')
-@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth()
 export class SystemSettingsController {
   constructor(private readonly settingsService: SystemSettingsService) {}
 
   @Get()
-  @Roles('super_admin')
-  @ApiOperation({ summary: 'Get system settings (Super Admin only)' })
+  @Permissions('settings.manage')
+  @ApiOperation({ summary: 'Get system settings' })
   @ApiResponse({ status: 200, type: SettingsResponseDto })
   async getSettings(@CurrentUser() user: JwtPayload) {
     const settings = await this.settingsService.getSettings(user.organizationId);
@@ -49,9 +48,9 @@ export class SystemSettingsController {
   }
 
   @Patch()
-  @Roles('super_admin')
+  @Permissions('settings.manage')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update system settings (Super Admin only)' })
+  @ApiOperation({ summary: 'Update system settings' })
   @ApiResponse({ status: 200, type: SettingsResponseDto })
   async updateSettings(@CurrentUser() user: JwtPayload, @Body() dto: UpdateSettingsDto) {
     const settings = await this.settingsService.updateSettings(user.organizationId, dto, user.sub);
@@ -59,7 +58,7 @@ export class SystemSettingsController {
   }
 
   @Patch('logo')
-  @Roles('super_admin')
+  @Permissions('settings.manage')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('logo', { limits: { fileSize: 5 * 1024 * 1024, files: 1 } }))
   @ApiConsumes('multipart/form-data')
@@ -70,7 +69,7 @@ export class SystemSettingsController {
       required: ['logo'],
     },
   })
-  @ApiOperation({ summary: 'Upload or replace the consultancy logo (Super Admin only)' })
+  @ApiOperation({ summary: 'Upload or replace the consultancy logo' })
   @ApiResponse({ status: 200, type: SettingsResponseDto })
   async uploadLogo(@CurrentUser() user: JwtPayload, @UploadedFile() file: Express.Multer.File) {
     const settings = await this.settingsService.uploadLogo(user.organizationId, file, user.sub);
@@ -78,9 +77,9 @@ export class SystemSettingsController {
   }
 
   @Delete('logo')
-  @Roles('super_admin')
+  @Permissions('settings.manage')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Remove the consultancy logo (Super Admin only)' })
+  @ApiOperation({ summary: 'Remove the consultancy logo' })
   @ApiResponse({ status: 200, description: 'Logo removed' })
   async removeLogo(@CurrentUser() user: JwtPayload) {
     const settings = await this.settingsService.removeLogo(user.organizationId, user.sub);

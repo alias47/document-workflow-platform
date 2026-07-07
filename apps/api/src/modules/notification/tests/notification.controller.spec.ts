@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { NotificationController } from '../controllers/notification.controller';
 import { NotificationService } from '../services/notification.service';
 
-import { ROLES_KEY } from '@/common/decorators/roles.decorator';
+import { PERMISSIONS_KEY } from '@/common/decorators/permissions.decorator';
 
 const notif = { id: 'n-1', organizationId: 'org-1', status: 'failed' };
 
@@ -14,12 +14,12 @@ const serviceMock = {
   retry: jest.fn(),
 };
 
-const superAdmin = {
+const admin = {
   sub: 'staff-1',
   email: 'admin@test.com',
   organizationId: 'org-1',
-  role: 'super_admin',
-  permissions: [],
+  role: 'Admin',
+  permissions: ['notification.view', 'notification.manage'],
 };
 
 describe('NotificationController', () => {
@@ -36,7 +36,7 @@ describe('NotificationController', () => {
 
   it('list returns paginated envelope', async () => {
     serviceMock.list.mockResolvedValue({ data: [notif], meta: { totalItems: 1 } });
-    const result = await controller.list(superAdmin as never, {});
+    const result = await controller.list(admin as never, {});
     expect(result).toEqual(
       expect.objectContaining({ success: true, data: [notif], meta: { totalItems: 1 } }),
     );
@@ -45,24 +45,31 @@ describe('NotificationController', () => {
 
   it('getById returns the notification', async () => {
     serviceMock.getById.mockResolvedValue(notif);
-    const result = await controller.getById(superAdmin as never, 'n-1');
+    const result = await controller.getById(admin as never, 'n-1');
     expect(result).toEqual({ success: true, message: 'Notification retrieved', data: notif });
   });
 
   it('retry delegates to the service', async () => {
     serviceMock.retry.mockResolvedValue({ ...notif, retryCount: 1 });
-    const result = await controller.retry(superAdmin as never, 'n-1');
+    const result = await controller.retry(admin as never, 'n-1');
     expect(serviceMock.retry).toHaveBeenCalledWith('n-1', 'org-1', 'staff-1');
     expect(result.data.retryCount).toBe(1);
   });
 
   describe('authorization', () => {
-    it('restricts every route to super_admin via @Roles', () => {
+    // Sprint 12.2: routes are gated by permissions, not the (unseeded) super_admin role.
+    it('gates read routes on notification.view', () => {
       const reflector = new Reflector();
-      for (const handler of [controller.list, controller.getById, controller.retry]) {
-        const roles = reflector.get<string[]>(ROLES_KEY, handler);
-        expect(roles).toEqual(['super_admin']);
+      for (const handler of [controller.list, controller.getById]) {
+        const perms = reflector.get<string[]>(PERMISSIONS_KEY, handler);
+        expect(perms).toEqual(['notification.view']);
       }
+    });
+
+    it('gates retry on notification.manage', () => {
+      const reflector = new Reflector();
+      const perms = reflector.get<string[]>(PERMISSIONS_KEY, controller.retry);
+      expect(perms).toEqual(['notification.manage']);
     });
   });
 });

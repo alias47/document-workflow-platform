@@ -18,21 +18,20 @@ import { NotificationService } from '../services/notification.service';
 import type { JwtPayload } from '@/modules/auth/interfaces/jwt-payload.interface';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { Roles } from '@/common/decorators/roles.decorator';
+import { Permissions } from '@/common/decorators/permissions.decorator';
 import { PermissionsGuard } from '@/common/guards/permissions.guard';
-import { RolesGuard } from '@/common/guards/roles.guard';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 
 @ApiTags('Notifications')
 @Controller('notifications')
-@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth()
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Get()
-  @Roles('super_admin')
-  @ApiOperation({ summary: 'List notification history (Super Admin only)' })
+  @Permissions('notification.view')
+  @ApiOperation({ summary: 'List notification history' })
   @ApiResponse({ status: 200, type: [NotificationResponseDto] })
   async list(@CurrentUser() user: JwtPayload, @Query() query: NotificationQueryDto) {
     const result = await this.notificationService.list(user.organizationId, query);
@@ -40,8 +39,8 @@ export class NotificationController {
   }
 
   @Get(':id')
-  @Roles('super_admin')
-  @ApiOperation({ summary: 'Get a notification by ID (Super Admin only)' })
+  @Permissions('notification.view')
+  @ApiOperation({ summary: 'Get a notification by ID' })
   @ApiResponse({ status: 200, type: NotificationResponseDto })
   @ApiResponse({ status: 404, description: 'Notification not found' })
   async getById(@CurrentUser() user: JwtPayload, @Param('id', ParseUUIDPipe) id: string) {
@@ -50,9 +49,9 @@ export class NotificationController {
   }
 
   @Post(':id/retry')
-  @Roles('super_admin')
+  @Permissions('notification.manage')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Retry a failed notification (Super Admin only)' })
+  @ApiOperation({ summary: 'Retry a failed notification' })
   @ApiResponse({ status: 200, type: NotificationResponseDto })
   @ApiResponse({ status: 404, description: 'Notification not found' })
   @ApiResponse({ status: 409, description: 'Already sent or max retries reached' })

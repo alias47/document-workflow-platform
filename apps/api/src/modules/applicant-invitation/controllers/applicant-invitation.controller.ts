@@ -18,6 +18,7 @@ import { ApplicantInvitationService } from '../services/applicant-invitation.ser
 import type { JwtPayload } from '@/modules/auth/interfaces/jwt-payload.interface';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Public } from '@/common/decorators/public.decorator';
 import { PermissionsGuard } from '@/common/guards/permissions.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
@@ -32,6 +33,7 @@ export class ApplicantInvitationController {
 
   @Get('applicants/:id/invitation')
   @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Permissions('applicant.view')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get invitation status for an applicant' })
   async getInvitation(
@@ -44,6 +46,7 @@ export class ApplicantInvitationController {
 
   @Post('applicants/:id/invitation')
   @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Permissions('applicant.update')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Send a portal invitation to an applicant' })
@@ -57,6 +60,7 @@ export class ApplicantInvitationController {
 
   @Post('applicants/:id/invitation/resend')
   @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Permissions('applicant.update')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend portal invitation (revokes old, creates new)' })
@@ -70,6 +74,7 @@ export class ApplicantInvitationController {
 
   @Post('applicants/:id/invitation/revoke')
   @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Permissions('applicant.update')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Revoke active invitation for an applicant' })

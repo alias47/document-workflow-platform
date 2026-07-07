@@ -1,8 +1,12 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Test, type TestingModule } from '@nestjs/testing';
 
 import { ApplicantInvitationController } from '../controllers/applicant-invitation.controller';
 import { ApplicantInvitationService } from '../services/applicant-invitation.service';
+
+import { PERMISSIONS_KEY } from '@/common/decorators/permissions.decorator';
+import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
 
 const ORG_ID = 'org-uuid';
 const APPLICANT_ID = 'applicant-uuid';
@@ -168,6 +172,36 @@ describe('ApplicantInvitationController', () => {
       await expect(
         controller.activateAccount({ token: 'tok', password: 'ValidPass1!' }),
       ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  // Sprint 12.2: the four staff invitation endpoints previously had guards but no
+  // permission metadata, making them reachable by any authenticated staff. They
+  // are now explicitly gated; the two applicant activation routes stay public.
+  describe('authorization', () => {
+    const reflector = new Reflector();
+
+    it('gates read of invitation status on applicant.view', () => {
+      expect(reflector.get<string[]>(PERMISSIONS_KEY, controller.getInvitation)).toEqual([
+        'applicant.view',
+      ]);
+    });
+
+    it('gates send/resend/revoke on applicant.update', () => {
+      for (const handler of [
+        controller.sendInvitation,
+        controller.resendInvitation,
+        controller.revokeInvitation,
+      ]) {
+        expect(reflector.get<string[]>(PERMISSIONS_KEY, handler)).toEqual(['applicant.update']);
+      }
+    });
+
+    it('leaves the public activation routes ungated by permissions and marked public', () => {
+      for (const handler of [controller.validateToken, controller.activateAccount]) {
+        expect(reflector.get<string[]>(PERMISSIONS_KEY, handler)).toBeUndefined();
+        expect(reflector.get<boolean>(IS_PUBLIC_KEY, handler)).toBe(true);
+      }
     });
   });
 });

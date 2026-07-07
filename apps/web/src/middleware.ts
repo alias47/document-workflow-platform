@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-const STAFF_PROTECTED = ['/dashboard', '/applicants'];
+const STAFF_PROTECTED = ['/dashboard', '/applicants', '/staff', '/reports', '/search', '/settings'];
 const APPLICANT_PROTECTED = [
   '/applicant/profile',
   '/applicant/documents',
