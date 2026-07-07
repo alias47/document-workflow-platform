@@ -11,6 +11,7 @@ import { ACTIVITY_TYPES } from '@/modules/activity/interfaces/activity-type';
 import { ActivityService } from '@/modules/activity/services/activity.service';
 import { ApplicantService } from '@/modules/applicant/services/applicant.service';
 import { AuditService } from '@/modules/audit/services/audit.service';
+import { DocumentRequirementRepository } from '@/modules/document-requirement/repositories/document-requirement.repository';
 import { NotificationService } from '@/modules/notification/services/notification.service';
 import { NOTIFICATION_TEMPLATES } from '@/modules/notification/templates/notification-templates';
 
@@ -22,6 +23,7 @@ export class DocumentService {
     private readonly auditService: AuditService,
     private readonly activityService: ActivityService,
     private readonly notificationService: NotificationService,
+    private readonly requirementRepo: DocumentRequirementRepository,
   ) {}
 
   async list(organizationId: string, query: DocumentQueryDto) {
@@ -128,6 +130,15 @@ export class DocumentService {
       resourceType: 'document',
       resourceId: id,
     });
+
+    // When a verification decision is made, auto-sync the linked requirement status
+    // so staff don't need to separately update it (TASK.md §11 business rule).
+    if (isVerificationDecision && existing.requirementId) {
+      const requirementStatus = dto.status === 'verified' ? 'approved' : 'rejected';
+      await this.requirementRepo
+        .updateApplicantRequirementStatus(existing.requirementId, requirementStatus)
+        .catch(() => undefined); // best-effort; the document update already succeeded
+    }
 
     // A verification decision is a distinct activity worth surfacing on the log.
     if (dto.status === 'verified' || dto.status === 'rejected') {

@@ -78,7 +78,10 @@ export class DocumentController {
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: UploadDocumentDto,
   ) {
-    const result = await this.uploadService.upload(file, dto, user.organizationId, user.sub);
+    const result = await this.uploadService.upload(file, dto, user.organizationId, {
+      type: 'staff',
+      staffId: user.sub,
+    });
     return { success: true, message: 'Document uploaded successfully', data: result };
   }
 

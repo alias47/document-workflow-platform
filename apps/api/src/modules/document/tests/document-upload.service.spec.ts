@@ -104,7 +104,10 @@ describe('DocumentUploadService', () => {
       applicantService.getById.mockResolvedValue({ id: APPLICANT_ID } as never);
       repo.create.mockResolvedValue({ id: DOCUMENT_ID } as never);
 
-      const result = await service.upload(makeFile(), uploadDto, ORG_ID, STAFF_ID);
+      const result = await service.upload(makeFile(), uploadDto, ORG_ID, {
+        type: 'staff',
+        staffId: STAFF_ID,
+      });
 
       expect(storage.upload).toHaveBeenCalledWith(
         expect.objectContaining({ organizationId: ORG_ID, applicantId: APPLICANT_ID }),
@@ -128,9 +131,9 @@ describe('DocumentUploadService', () => {
         throw new BadRequestException('No file provided');
       });
 
-      await expect(service.upload(undefined, uploadDto, ORG_ID, STAFF_ID)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.upload(undefined, uploadDto, ORG_ID, { type: 'staff', staffId: STAFF_ID }),
+      ).rejects.toThrow(BadRequestException);
       expect(storage.upload).not.toHaveBeenCalled();
     });
 
@@ -138,9 +141,9 @@ describe('DocumentUploadService', () => {
       applicantService.getById.mockResolvedValue({ id: APPLICANT_ID } as never);
       repo.create.mockRejectedValue(new Error('db down'));
 
-      await expect(service.upload(makeFile(), uploadDto, ORG_ID, STAFF_ID)).rejects.toThrow(
-        'db down',
-      );
+      await expect(
+        service.upload(makeFile(), uploadDto, ORG_ID, { type: 'staff', staffId: STAFF_ID }),
+      ).rejects.toThrow('db down');
       expect(storage.delete).toHaveBeenCalledWith('organizations/o/applicants/a/2026/07/x.pdf');
     });
   });

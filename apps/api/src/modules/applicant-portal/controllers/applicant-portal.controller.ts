@@ -2,11 +2,17 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,6 +24,7 @@ import { UpdateApplicantProfileDto } from '../dto/update-applicant-profile.dto';
 import { ApplicantPortalService } from '../services/applicant-portal.service';
 
 import type { ApplicantJwtPayload } from '@/modules/applicant-auth/interfaces/applicant-jwt-payload.interface';
+import type { Response } from 'express';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { Public } from '@/common/decorators/public.decorator';
@@ -81,5 +88,40 @@ export class ApplicantPortalController {
       requirementId,
     );
     return { success: true, message: 'Document uploaded', data };
+  }
+
+  @Get('documents')
+  @ApiOperation({ summary: 'List all documents uploaded by the applicant' })
+  async listDocuments(
+    @CurrentUser() user: ApplicantJwtPayload,
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('pageSize', new ParseIntPipe({ optional: true })) pageSize?: number,
+  ) {
+    const result = await this.portalService.listDocuments(
+      user.applicantId,
+      user.organizationId,
+      page ?? 1,
+      pageSize ?? 25,
+    );
+    return { success: true, message: 'Documents retrieved', ...result };
+  }
+
+  @Get('documents/:id/download')
+  @Header('Content-Disposition', 'attachment')
+  @ApiOperation({ summary: 'Download an uploaded document' })
+  async downloadDocument(
+    @CurrentUser() user: ApplicantJwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const { stream, filename, contentType } = await this.portalService.downloadDocument(
+      id,
+      user.applicantId,
+      user.organizationId,
+    );
+    const safeName = encodeURIComponent(filename);
+    res.setHeader('Content-Disposition', `attachment; filename="${safeName}"`);
+    res.setHeader('Content-Type', contentType);
+    return new StreamableFile(stream, { type: contentType });
   }
 }

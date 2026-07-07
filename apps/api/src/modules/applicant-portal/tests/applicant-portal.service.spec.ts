@@ -4,8 +4,10 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { ApplicantPortalService } from '../services/applicant-portal.service';
 
 import { ApplicantRepository } from '@/modules/applicant/repositories/applicant.repository';
+import { DocumentRepository } from '@/modules/document/repositories/document.repository';
 import { DocumentUploadService } from '@/modules/document/services/document-upload.service';
 import { DocumentRequirementRepository } from '@/modules/document-requirement/repositories/document-requirement.repository';
+import { OrganizationRepository } from '@/modules/organization/repositories/organization.repository';
 
 const ORG_ID = 'org-uuid-1';
 const APPLICANT_ID = 'applicant-uuid-1';
@@ -64,6 +66,8 @@ describe('ApplicantPortalService', () => {
   let requirementRepo: jest.Mocked<DocumentRequirementRepository>;
   let uploadService: jest.Mocked<DocumentUploadService>;
 
+  const mockOrg = { id: ORG_ID, portalAllowProfileEdit: true } as never;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -86,7 +90,21 @@ describe('ApplicantPortalService', () => {
           provide: DocumentUploadService,
           useValue: {
             upload: jest.fn(),
+            download: jest.fn(),
           } satisfies Partial<Record<keyof DocumentUploadService, jest.Mock>>,
+        },
+        {
+          provide: DocumentRepository,
+          useValue: {
+            findById: jest.fn(),
+            listForApplicantPortal: jest.fn(),
+          } satisfies Partial<Record<keyof DocumentRepository, jest.Mock>>,
+        },
+        {
+          provide: OrganizationRepository,
+          useValue: {
+            findById: jest.fn().mockResolvedValue(mockOrg),
+          } satisfies Partial<Record<keyof OrganizationRepository, jest.Mock>>,
         },
       ],
     }).compile();
@@ -191,7 +209,7 @@ describe('ApplicantPortalService', () => {
         mockFile,
         expect.objectContaining({ applicantId: APPLICANT_ID, requirementId: REQUIREMENT_ID }),
         ORG_ID,
-        APPLICANT_ID,
+        { type: 'applicant', applicantId: APPLICANT_ID },
       );
       expect(result).toEqual({ id: 'doc-1' });
     });

@@ -7,9 +7,16 @@ import { ApplicantModule } from '@/modules/applicant/applicant.module';
 import { ApplicantAuthModule } from '@/modules/applicant-auth/applicant-auth.module';
 import { DocumentModule } from '@/modules/document/document.module';
 import { DocumentRequirementModule } from '@/modules/document-requirement/document-requirement.module';
+import { OrganizationModule } from '@/modules/organization/organization.module';
 
 @Module({
-  imports: [ApplicantAuthModule, ApplicantModule, DocumentRequirementModule, DocumentModule],
+  imports: [
+    ApplicantAuthModule,
+    ApplicantModule,
+    DocumentRequirementModule,
+    DocumentModule,
+    OrganizationModule,
+  ],
   controllers: [ApplicantPortalController],
   providers: [ApplicantPortalService],
 })

@@ -40,7 +40,7 @@ export function ApplicantProfileCard() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Profile</CardTitle>
-        {!editing && (
+        {!editing && profile.portalAllowProfileEdit !== false && (
           <Button variant="secondary" size="sm" onClick={startEdit}>
             Edit
           </Button>

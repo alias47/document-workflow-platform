@@ -370,6 +370,7 @@ model Applicant {
   activities           ApplicantActivity[]
   documentRequirements ApplicantDocumentRequirement[]
   invitations          PortalInvitation[]
+  selfUploadedDocuments Document[]                   @relation("SelfUploadedDocuments")
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -417,6 +418,8 @@ model Document {
   organizationId    String           @db.Uuid
   applicantId       String           @db.Uuid
   uploadedBy        String?          @db.Uuid
+  // Tracks portal self-uploads. Mutually exclusive with uploadedBy (staff uploads).
+  uploadedByApplicantId String?      @db.Uuid
   category          DocumentCategory @default(other)
   status            DocumentStatus   @default(pending)
   originalFilename  String
@@ -441,17 +444,19 @@ model Document {
 
   requirementId   String?          @db.Uuid
 
-  organization    Organization                  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  applicant       Applicant                     @relation(fields: [applicantId], references: [id], onDelete: Restrict)
-  uploadedByStaff Staff?                        @relation("UploadedDocuments", fields: [uploadedBy], references: [id], onDelete: SetNull)
-  verifiedByStaff Staff?                        @relation("VerifiedDocuments", fields: [verifiedBy], references: [id], onDelete: SetNull)
-  requirement     ApplicantDocumentRequirement? @relation(fields: [requirementId], references: [id], onDelete: SetNull)
+  organization          Organization                  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  applicant             Applicant                     @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  uploadedByStaff       Staff?                        @relation("UploadedDocuments", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  uploadedByApplicant   Applicant?                    @relation("SelfUploadedDocuments", fields: [uploadedByApplicantId], references: [id], onDelete: SetNull)
+  verifiedByStaff       Staff?                        @relation("VerifiedDocuments", fields: [verifiedBy], references: [id], onDelete: SetNull)
+  requirement           ApplicantDocumentRequirement? @relation(fields: [requirementId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([applicantId])
   @@index([status])
   @@index([category])
   @@index([uploadedBy])
+  @@index([uploadedByApplicantId])
   @@index([requirementId])
   @@index([organizationId, status])
   @@map("documents")

@@ -28,6 +28,10 @@ export interface DownloadResult {
   contentType: string;
 }
 
+/** Discriminated union so callers declare who is uploading. */
+export type UploadActor =
+  { type: 'staff'; staffId: string } | { type: 'applicant'; applicantId: string };
+
 @Injectable()
 export class DocumentUploadService {
   constructor(
@@ -44,7 +48,7 @@ export class DocumentUploadService {
     file: Express.Multer.File | undefined,
     dto: UploadDocumentDto,
     organizationId: string,
-    staffId: string,
+    actor: UploadActor,
   ) {
     // Reject invalid files before any storage or DB work.
     const validated = this.fileValidation.validate(file);
@@ -64,11 +68,18 @@ export class DocumentUploadService {
       buffer: uploaded.buffer,
     });
 
+    // Derive FK fields from the actor discriminant so uploads are correctly
+    // attributed without violating the staff FK constraint on uploadedBy.
+    const isStaff = actor.type === 'staff';
+    const staffId = isStaff ? actor.staffId : null;
+    const applicantUploaderId = isStaff ? null : actor.applicantId;
+
     try {
       const document = await this.documentRepo.create({
         organizationId,
         applicantId: dto.applicantId,
         uploadedBy: staffId,
+        uploadedByApplicantId: applicantUploaderId,
         category: dto.category as DocumentCategory,
         originalFilename,
         storedFilename,
@@ -87,21 +98,28 @@ export class DocumentUploadService {
 
       void this.auditService.log({
         organizationId,
-        actorId: staffId,
-        actorType: 'staff',
+        actorId: staffId ?? undefined,
+        actorType: isStaff ? 'staff' : 'applicant',
         action: 'document.uploaded',
         resourceType: 'document',
         resourceId: document.id,
+        // Record the applicant uploader in metadata for non-staff uploads so
+        // the audit trail remains accurate without a Staff FK violation.
+        ...(!isStaff ? { metadata: { uploadedByApplicantId: applicantUploaderId as string } } : {}),
       });
 
       void this.activityService.record({
         organizationId,
         applicantId: dto.applicantId,
-        actorId: staffId,
+        // actorId FK references Staff; do not pass applicant ID here.
+        ...(isStaff ? { actorId: staffId as string } : {}),
         type: ACTIVITY_TYPES.DOCUMENT_UPLOADED,
         title: 'Document uploaded',
         description: originalFilename,
-        metadata: { documentId: document.id },
+        metadata: {
+          documentId: document.id,
+          ...(!isStaff ? { uploadedByApplicantId: applicantUploaderId as string } : {}),
+        },
       });
 
       return { id: document.id, storageKey, checksum };

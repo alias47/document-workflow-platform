@@ -16,7 +16,8 @@
     "db:studio": "dotenv -e ../../.env -- prisma studio --schema=../../prisma/schema.prisma",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "test:integration": "dotenv -e ../../.env -- jest --config jest.integration.config.ts --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",

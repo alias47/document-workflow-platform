@@ -1,8 +1,8 @@
-# Sprint 12.2 — Authorization & RBAC Hardening
+# Sprint 12.3 — Pilot Readiness & Applicant Portal Completion
 
 **Project:** Document Workflow Platform
 
-**Sprint:** 12.2
+**Sprint:** 12.3
 
 **Status:** Ready for Implementation
 
@@ -10,11 +10,11 @@
 
 # 1. Sprint Goal
 
-Strengthen the authorization system by resolving all critical RBAC inconsistencies identified during the Authentication & Authorization Audit.
+Complete the remaining critical applicant portal functionality identified in the MVP Readiness Audit.
 
-This sprint focuses on ensuring every protected resource is correctly secured, every permission is valid, and backend and frontend authorization remain consistent.
+This sprint focuses on ensuring that an applicant can independently complete the entire document submission workflow without staff intervention.
 
-No new business features should be introduced.
+No new business modules or major UI redesigns will be introduced.
 
 ---
 
@@ -22,193 +22,301 @@ No new business features should be introduced.
 
 Implement:
 
-- Complete authorization audit
-- Endpoint permission verification
-- RBAC consistency improvements
-- Permission seed validation
-- Frontend route protection improvements
-- Navigation authorization consistency
-- Authorization regression tests
+- Fix applicant document upload data integrity
+- Correct applicant upload audit logging
+- Applicant document listing
+- Applicant document download
+- Applicant document preview support (when applicable)
+- Display document verification feedback
+- Enforce portal profile editing settings
+- Automatically synchronize requirement status after document verification
+- Add integration testing for the applicant upload workflow
 
 ---
 
 # 3. Scope
 
-This sprint applies to:
+This sprint applies only to:
 
-- RBAC
-- Permission Guards
-- Role Guards
-- Controller authorization
-- Route protection
-- Middleware
-- Navigation authorization
-- Permission seeds
+- Applicant Portal
+- Document Module
+- Document Review
+- Requirement Tracking
+- Audit Logging
+- Integration Testing
 
-This sprint does **not** include:
+Out of Scope:
 
-- New roles
-- Super Admin implementation
-- Manager implementation
+- Calendar
+- Tasks
+- Notification redesign
+- New workflow stages
+- New RBAC features
 - Sidebar redesign
 - Dashboard redesign
-- New UI
-- New business features
+- Mobile optimization
+- AI/OCR
 
 ---
 
-# 4. Authorization Audit
+# 4. Applicant Upload Data Integrity
 
-Review every controller in the backend.
+Review the complete applicant upload flow.
 
-For every endpoint verify:
+The current implementation incorrectly associates applicant uploads with a Staff foreign key.
 
-- Authentication Guard
-- Permission Guard
-- Role Guard (if applicable)
-- Public decorator usage
+Correct the data model and upload logic so applicant uploads are stored without violating referential integrity.
+
+Requirements:
+
+- Preserve existing staff upload behavior.
+- Maintain backward compatibility where possible.
+- Avoid breaking existing document queries.
+- Do not introduce duplicate document records.
+- Existing staff upload functionality must remain unchanged.
+
+---
+
+# 5. Applicant Upload Audit
+
+Review audit logging for applicant uploads.
+
+Requirements:
+
+- Record the correct actor type.
+- Record the correct actor identifier.
+- Preserve existing audit schema where possible.
+- Activity logs must also correctly identify applicant actors.
+
+---
+
+# 6. Applicant Document Center
+
+Applicants must be able to view every document they have uploaded.
+
+Implement:
+
+- Document list
+- Upload date
+- Requirement name
+- Current verification status
+- Current workflow status (if applicable)
+- Latest version indicator
+
+Ordering:
+
+- Most recent first
+
+Support pagination if required.
+
+---
+
+# 7. Applicant Document Download
+
+Applicants must be able to download their own uploaded files.
+
+Requirements:
+
 - Organization isolation
-- Ownership validation (where required)
+- Applicant ownership validation
+- Soft-delete checks
+- Secure download endpoint
+- Existing storage abstraction must be reused
+- No direct storage exposure
 
-Every protected endpoint must explicitly define its authorization requirements.
-
-No endpoint should rely on implicit access.
-
----
-
-# 5. Permission Audit
-
-Review every permission used throughout the project.
-
-Verify:
-
-- Permission exists in seed data
-- Permission is assigned to the correct roles
-- Permission naming follows project conventions
-- Permission is not duplicated
-- Permission is actually used
-
-Examples include but are not limited to:
-
-- dashboard.view
-- dashboard.workload.view
-- report.view
-- report.export
-- applicant.view
-- applicant.create
-- applicant.update
-- applicant.delete
-- document.*
-- workflow.*
-- notification.*
-- settings.*
-- search.*
-- audit.*
-
-Document any orphaned permissions or missing permissions.
+Applicants must never access documents belonging to another applicant.
 
 ---
 
-# 6. Role Consistency
+# 8. Document Preview
 
-Review every role reference in the backend.
+Where supported by the storage provider and file type:
 
-Verify:
+Provide secure preview support for common document formats.
 
-- Every referenced role actually exists
-- No unreachable role decorators remain
-- Role checks are consistent
-- Permission checks remain the primary authorization mechanism
+Examples:
 
-If invalid role references are discovered, replace them with the appropriate permission-based authorization while preserving existing business behavior.
+- PDF
+- JPEG
+- PNG
 
-Do not introduce new roles during this sprint.
+If preview is unavailable, download remains available.
 
----
-
-# 7. Invitation Authorization
-
-Review every invitation endpoint.
-
-Including:
-
-Staff Invitations
-
-- Send Invitation
-- Resend Invitation
-- Revoke Invitation
-
-Applicant Invitations
-
-- Send Invitation
-- Resend Invitation
-- Revoke Invitation
-
-Verify only authorized users may perform these actions.
-
-Unauthorized authenticated users must receive HTTP 403.
+Do not duplicate storage logic.
 
 ---
 
-# 8. Settings Authorization
+# 9. Verification Feedback
 
-Review every Settings endpoint.
+Applicants must clearly understand why a document requires correction.
 
-Verify:
+Expose:
 
-- Read permissions
-- Update permissions
-- Notification settings
-- Document requirement settings
-- Organization settings
+- Verification status
+- Review date
+- Reviewer (optional)
+- Rejection reason
+- Verification notes
 
-Ensure settings cannot become unreachable because of invalid role decorators.
-
-Use permission-based authorization where appropriate.
+Do not expose internal staff-only comments.
 
 ---
 
-# 9. Reports Authorization
+# 10. Portal Profile Settings Enforcement
 
-Review every reporting endpoint.
+Review Applicant Profile editing.
 
-Verify:
+Enforce:
 
-- report.view
-- report.export
+portalAllowProfileEdit
 
-Ensure:
+If disabled:
 
-- Permissions exist
-- Permissions are seeded
-- Permissions are assigned
-- Authorized users can successfully access reports
-- Unauthorized users receive HTTP 403
+- Editing endpoints reject updates.
+- UI disables editing controls.
+- Existing profile viewing remains available.
 
----
-
-# 10. Dashboard Authorization
-
-Review dashboard permissions.
-
-Verify:
-
-- dashboard.view
-- dashboard.workload.view
-
-Ensure workload endpoints remain restricted while general dashboard access functions correctly.
+Organization settings remain the source of truth.
 
 ---
 
-# 11. Frontend Route Protection
+# 11. Requirement Synchronization
 
-Review frontend route protection.
+Review document verification.
 
-Verify:
+When staff:
 
-Protected Staff Routes
+- approve document
+- reject document
 
-- /dashboard
-- /applicants
-- /staff
-- /workflow
+Automatically synchronize the corresponding Applicant Document Requirement status.
+
+Business Rules:
+
+Approved Document
+
+↓
+
+Requirement Approved
+
+Rejected Document
+
+↓
+
+Requirement Rejected
+
+Maintain transactional consistency.
+
+Prevent conflicting states.
+
+---
+
+# 12. Integration Testing
+
+Introduce real integration tests for the applicant upload workflow.
+
+At minimum verify:
+
+Applicant Activation
+
+↓
+
+Login
+
+↓
+
+Upload Document
+
+↓
+
+Database Persistence
+
+↓
+
+Audit Log
+
+↓
+
+Activity Log
+
+↓
+
+Document Listing
+
+↓
+
+Download
+
+↓
+
+Verification
+
+↓
+
+Requirement Synchronization
+
+↓
+
+Portal Display
+
+Tests must execute against a real database.
+
+Mock-only testing is insufficient.
+
+---
+
+# 13. Regression Review
+
+Ensure the following continue working:
+
+- Staff uploads
+- Staff document review
+- Reports
+- Dashboard
+- Search
+- Activity Log
+- Audit Log
+- Notifications
+
+No existing functionality may regress.
+
+---
+
+# 14. Acceptance Criteria
+
+The sprint is complete when:
+
+- Applicant uploads succeed without FK violations.
+- Applicant uploads are correctly attributed.
+- Applicants can view uploaded documents.
+- Applicants can securely download their own documents.
+- Preview works where supported.
+- Rejection reasons are visible.
+- Portal profile editing obeys organization settings.
+- Requirement status automatically synchronizes.
+- Integration tests cover the upload workflow.
+- All existing tests continue passing.
+- No regressions are introduced.
+
+---
+
+# 15. Deliverables
+
+Claude must provide:
+
+1. Updated backend implementation
+2. Updated frontend implementation
+3. Integration tests
+4. Updated unit tests (if required)
+5. Completion Report including:
+
+- Files Created
+- Files Modified
+- Database Changes
+- API Changes
+- Frontend Changes
+- Business Rules
+- Security Review
+- Test Results
+- Documentation Notes
+- Acceptance Criteria Confirmation

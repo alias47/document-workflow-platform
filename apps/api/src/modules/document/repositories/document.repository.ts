@@ -6,7 +6,10 @@ import { PrismaService } from '@/prisma/prisma.service';
 export interface CreateDocumentData {
   organizationId: string;
   applicantId: string;
-  uploadedBy: string;
+  /** Staff uploader ID. Null for portal self-uploads (use uploadedByApplicantId instead). */
+  uploadedBy: string | null;
+  /** Applicant self-upload ID. Mutually exclusive with uploadedBy. */
+  uploadedByApplicantId?: string | null;
   category: DocumentCategory;
   originalFilename: string;
   storedFilename: string;
@@ -15,7 +18,7 @@ export interface CreateDocumentData {
   storageKey: string;
   checksum?: string;
   expiresAt?: Date;
-  createdBy: string;
+  createdBy: string | null;
   requirementId?: string;
 }
 
@@ -37,6 +40,11 @@ export interface DocumentListOptions {
   status?: string;
   sortBy: string;
   sortOrder: 'asc' | 'desc';
+}
+
+export interface PortalDocumentListOptions {
+  page: number;
+  pageSize: number;
 }
 
 const UPLOADER_INCLUDE = {
@@ -80,6 +88,51 @@ export class DocumentRepository {
   }
 
   /**
+   * Applicant-scoped document list for the portal Document Center. Returns
+   * verification feedback fields so applicants can understand rejection reasons.
+   * Ordered newest-first per TASK.md §6.
+   */
+  async listForApplicantPortal(
+    applicantId: string,
+    organizationId: string,
+    opts: PortalDocumentListOptions,
+  ) {
+    const { page, pageSize } = opts;
+    const where: Prisma.DocumentWhereInput = {
+      applicantId,
+      organizationId,
+      deletedAt: null,
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.document.findMany({
+        where,
+        select: {
+          id: true,
+          originalFilename: true,
+          mimeType: true,
+          fileSize: true,
+          status: true,
+          category: true,
+          createdAt: true,
+          verifiedAt: true,
+          verificationNotes: true,
+          requirementId: true,
+          requirement: {
+            select: { requirement: { select: { name: true } } },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.document.count({ where }),
+    ]);
+
+    return { data, total };
+  }
+
+  /**
    * Non-deleted document counts grouped by verification status (dashboard
    * summary). Single groupBy query — no N+1.
    */
@@ -97,14 +150,15 @@ export class DocumentRepository {
       data: {
         organizationId: data.organizationId,
         applicantId: data.applicantId,
-        uploadedBy: data.uploadedBy,
+        uploadedBy: data.uploadedBy ?? null,
+        uploadedByApplicantId: data.uploadedByApplicantId ?? null,
         category: data.category,
         originalFilename: data.originalFilename,
         storedFilename: data.storedFilename,
         mimeType: data.mimeType,
         fileSize: data.fileSize,
         storageKey: data.storageKey,
-        createdBy: data.createdBy,
+        createdBy: data.createdBy ?? null,
         ...(data.checksum !== undefined ? { checksum: data.checksum } : {}),
         ...(data.expiresAt !== undefined ? { expiresAt: data.expiresAt } : {}),
         ...(data.requirementId !== undefined ? { requirementId: data.requirementId } : {}),

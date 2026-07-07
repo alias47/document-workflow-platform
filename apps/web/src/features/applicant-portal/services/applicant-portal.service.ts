@@ -1,5 +1,6 @@
 import type {
   ApplicantDashboard,
+  ApplicantDocumentListResponse,
   ApplicantDocumentRequirement,
   ApplicantPortalProfile,
   ApplicantProfile,
@@ -65,5 +66,17 @@ export const applicantPortalService = {
       { headers: { 'Content-Type': 'multipart/form-data' } },
     );
     return res.data.data;
+  },
+
+  async listDocuments(page = 1, pageSize = 25) {
+    const res = await http.get<ApiResponse<ApplicantDocumentListResponse>>(
+      `/applicant/documents?page=${page}&pageSize=${pageSize}`,
+    );
+    return res.data.data;
+  },
+
+  downloadDocument(documentId: string) {
+    // Trigger browser download via a direct navigation to the download endpoint.
+    window.open(`/api/applicant/documents/${documentId}/download`, '_blank');
   },
 };

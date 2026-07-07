@@ -34,11 +34,25 @@ export interface ApplicantProfile {
   nationality?: string;
   applicantNumber: string;
   status: string;
+  portalAllowProfileEdit?: boolean;
   assignedConsultant?: {
     id: string;
     firstName: string;
     lastName: string;
   } | null;
+}
+
+export interface ApplicantDocument {
+  id: string;
+  originalFilename: string;
+  mimeType: string;
+  fileSize: number;
+  status: string;
+  category: string;
+  createdAt: string;
+  verifiedAt?: string | null;
+  verificationNotes?: string | null;
+  requirementId?: string | null;
 }
 
 export interface ApplicantDocumentRequirement {
@@ -55,12 +69,19 @@ export interface ApplicantDocumentRequirement {
     category: string;
     isRequired: boolean;
   };
-  documents: {
-    id: string;
-    originalFilename: string;
-    uploadedAt: string;
-    status: string;
-  }[];
+  documents: ApplicantDocument[];
+}
+
+export interface ApplicantDocumentListMeta {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface ApplicantDocumentListResponse {
+  data: ApplicantDocument[];
+  meta: ApplicantDocumentListMeta;
 }
 
 export interface ApplicantDashboard {

@@ -26,6 +26,6 @@ import { StorageModule } from '@/modules/storage/storage.module';
   ],
   controllers: [DocumentController],
   providers: [DocumentService, DocumentUploadService, FileValidationService, DocumentRepository],
-  exports: [DocumentService, DocumentUploadService],
+  exports: [DocumentService, DocumentUploadService, DocumentRepository],
 })
 export class DocumentModule {}

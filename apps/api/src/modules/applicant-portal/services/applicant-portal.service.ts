@@ -9,8 +9,10 @@ import type { UpdateApplicantProfileDto } from '../dto/update-applicant-profile.
 import type { UploadDocumentDto } from '@/modules/document/dto/upload-document.dto';
 
 import { ApplicantRepository } from '@/modules/applicant/repositories/applicant.repository';
+import { DocumentRepository } from '@/modules/document/repositories/document.repository';
 import { DocumentUploadService } from '@/modules/document/services/document-upload.service';
 import { DocumentRequirementRepository } from '@/modules/document-requirement/repositories/document-requirement.repository';
+import { OrganizationRepository } from '@/modules/organization/repositories/organization.repository';
 
 @Injectable()
 export class ApplicantPortalService {
@@ -18,6 +20,8 @@ export class ApplicantPortalService {
     private readonly applicantRepo: ApplicantRepository,
     private readonly requirementRepo: DocumentRequirementRepository,
     private readonly uploadService: DocumentUploadService,
+    private readonly documentRepo: DocumentRepository,
+    private readonly organizationRepo: OrganizationRepository,
   ) {}
 
   async getDashboard(applicantId: string, organizationId: string) {
@@ -60,7 +64,10 @@ export class ApplicantPortalService {
   }
 
   async getProfile(applicantId: string, organizationId: string) {
-    const applicant = await this.applicantRepo.findById(applicantId, organizationId);
+    const [applicant, org] = await Promise.all([
+      this.applicantRepo.findById(applicantId, organizationId),
+      this.organizationRepo.findById(organizationId),
+    ]);
     if (!applicant) throw new NotFoundException('Applicant not found');
 
     const primaryAssignment = applicant.assignments.find((a) => a.isPrimary);
@@ -80,6 +87,7 @@ export class ApplicantPortalService {
       nationality: applicant.nationality,
       applicantNumber: applicant.applicantNumber,
       status: applicant.status,
+      portalAllowProfileEdit: org?.portalAllowProfileEdit ?? true,
       assignedConsultant: primaryAssignment
         ? {
             id: primaryAssignment.staff.id,
@@ -91,6 +99,11 @@ export class ApplicantPortalService {
   }
 
   async updateProfile(applicantId: string, organizationId: string, dto: UpdateApplicantProfileDto) {
+    const org = await this.organizationRepo.findById(organizationId);
+    if (!org?.portalAllowProfileEdit) {
+      throw new ForbiddenException('Profile editing is disabled by your organization');
+    }
+
     const applicant = await this.applicantRepo.findById(applicantId, organizationId);
     if (!applicant) throw new NotFoundException('Applicant not found');
 
@@ -138,6 +151,39 @@ export class ApplicantPortalService {
       requirementId,
     };
 
-    return this.uploadService.upload(file, dto, organizationId, applicantId);
+    return this.uploadService.upload(file, dto, organizationId, {
+      type: 'applicant',
+      applicantId,
+    });
+  }
+
+  async listDocuments(applicantId: string, organizationId: string, page = 1, pageSize = 25) {
+    const applicant = await this.applicantRepo.findById(applicantId, organizationId);
+    if (!applicant) throw new NotFoundException('Applicant not found');
+
+    const { data, total } = await this.documentRepo.listForApplicantPortal(
+      applicantId,
+      organizationId,
+      { page, pageSize },
+    );
+
+    return {
+      data,
+      meta: {
+        page,
+        pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    };
+  }
+
+  async downloadDocument(documentId: string, applicantId: string, organizationId: string) {
+    // Ownership check: document must belong to this applicant and org.
+    const doc = await this.documentRepo.findById(documentId, organizationId);
+    if (!doc || doc.applicantId !== applicantId) {
+      throw new ForbiddenException('Document not found or does not belong to you');
+    }
+    return this.uploadService.download(documentId, organizationId);
   }
 }

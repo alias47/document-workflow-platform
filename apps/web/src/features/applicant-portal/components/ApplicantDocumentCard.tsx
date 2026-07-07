@@ -1,3 +1,5 @@
+import { applicantPortalService } from '../services/applicant-portal.service';
+
 import type { ApplicantDocumentRequirement, RequirementStatus } from '../types';
 
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +25,7 @@ export function ApplicantDocumentCard({ requirement, onUpload }: Props) {
   const badge = STATUS_BADGE[requirement.status];
   const latestDocument = requirement.documents[0];
   const canUpload = requirement.status !== 'approved';
+  const isRejected = requirement.status === 'rejected';
 
   return (
     <Card>
@@ -44,10 +47,32 @@ export function ApplicantDocumentCard({ requirement, onUpload }: Props) {
       </CardHeader>
       <CardContent className="space-y-3">
         {latestDocument && (
-          <div className="text-sm text-gray-600">
-            <span className="font-medium">File:</span> {latestDocument.originalFilename}
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm text-gray-600 truncate">
+              <span className="font-medium">File:</span> {latestDocument.originalFilename}
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => applicantPortalService.downloadDocument(latestDocument.id)}
+            >
+              Download
+            </Button>
           </div>
         )}
+
+        {isRejected && latestDocument?.verificationNotes && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <p className="font-medium mb-1">Rejection reason:</p>
+            <p>{latestDocument.verificationNotes}</p>
+            {latestDocument.verifiedAt && (
+              <p className="mt-1 text-xs text-red-500">
+                Reviewed: {new Date(latestDocument.verifiedAt).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        )}
+
         {requirement.completedAt && (
           <div className="text-sm text-gray-500">
             Completed: {new Date(requirement.completedAt).toLocaleDateString()}
@@ -56,10 +81,10 @@ export function ApplicantDocumentCard({ requirement, onUpload }: Props) {
         {canUpload && (
           <Button
             size="sm"
-            variant={requirement.status === 'rejected' ? 'danger' : 'primary'}
+            variant={isRejected ? 'danger' : 'primary'}
             onClick={() => onUpload(requirement.id)}
           >
-            {requirement.status === 'rejected' ? 'Re-upload' : 'Upload'}
+            {isRejected ? 'Re-upload' : 'Upload'}
           </Button>
         )}
       </CardContent>

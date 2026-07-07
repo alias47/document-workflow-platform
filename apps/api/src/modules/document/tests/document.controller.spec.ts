@@ -134,7 +134,10 @@ describe('DocumentController', () => {
 
       expect(result.success).toBe(true);
       expect(result.data.id).toBe(DOCUMENT_ID);
-      expect(uploadService.upload).toHaveBeenCalledWith(file, dto, USER.organizationId, USER.sub);
+      expect(uploadService.upload).toHaveBeenCalledWith(file, dto, USER.organizationId, {
+        type: 'staff',
+        staffId: USER.sub,
+      });
     });
   });
 
