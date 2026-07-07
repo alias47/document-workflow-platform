@@ -14,6 +14,8 @@ export interface StaffUser {
   lastName: string;
   role: string;
   organizationId: string;
+  /** Permission strings granted to this user (e.g. 'applicant.view'). */
+  permissions: string[];
 }
 
 export interface LoginResponseData {

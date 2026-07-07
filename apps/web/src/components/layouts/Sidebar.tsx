@@ -2,11 +2,14 @@
 
 import {
   Activity,
+  BarChart2,
   Bell,
+  ClipboardList,
   Clock,
   FileText,
   LayoutDashboard,
   type LucideIcon,
+  Search,
   Settings,
   Upload,
   UserCog,
@@ -29,15 +32,18 @@ function formatRole(role: string): string {
 }
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  LayoutDashboard,
-  Users,
-  UserCog,
-  FileText,
   Activity,
+  BarChart2,
   Bell,
+  ClipboardList,
+  Clock,
+  FileText,
+  LayoutDashboard,
+  Search,
   Settings,
   Upload,
-  Clock,
+  UserCog,
+  Users,
 };
 
 interface SidebarProps {
@@ -67,7 +73,7 @@ function NavLink({
         active ? 'bg-[#2563EB] text-white' : 'text-[#94A3B8] hover:bg-[#1E293B] hover:text-white',
       )}
     >
-      {Icon && <Icon size={18} className="shrink-0" />}
+      {Icon && <Icon size={18} className="shrink-0" aria-hidden="true" />}
       <span className="flex-1 truncate">{label}</span>
       {badge && (
         <span
@@ -87,6 +93,18 @@ export function Sidebar({ nav = ADMIN_NAV }: SidebarProps) {
   const { user } = useAuth();
   const userName = user ? `${user.firstName} ${user.lastName}` : 'Account';
   const userRole = user ? formatRole(user.role) : '';
+  const userPermissions = user?.permissions ?? [];
+
+  // Filter nav sections to only items the user has permission to see.
+  // Items without a `permission` field are always shown.
+  const filteredNav: NavSection[] = nav
+    .map((section) => ({
+      ...section,
+      items: section.items.filter(
+        (item) => !item.permission || userPermissions.includes(item.permission),
+      ),
+    }))
+    .filter((section) => section.items.length > 0);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col bg-[#0F172A] border-r border-[#1E293B]">
@@ -96,13 +114,16 @@ export function Sidebar({ nav = ADMIN_NAV }: SidebarProps) {
       </div>
 
       {/* Nav sections */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-none">
-        {nav.map((section) => (
+      <nav
+        className="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-none"
+        aria-label="Main navigation"
+      >
+        {filteredNav.map((section) => (
           <div key={section.label}>
             <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-[#475569]">
               {section.label}
             </p>
-            <ul className="space-y-0.5">
+            <ul className="space-y-0.5" role="list">
               {section.items.map((item) => (
                 <li key={item.href}>
                   <NavLink {...item} />

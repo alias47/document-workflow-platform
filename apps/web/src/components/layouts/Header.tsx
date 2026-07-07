@@ -1,7 +1,8 @@
 'use client';
 
 import { Bell, LogOut, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { Avatar } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
@@ -21,9 +22,18 @@ function formatRole(role: string): string {
 
 export function Header({ title, className }: HeaderProps) {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  function handleSearch(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const q = new FormData(e.currentTarget).get('q');
+    if (typeof q === 'string' && q.trim()) {
+      router.push(`/search?q=${encodeURIComponent(q.trim())}`);
+    }
+  }
 
   const userName = user ? `${user.firstName} ${user.lastName}` : 'Account';
   const userRole = user ? formatRole(user.role) : '';
@@ -66,28 +76,31 @@ export function Header({ title, className }: HeaderProps) {
       {title && <h1 className="text-base font-semibold text-[#0F172A] mr-4 shrink-0">{title}</h1>}
 
       {/* Search */}
-      <div className="relative flex-1 max-w-xs">
+      <form onSubmit={handleSearch} role="search" className="relative flex-1 max-w-xs">
         <Search
           size={15}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none"
+          aria-hidden="true"
         />
         <input
           type="search"
-          placeholder="Search..."
+          name="q"
+          placeholder="Search…"
+          aria-label="Search applicants, documents, and staff"
           className="w-full h-9 pl-9 pr-3 rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC] text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE] focus:bg-white transition-colors"
         />
-      </div>
+      </form>
 
       <div className="flex-1" />
 
       {/* Notifications */}
       <button
         type="button"
+        onClick={() => router.push('/settings/notifications')}
         className="relative h-9 w-9 flex items-center justify-center rounded-[8px] text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#1E293B] transition-colors"
-        aria-label="Notifications"
+        aria-label="View notifications"
       >
         <Bell size={18} />
-        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full ring-2 ring-white" />
       </button>
 
       {/* User menu */}

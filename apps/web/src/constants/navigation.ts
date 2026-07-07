@@ -3,6 +3,8 @@ export interface NavItem {
   href: string;
   iconName: string;
   badge?: string;
+  /** Permission required to see this item. Omit for always-visible items. */
+  permission?: string;
 }
 
 export interface NavSection {
@@ -10,40 +12,77 @@ export interface NavSection {
   items: NavItem[];
 }
 
-// Staff / admin navigation
+// Staff / admin navigation with permission metadata.
+// The Sidebar filters items dynamically; nothing is hidden by hardcoded logic.
 export const ADMIN_NAV: NavSection[] = [
   {
     label: 'Main',
     items: [
-      { iconName: 'LayoutDashboard', label: 'Dashboard', href: '/dashboard' },
-      { iconName: 'Users', label: 'Applicants', href: '/applicants', badge: '12' },
-      { iconName: 'FileText', label: 'Documents', href: '/documents' },
+      {
+        iconName: 'LayoutDashboard',
+        label: 'Dashboard',
+        href: '/dashboard',
+        permission: 'dashboard.view',
+      },
+      {
+        iconName: 'Users',
+        label: 'Applicants',
+        href: '/applicants',
+        permission: 'applicant.view',
+      },
+      {
+        iconName: 'Search',
+        label: 'Search',
+        href: '/search',
+        permission: 'search.view',
+      },
+    ],
+  },
+  {
+    label: 'Reports',
+    items: [
+      {
+        iconName: 'BarChart2',
+        label: 'Reports',
+        href: '/reports',
+        permission: 'report.view',
+      },
     ],
   },
   {
     label: 'Management',
     items: [
-      { iconName: 'UserCog', label: 'Staff', href: '/staff' },
-      { iconName: 'Activity', label: 'Timeline', href: '/timeline' },
-      { iconName: 'Bell', label: 'Notifications', href: '/settings/notifications' },
-      { iconName: 'Settings', label: 'Settings', href: '/settings' },
+      {
+        iconName: 'UserCog',
+        label: 'Staff',
+        href: '/staff',
+        permission: 'staff.view',
+      },
+      {
+        iconName: 'Bell',
+        label: 'Notifications',
+        href: '/settings/notifications',
+        permission: 'notification.view',
+      },
       {
         iconName: 'ClipboardList',
         label: 'Document Requirements',
         href: '/settings/document-requirements',
+        permission: 'settings.manage',
+      },
+      {
+        iconName: 'Settings',
+        label: 'Settings',
+        href: '/settings',
+        permission: 'settings.manage',
       },
     ],
   },
 ];
 
-// Applicant portal navigation
-export const PORTAL_NAV: NavSection[] = [
-  {
-    label: 'My Application',
-    items: [
-      { iconName: 'LayoutDashboard', label: 'Overview', href: '/portal/dashboard' },
-      { iconName: 'Upload', label: 'Documents', href: '/portal/documents' },
-      { iconName: 'Clock', label: 'Timeline', href: '/portal/timeline' },
-    ],
-  },
+// Applicant portal navigation — all routes verified to exist.
+export const PORTAL_NAV = [
+  { label: 'Overview', href: '/applicant' },
+  { label: 'Documents', href: '/applicant/documents' },
+  { label: 'Profile', href: '/applicant/profile' },
 ];

@@ -53,7 +53,7 @@ export function ApplicantDocumentCard({ requirement, onUpload }: Props) {
             </div>
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => applicantPortalService.downloadDocument(latestDocument.id)}
             >
               Download
