@@ -10,6 +10,7 @@
 
 import { randomUUID } from 'crypto';
 
+import { ConfigModule } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { PrismaClient } from '@prisma/client';
 
@@ -145,7 +146,7 @@ async function cleanupTestData() {
 
 // ─── Test module ──────────────────────────────────────────────────────────────
 
-let module: TestingModule;
+let testingModule: TestingModule;
 let uploadService: DocumentUploadService;
 let documentRepo: DocumentRepository;
 let documentService: DocumentService;
@@ -164,7 +165,8 @@ beforeAll(async () => {
     })),
   };
 
-  module = await Test.createTestingModule({
+  testingModule = await Test.createTestingModule({
+    imports: [ConfigModule.forRoot({ isGlobal: true })],
     providers: [
       DocumentUploadService,
       DocumentRepository,
@@ -187,15 +189,15 @@ beforeAll(async () => {
     ],
   }).compile();
 
-  uploadService = module.get(DocumentUploadService);
-  documentRepo = module.get(DocumentRepository);
-  documentService = module.get(DocumentService);
-  requirementRepo = module.get(DocumentRequirementRepository);
+  uploadService = testingModule.get(DocumentUploadService);
+  documentRepo = testingModule.get(DocumentRepository);
+  documentService = testingModule.get(DocumentService);
+  requirementRepo = testingModule.get(DocumentRequirementRepository);
 });
 
 afterAll(async () => {
   await cleanupTestData();
-  await module.close();
+  await testingModule.close();
   await rawPrisma.$disconnect();
 });
 

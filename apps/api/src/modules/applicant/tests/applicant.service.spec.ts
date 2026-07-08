@@ -78,6 +78,7 @@ describe('ApplicantService', () => {
             findById: jest.fn(),
             findByEmail: jest.fn(),
             countByOrganization: jest.fn(),
+            countAll: jest.fn(),
             list: jest.fn(),
             create: jest.fn(),
             createAssignment: jest.fn(),
@@ -186,7 +187,7 @@ describe('ApplicantService', () => {
 
     it('creates applicant and assignment in a transaction', async () => {
       repo.findByEmail.mockResolvedValue(null);
-      repo.countByOrganization.mockResolvedValue(0);
+      repo.countAll.mockResolvedValue(0);
 
       const result = await service.create(createDto, ORG_ID, STAFF_ID);
 
@@ -212,7 +213,7 @@ describe('ApplicantService', () => {
     });
 
     it('skips email check when no email provided', async () => {
-      repo.countByOrganization.mockResolvedValue(3);
+      repo.countAll.mockResolvedValue(3);
       const dtoNoEmail: CreateApplicantDto = {
         firstName: 'Jane',
         lastName: 'Smith',
@@ -226,7 +227,7 @@ describe('ApplicantService', () => {
 
     it('generates correct applicant number sequence', async () => {
       repo.findByEmail.mockResolvedValue(null);
-      repo.countByOrganization.mockResolvedValue(9);
+      repo.countAll.mockResolvedValue(9);
 
       const result = await service.create(createDto, ORG_ID, STAFF_ID);
       expect(result.applicantNumber).toBe('APP-2026-0010');

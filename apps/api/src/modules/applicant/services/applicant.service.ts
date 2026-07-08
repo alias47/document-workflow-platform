@@ -213,8 +213,8 @@ export class ApplicantService {
     });
   }
 
-  private async generateApplicantNumber(organizationId: string): Promise<string> {
-    const total = await this.applicantRepo.countByOrganization(organizationId);
+  private async generateApplicantNumber(_organizationId: string): Promise<string> {
+    const total = await this.applicantRepo.countAll();
     const year = new Date().getFullYear();
     const seq = String(total + 1).padStart(4, '0');
     return `APP-${year}-${seq}`;

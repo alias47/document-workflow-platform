@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   Header,
   HttpCode,
@@ -94,8 +95,8 @@ export class ApplicantPortalController {
   @ApiOperation({ summary: 'List all documents uploaded by the applicant' })
   async listDocuments(
     @CurrentUser() user: ApplicantJwtPayload,
-    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
-    @Query('pageSize', new ParseIntPipe({ optional: true })) pageSize?: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('pageSize', new DefaultValuePipe(25), ParseIntPipe) pageSize?: number,
   ) {
     const result = await this.portalService.listDocuments(
       user.applicantId,

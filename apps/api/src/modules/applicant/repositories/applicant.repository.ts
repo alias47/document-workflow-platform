@@ -79,6 +79,10 @@ export class ApplicantRepository {
     return this.prisma.applicant.count({ where: { organizationId } });
   }
 
+  async countAll(): Promise<number> {
+    return this.prisma.applicant.count();
+  }
+
   /**
    * Count of non-deleted applicants grouped by lifecycle status. Returns one row
    * per status present; callers total or pick specific statuses. Single groupBy

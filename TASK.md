@@ -1,8 +1,8 @@
-# Sprint 12.3 — Pilot Readiness & Applicant Portal Completion
+# Sprint 12.5 — Integration & End-to-End Testing
 
 **Project:** Document Workflow Platform
 
-**Sprint:** 12.3
+**Sprint:** 12.5
 
 **Status:** Ready for Implementation
 
@@ -10,11 +10,11 @@
 
 # 1. Sprint Goal
 
-Complete the remaining critical applicant portal functionality identified in the MVP Readiness Audit.
+Introduce production-grade integration and end-to-end testing for the application's most critical workflows.
 
-This sprint focuses on ensuring that an applicant can independently complete the entire document submission workflow without staff intervention.
+The objective is to validate that modules work together correctly against a real database and that complete user journeys succeed from start to finish.
 
-No new business modules or major UI redesigns will be introduced.
+No business functionality should be changed except where necessary to improve testability or fix defects discovered during testing.
 
 ---
 
@@ -22,206 +22,99 @@ No new business modules or major UI redesigns will be introduced.
 
 Implement:
 
-- Fix applicant document upload data integrity
-- Correct applicant upload audit logging
-- Applicant document listing
-- Applicant document download
-- Applicant document preview support (when applicable)
-- Display document verification feedback
-- Enforce portal profile editing settings
-- Automatically synchronize requirement status after document verification
-- Add integration testing for the applicant upload workflow
+- Integration test infrastructure
+- End-to-end (E2E) test infrastructure
+- Test database configuration
+- Seed data for tests
+- Critical workflow integration tests
+- Smoke E2E tests
+- CI-compatible test commands
 
 ---
 
 # 3. Scope
 
-This sprint applies only to:
+Include:
 
-- Applicant Portal
-- Document Module
-- Document Review
-- Requirement Tracking
-- Audit Logging
-- Integration Testing
+- API integration tests
+- Real PostgreSQL test database
+- Full Nest application bootstrap
+- Authentication flows
+- Applicant lifecycle
+- Document upload/review
+- Reports
+- Dashboard
 
 Out of Scope:
 
-- Calendar
-- Tasks
-- Notification redesign
-- New workflow stages
-- New RBAC features
-- Sidebar redesign
-- Dashboard redesign
-- Mobile optimization
-- AI/OCR
+- Frontend UI automation (Playwright/Cypress)
+- Performance testing
+- Load testing
 
 ---
 
-# 4. Applicant Upload Data Integrity
+# 4. Test Infrastructure
 
-Review the complete applicant upload flow.
-
-The current implementation incorrectly associates applicant uploads with a Staff foreign key.
-
-Correct the data model and upload logic so applicant uploads are stored without violating referential integrity.
+Create dedicated integration and E2E test setup.
 
 Requirements:
 
-- Preserve existing staff upload behavior.
-- Maintain backward compatibility where possible.
-- Avoid breaking existing document queries.
-- Do not introduce duplicate document records.
-- Existing staff upload functionality must remain unchanged.
+- Separate test database
+- Automatic cleanup
+- Independent migrations
+- Independent seed
+- Parallel-safe execution where practical
 
 ---
 
-# 5. Applicant Upload Audit
+# 5. Authentication Integration Tests
 
-Review audit logging for applicant uploads.
+Verify:
 
-Requirements:
-
-- Record the correct actor type.
-- Record the correct actor identifier.
-- Preserve existing audit schema where possible.
-- Activity logs must also correctly identify applicant actors.
-
----
-
-# 6. Applicant Document Center
-
-Applicants must be able to view every document they have uploaded.
-
-Implement:
-
-- Document list
-- Upload date
-- Requirement name
-- Current verification status
-- Current workflow status (if applicable)
-- Latest version indicator
-
-Ordering:
-
-- Most recent first
-
-Support pagination if required.
+- Staff login
+- Applicant login
+- Refresh token rotation
+- Refresh replay detection
+- Logout
+- Logout all sessions
+- Password reset
+- Invitation activation
 
 ---
 
-# 7. Applicant Document Download
+# 6. Applicant Lifecycle Tests
 
-Applicants must be able to download their own uploaded files.
+Verify complete flow:
 
-Requirements:
-
-- Organization isolation
-- Applicant ownership validation
-- Soft-delete checks
-- Secure download endpoint
-- Existing storage abstraction must be reused
-- No direct storage exposure
-
-Applicants must never access documents belonging to another applicant.
-
----
-
-# 8. Document Preview
-
-Where supported by the storage provider and file type:
-
-Provide secure preview support for common document formats.
-
-Examples:
-
-- PDF
-- JPEG
-- PNG
-
-If preview is unavailable, download remains available.
-
-Do not duplicate storage logic.
-
----
-
-# 9. Verification Feedback
-
-Applicants must clearly understand why a document requires correction.
-
-Expose:
-
-- Verification status
-- Review date
-- Reviewer (optional)
-- Rejection reason
-- Verification notes
-
-Do not expose internal staff-only comments.
-
----
-
-# 10. Portal Profile Settings Enforcement
-
-Review Applicant Profile editing.
-
-Enforce:
-
-portalAllowProfileEdit
-
-If disabled:
-
-- Editing endpoints reject updates.
-- UI disables editing controls.
-- Existing profile viewing remains available.
-
-Organization settings remain the source of truth.
-
----
-
-# 11. Requirement Synchronization
-
-Review document verification.
-
-When staff:
-
-- approve document
-- reject document
-
-Automatically synchronize the corresponding Applicant Document Requirement status.
-
-Business Rules:
-
-Approved Document
+Admin Login
 
 ↓
 
-Requirement Approved
-
-Rejected Document
+Create Applicant
 
 ↓
 
-Requirement Rejected
-
-Maintain transactional consistency.
-
-Prevent conflicting states.
-
----
-
-# 12. Integration Testing
-
-Introduce real integration tests for the applicant upload workflow.
-
-At minimum verify:
-
-Applicant Activation
+Assign Staff
 
 ↓
 
-Login
+Workflow Created
+
+↓
+
+Requirements Generated
+
+↓
+
+Invitation Sent
+
+↓
+
+Applicant Activated
+
+↓
+
+Applicant Login
 
 ↓
 
@@ -229,94 +122,106 @@ Upload Document
 
 ↓
 
-Database Persistence
+Staff Review
 
 ↓
 
-Audit Log
+Requirement Updated
 
 ↓
 
-Activity Log
-
-↓
-
-Document Listing
-
-↓
-
-Download
-
-↓
-
-Verification
-
-↓
-
-Requirement Synchronization
-
-↓
-
-Portal Display
-
-Tests must execute against a real database.
-
-Mock-only testing is insufficient.
+Applicant Downloads Document
 
 ---
 
-# 13. Regression Review
+# 7. Organization Isolation Tests
 
-Ensure the following continue working:
+Verify:
 
-- Staff uploads
-- Staff document review
-- Reports
-- Dashboard
-- Search
-- Activity Log
-- Audit Log
-- Notifications
-
-No existing functionality may regress.
+- Cross-org applicant access denied
+- Cross-org document access denied
+- Cross-org search denied
+- Cross-org reports denied
+- Cross-org dashboard denied
 
 ---
 
-# 14. Acceptance Criteria
+# 8. Reports Integration
 
-The sprint is complete when:
+Verify:
 
-- Applicant uploads succeed without FK violations.
-- Applicant uploads are correctly attributed.
-- Applicants can view uploaded documents.
-- Applicants can securely download their own documents.
-- Preview works where supported.
-- Rejection reasons are visible.
-- Portal profile editing obeys organization settings.
-- Requirement status automatically synchronizes.
-- Integration tests cover the upload workflow.
-- All existing tests continue passing.
-- No regressions are introduced.
+- Applicant report
+- Document report
+- Workflow report
+- Staff workload
+
+Export:
+
+- CSV
+- Excel
+- PDF
 
 ---
 
-# 15. Deliverables
+# 9. Dashboard Integration
+
+Verify:
+
+- Summary
+- Activity
+- Workload
+- Permission enforcement
+
+---
+
+# 10. Storage Integration
+
+Verify:
+
+- File upload
+- Download
+- Checksum
+- Soft delete behavior
+
+---
+
+# 11. Regression Suite
+
+Every future PR should execute:
+
+- Unit tests
+- Integration tests
+- E2E smoke tests
+
+---
+
+# 12. Acceptance Criteria
+
+Complete when:
+
+- Integration infrastructure exists.
+- E2E infrastructure exists.
+- Test DB is isolated.
+- Critical workflows are fully covered.
+- Organization isolation is verified.
+- Authentication flows are verified.
+- Dashboard and reports are verified.
+- Storage integration is verified.
+- All tests pass.
+
+---
+
+# 13. Deliverables
 
 Claude must provide:
 
-1. Updated backend implementation
-2. Updated frontend implementation
-3. Integration tests
-4. Updated unit tests (if required)
-5. Completion Report including:
-
-- Files Created
-- Files Modified
-- Database Changes
-- API Changes
-- Frontend Changes
-- Business Rules
-- Security Review
-- Test Results
-- Documentation Notes
-- Acceptance Criteria Confirmation
+1. Integration test infrastructure
+2. E2E test infrastructure
+3. New test suites
+4. Updated scripts/documentation
+5. Sprint Completion Report including:
+   - Files Created
+   - Files Modified
+   - Test Coverage Added
+   - Infrastructure Changes
+   - Validation Results

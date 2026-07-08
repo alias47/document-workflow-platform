@@ -15,7 +15,8 @@
       "Bash(npx prisma *)",
       "Bash(pnpm -w exec eslint apps/web/src --fix --no-warn-ignored)",
       "Bash(pnpm --filter @repo/web lint)",
-      "Bash(grep -nA4 \"softDelete\" apps/api/src/modules/staff/repositories/staff.repository.ts)"
+      "Bash(grep -nA4 \"softDelete\" apps/api/src/modules/staff/repositories/staff.repository.ts)",
+      "Bash(pnpm --filter @repo/api test)"
     ]
   }
 }
